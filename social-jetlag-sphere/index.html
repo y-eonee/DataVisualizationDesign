@@ -4,39 +4,39 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Social Jetlag Sphere</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;500;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
 <style>
+@font-face{font-family:Pretendard;font-weight:45 920;font-style:normal;font-display:swap;src:url(PretendardVariable.woff2) format('woff2')}
+html{letter-spacing:-.05em}button,input{letter-spacing:inherit}
 :root{--bg:#000;--fg:#fff;--mute:rgba(255,255,255,.58);--line:rgba(255,255,255,.16);--panel:rgba(14,13,24,.78);--lav:#b69cff;color-scheme:dark}
 *{box-sizing:border-box;margin:0}
-html,body{height:100%;background:radial-gradient(ellipse at 38% 48%,#0b0a1c 0%,#000 62%);color:var(--fg);overflow:hidden;font-family:'Noto Sans KR',Raleway,sans-serif}
+html,body{height:100%;background:radial-gradient(ellipse at 38% 48%,#0b0a1c 0%,#000 62%);color:var(--fg);overflow:hidden;font-family:Pretendard,sans-serif}
 canvas{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 #gl{z-index:1;touch-action:none;cursor:grab}
 #lab{z-index:2;pointer-events:none}
 #head{position:fixed;left:28px;top:22px;z-index:4;pointer-events:none}
-#head h1{font:800 clamp(24px,3vw,38px)/1 Raleway,'Noto Sans KR',sans-serif;letter-spacing:-.01em}
-#head h1 span{color:var(--lav)}
-#head p{font:500 10px Raleway,'Noto Sans KR',sans-serif;letter-spacing:.22em;color:var(--mute);margin-top:8px;text-transform:uppercase}
+#head h1{font:800 var(--hs,64px)/.94 Pretendard,sans-serif;color:#fff}
+#head p{font:500 12px Pretendard,sans-serif;color:var(--mute);margin-top:14px}
 #stats{display:flex;gap:26px;margin-top:16px}
-#stats small{display:block;font:400 9px Raleway,sans-serif;color:var(--mute);letter-spacing:.06em}
-#stats b{font:700 20px Raleway,sans-serif}
+#stats small{display:block;font:400 9px Pretendard,sans-serif;color:var(--mute);}
+#stats b{font:700 20px Pretendard,sans-serif}
 #panel{position:fixed;right:18px;top:14px;bottom:14px;width:min(340px,calc(100vw - 36px));z-index:5;display:flex;flex-direction:column;gap:8px;overflow:hidden;justify-content:flex-start}
 #panel::-webkit-scrollbar{display:none}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;backdrop-filter:blur(8px);flex:none}
-.card h3{font:700 11px Raleway,'Noto Sans KR',sans-serif;letter-spacing:.12em;color:var(--mute);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
-.card h3 button{background:none;border:1px solid var(--line);border-radius:8px;color:#fff;font:400 10px 'Noto Sans KR',sans-serif;padding:3px 8px;cursor:pointer}
+.card h3{font:700 11px Pretendard,sans-serif;color:var(--mute);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.card h3 button{background:none;border:1px solid var(--line);border-radius:8px;color:#fff;font:400 10px Pretendard,sans-serif;padding:3px 8px;cursor:pointer}
 .card h3 button:hover{border-color:#fff}
-#who .tag{display:inline-block;font:800 10px Raleway,sans-serif;letter-spacing:.16em;border:1px solid #fff;border-radius:99px;padding:2px 9px;margin-bottom:6px}
-#who h2{font:700 18px/1.25 'Noto Sans KR',sans-serif}
+#who .tag{display:inline-block;font:800 10px Pretendard,sans-serif;border:1px solid #fff;border-radius:99px;padding:2px 9px;margin-bottom:6px}
+#who h2{font:700 18px/1.25 Pretendard,sans-serif}
 #who .sub{font-size:12px;color:var(--mute);margin-top:2px}
 #who .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 2px}
-#who .kv small{display:block;font:400 9.5px 'Noto Sans KR',sans-serif;color:var(--mute)}
-#who .kv b{font:700 17px Raleway,'Noto Sans KR',sans-serif}
+#who .kv small{display:block;font:400 9.5px Pretendard,sans-serif;color:var(--mute)}
+#who .kv b{font:700 17px Pretendard,sans-serif}
 #who p{font-size:11.5px;line-height:1.6;color:rgba(255,255,255,.8);margin-top:8px}
 .row{display:grid;grid-template-columns:84px 1fr 44px;align-items:center;gap:8px;font-size:11.5px;margin:4px 0;cursor:pointer}
 .row:hover .nm{color:var(--lav)}
 .row .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
 .row .bar i{display:block;height:100%;border-radius:3px}
-.row .n{text-align:right;font:500 11px Raleway,sans-serif;color:var(--mute)}
+.row .n{text-align:right;font:500 11px Pretendard,sans-serif;color:var(--mute)}
 .row.off{opacity:.35}
 .row .nm{display:flex;align-items:center;gap:7px;white-space:nowrap}
 .tg{display:flex;align-items:center;gap:6px;font-size:11px;margin:3px 0;cursor:pointer}
@@ -47,28 +47,46 @@ canvas{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 @media(max-height:700px) and (min-width:821px){#panel{zoom:.78}}.tg input{accent-color:#b69cff;width:15px;height:15px}
 .legend2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.legend2 .row{margin:1px 0}
 .scale{display:flex;align-items:flex-end;gap:14px;margin-top:0}
-.scale div{font:500 10px Raleway,'Noto Sans KR',sans-serif;color:var(--mute);text-align:center}
+.scale div{font:500 10px Pretendard,sans-serif;color:var(--mute);text-align:center}
 .scale i{display:block;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.2),#fff);margin-bottom:6px;border-radius:2px}
 #mm{position:static;width:100%;height:auto;display:block;border-radius:8px}
 #mmw{padding:9px 12px 7px}
 #mmw h3{margin-bottom:8px}#mmt{font-size:10.5px;color:var(--mute);margin-top:6px}
-#zoom{position:fixed;left:28px;bottom:112px;z-index:5;display:flex;flex-direction:column;gap:2px}
-#zoom button{width:40px;height:40px;background:none;border:0;color:#fff;font:300 34px/1 Raleway,sans-serif;cursor:pointer}
+#zoom{position:fixed;left:calc(28px + var(--lw,0px));bottom:112px;z-index:5;display:flex;flex-direction:column;gap:2px}
+#zoom button{width:40px;height:40px;background:none;border:0;color:#fff;font:300 34px/1 Pretendard,sans-serif;cursor:pointer}
 #zoom button:hover{color:var(--lav)}
-#timebar{position:fixed;left:28px;right:min(376px,calc(100vw - 20px));bottom:18px;height:70px;z-index:4;pointer-events:none}
+#timebar{position:fixed;left:calc(28px + var(--lw,0px));right:min(376px,calc(100vw - 20px));bottom:18px;height:70px;z-index:4;pointer-events:none}
 #tb{width:100%;height:100%;position:static}
 #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:94px;font-size:11px;color:var(--mute);z-index:3;pointer-events:none;transition:opacity .5s}
 #tip{position:fixed;z-index:8;pointer-events:none;padding:8px 11px;border:1px solid rgba(255,255,255,.4);border-radius:8px;background:rgba(8,8,16,.92);font-size:12px;line-height:1.6;display:none;max-width:240px}
-#tip b{font-family:Raleway,'Noto Sans KR',sans-serif}
+#tip b{font-family:Pretendard,sans-serif}
 @media(max-width:820px){#mmw{position:fixed;width:150px;right:10px;top:14px;padding:6px 8px;z-index:6}#mmw h3,#mmt{display:none}#panel{overflow-y:auto;top:auto;bottom:96px;height:34vh;right:10px;left:10px;width:auto}#zoom{display:none}#timebar{right:10px;left:10px}#head{left:16px}}
+/* ---- 상세 패널 : 연령·직군·개인을 고르면 왼쪽에서 열림 ---- */
+#detail{position:fixed;left:0;top:0;bottom:0;width:min(440px,50vw);z-index:6;padding:30px 30px 34px 28px;overflow-y:auto;scrollbar-width:none;background:linear-gradient(90deg,rgba(4,4,12,.96) 0,rgba(4,4,12,.92) 82%,rgba(4,4,12,0));transform:translateX(-104%);opacity:0;pointer-events:none;transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .4s}
+#detail::-webkit-scrollbar{display:none}
+#detail.on{transform:none;opacity:1;pointer-events:auto}
+#detail .x{position:absolute;right:22px;top:16px;width:30px;height:30px;background:none;border:1px solid var(--line);border-radius:50%;color:#fff;font:300 18px/1 Pretendard,sans-serif;cursor:pointer;display:grid;place-items:center;padding:0}
+#detail .x:hover,#detail .x:focus-visible{border-color:#fff;outline:none}
+#detail .dk{font:700 11px Pretendard,sans-serif;color:var(--lav);padding-right:40px}
+#detail h2{font:800 clamp(34px,4.2vw,52px)/1.05 Pretendard,sans-serif;margin:8px 0 14px;padding-bottom:12px;border-bottom:2px solid #fff;text-wrap:balance}
+#detail p.lead{font:400 13.5px/1.8 Pretendard,sans-serif;color:#e8e8f4}
+#detail p.lead+p.lead{margin-top:8px}
+#detail .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 4px}
+#detail .kv div{border-top:1px solid rgba(255,255,255,.28);padding-top:8px}
+#detail .kv small{display:block;font:400 11px Pretendard,sans-serif;color:var(--mute)}
+#detail .kv b{font:700 26px Pretendard,sans-serif;font-variant-numeric:tabular-nums}
+#detail .ct{font:700 11px Pretendard,sans-serif;color:var(--mute);margin:26px 0 8px}
+#detail canvas{position:static;display:block;width:100%;height:auto}
+#detail p.note{font:300 11px/1.7 Pretendard,sans-serif;color:rgba(255,255,255,.5);margin-top:26px}
+body.dopen #head{opacity:0}
+#head{transition:opacity .4s}
+@media(max-width:820px){#detail{left:0;right:0;top:auto;bottom:0;width:auto;height:58vh;padding:22px 18px 28px;transform:translateY(104%);background:rgba(4,4,12,.97);border-top:1px solid var(--line)}#detail.on{transform:none}body.dopen #panel{opacity:0;pointer-events:none}#detail h2{font-size:30px}#detail .kv b{font-size:20px}}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
-</head>
-<body>
 <canvas id="gl"></canvas><canvas id="lab"></canvas>
-<div id="head"><h1>Social <span>Jetlag</span></h1><p>평일과 휴일 사이, 4,200명의 기상 리듬</p>
+<div id="head"><h1>Social<br>Jetlag</h1><p>평일과 휴일 사이, 4,200명의 기상 리듬</p>
  <div id="stats"><div><small>표본</small><b id="sN">4,200</b></div><div><small>평균 시차</small><b id="sM">+41분</b></div><div><small>시차 1시간 이상</small><b id="sH">0%</b></div></div></div>
 <div id="panel">
  <div class="card" id="mmw"><h3>Global overview <button id="reset">시점 초기화</button></h3><canvas id="mm" width="620" height="215"></canvas><div id="mmt">현재 시야 · 전체</div></div>
@@ -81,11 +99,15 @@ canvas{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 <div id="zoom"><button id="zi" aria-label="확대">+</button><button id="zo" aria-label="축소">−</button></div>
 <div id="timebar"><canvas id="tb"></canvas></div>
 <div id="hint">드래그로 회전 · 휠로 확대 · 점을 누르면 내 위치(YOU) · Esc로 해제</div>
+<aside id="detail" aria-live="polite"></aside>
 <div id="tip"></div>
 <script src="data.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+/* Pretendard 로드 · 캔버스 글자도 자간 -5% */
+{const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'font');Object.defineProperty(CanvasRenderingContext2D.prototype,'font',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,v);const m=/(\d+(?:\.\d+)?)px/.exec(d.get.call(this));if('letterSpacing' in this&&m)this.letterSpacing=(-.05*m[1])+'px'}})}
+['300','400','500','700','800'].forEach(w=>document.fonts.load(w+' 12px Pretendard'));
 const $=id=>document.getElementById(id);
 const AGES=['10대','20대','30대','40대','50대','60대','70대+'];
 const JOBS=['비취업','관리자','전문가','사무','서비스','판매','농림어업','기능원','장치·기계','단순노무'];
@@ -237,7 +259,7 @@ function applyState(){
   D.forEach(d=>{const on=member(d);nA[d.i]=on?1:.12;hA[d.i]=on?.7:.05;nS[d.i]=on?(active()?10:7.5):5.5});
   if(S.you!==null){nA[S.you]=1;hA[S.you]=1;nS[S.you]=12}
   nodeMesh.geometry.attributes.aA.needsUpdate=true;nodeMesh.geometry.attributes.aS.needsUpdate=true;hMesh.geometry.attributes.aA.needsUpdate=true;
-  renderPanel();drawTime();
+  renderPanel();renderDetail();drawTime();
 }
 
 /* ---------- 투영 + 2D 오버레이 ---------- */
@@ -298,17 +320,17 @@ function overlay(now){
    for(const h of hubs){v3.set(h.v[0]*eg,h.v[1]*eg,h.v[2]*eg).project(cam);const cp=cam.position,dd=(h.v[0]*cp.x+h.v[1]*cp.y+h.v[2]*cp.z)/(Math.hypot(...h.v)*cp.length());if(dd<.1)continue;const x=(v3.x*.5+.5)*W,y=(-v3.y*.5+.5)*H,r=RPX*.2;lx.globalAlpha=.4*Math.min(1,dd*1.4)*eg;lx.drawImage(HUBH,x-r,y-r,r*2,r*2)}lx.globalAlpha=1}
   lx.globalCompositeOperation='source-over';
   // 시각 눈금 라벨
-  lx.textAlign='center';lx.textBaseline='middle';lx.font="500 9px Raleway,sans-serif";
+  lx.textAlign='center';lx.textBaseline='middle';lx.font="500 9px Pretendard,sans-serif";
   if($('t_skel').checked)for(const t of tickLabels){const d=SD[t.v];if(d<.25)continue;lx.fillStyle=`rgba(255,255,255,${.62*d*eg})`;lx.fillText(t.text,SX[t.v],SY[t.v])}
   // 군집 라벨
   labelHits=[];
   for(const h of hubs){v3.set(h.v[0]*1.0*eg,h.v[1]*eg,h.v[2]*eg).project(cam);const cp=cam.position,d=(h.v[0]*cp.x+h.v[1]*cp.y+h.v[2]*cp.z)/(Math.hypot(...h.v)*cp.length());if(d<.12)continue;
     const x=(v3.x*.5+.5)*W,y=(-v3.y*.5+.5)*H,on=S.age===null||S.age===h.age;labelHits.push({x,y,age:h.age});
-    lx.font="700 14px 'Noto Sans KR',sans-serif";lx.fillStyle=`rgba(255,255,255,${(on?.95:.3)*Math.min(1,d*1.6)*eg})`;lx.fillText(AGES[h.age],x,y-8);
-    lx.font="400 10px Raleway,sans-serif";lx.fillStyle=`rgba(255,255,255,${(on?.6:.2)*Math.min(1,d*1.6)*eg})`;lx.fillText(h.n.toLocaleString()+'명',x,y+7)}
+    lx.font="700 14px Pretendard,sans-serif";lx.fillStyle=`rgba(255,255,255,${(on?.95:.3)*Math.min(1,d*1.6)*eg})`;lx.fillText(AGES[h.age],x,y-8);
+    lx.font="400 10px Pretendard,sans-serif";lx.fillStyle=`rgba(255,255,255,${(on?.6:.2)*Math.min(1,d*1.6)*eg})`;lx.fillText(h.n.toLocaleString()+'명',x,y+7)}
   // 호버 · YOU
   const mark=(i,double,label)=>{if(SD[i]<.02)return;const x=SX[i],y=SY[i];lx.strokeStyle='#fff';lx.lineWidth=1.4;lx.beginPath();lx.arc(x,y,9,0,6.2832);lx.stroke();
-    if(double){lx.beginPath();lx.arc(x,y,14,0,6.2832);lx.stroke();lx.font="800 10px Raleway,sans-serif";const w=lx.measureText(label).width+12;lx.fillStyle='#fff';lx.fillRect(x+16,y-20,w,15);lx.fillStyle='#000';lx.textAlign='left';lx.fillText(label,x+22,y-12);lx.textAlign='center'}};
+    if(double){lx.beginPath();lx.arc(x,y,14,0,6.2832);lx.stroke();lx.font="800 10px Pretendard,sans-serif";const w=lx.measureText(label).width+12;lx.fillStyle='#fff';lx.fillRect(x+16,y-20,w,15);lx.fillStyle='#000';lx.textAlign='left';lx.fillText(label,x+22,y-12);lx.textAlign='center'}};
   if(S.hover>=0&&S.hover!==S.you)mark(S.hover,false);
   if(S.you!==null){const i=S.you,d=D[i];mark(i,true,'YOU');
     // 내 경로 강조
@@ -338,6 +360,65 @@ function renderPanel(){
 $('scale').innerHTML=[0,1,2,3].map(h=>`<div><i style="width:${10+h*22}px"></i>${h}h${h===3?'+':''}</div>`).join('');
 $('sM').textContent=sg(avg(D,d=>d.j));$('sH').textContent=Math.round(D.filter(d=>Math.abs(d.j)>=60).length/N*100)+'%';
 
+/* ---------- 상세 패널 (연령·직군·개인을 고르면 열림) ---------- */
+const LAVC0=[182,156,255];
+/* 그래프 색 = 선택한 연령대 색 (직군만 고르면 기본 라벤더) */
+const dcol=()=>S.age!==null?AGEC[S.age]:S.you!==null?AGEC[D[S.you].ag]:LAVC0;
+function renderDetail(){
+  const el=$('detail');
+  if(!active()){el.classList.remove('on');DVT=0;document.body.classList.remove('dopen');$('who').style.display='';return}
+  const ref=S.you!==null?D[S.you]:null,L=D.filter(member),n=L.length;
+  const label=ref?`${AGES[ref.ag]} × ${JOBS[ref.job]}`:S.age!==null&&S.job!==null?`${AGES[S.age]} × ${JOBS[S.job]}`:S.age!==null?AGES[S.age]:JOBS[S.job];
+  const kind=ref?'YOU와 같은 연령·직군':S.age!==null&&S.job!==null?'연령 × 직군':S.age!==null?'연령대':'직군';
+  const mw=avg(L,d=>d.wdw),mh=avg(L,d=>d.hdw),sw=avg(L,d=>d.wds),sh=avg(L,d=>d.hds),dj=mh-mw,ds=sh-sw,all=avg(D,d=>d.j),diff=Math.round(dj-all),share=n/N*100;
+  const cmp=Math.abs(diff)<3?'전체 평균과 거의 같습니다.':`전체 평균 시차(${sg(all)})보다 ${Math.abs(diff)}분 ${diff>0?'큽니다':'작습니다'}.`;
+  const lead=`전체 응답자 ${N.toLocaleString()}명 중 ‘${label}’${josa(label,'은','는')} ${n.toLocaleString()}명(${share.toFixed(share<10?1:0)}%)입니다. 평균 기상 시각은 평일 ${hm(mw)}, 휴일 ${hm(mh)}로 휴일에 평균 ${Math.abs(Math.round(dj))}분 ${dj>=0?'늦게':'일찍'} 일어납니다. 수면시간은 평일 ${dur(sw)}에서 휴일 ${dur(sh)}${josa(dur(sh),'으로','로')} ${Math.abs(Math.round(ds))}분 ${ds>=0?'늘어납니다':'줄어듭니다'}. ${cmp}`;
+  const you=ref?`<p class="lead">YOU는 ${ref.age}세 ${ref.sex===1?'남':'여'}로 평일 ${hm(ref.wdw)}, 휴일 ${hm(ref.hdw)}에 일어나 시차는 ${sg(ref.j)}입니다.</p>`:'';
+  el.innerHTML=`<button class="x" id="dx" aria-label="상세 닫기">×</button>
+   <div class="dk" style="color:rgb(${dcol().join(',')})">${kind} · 평균 시차 ${sg(dj)}</div>
+   <h2>${label}</h2>
+   <p class="lead">${lead}</p>${you}
+   <div class="kv"><div><small>표본</small><b>${n.toLocaleString()}명</b></div><div><small>평균 시차</small><b>${sg(dj)}</b></div><div><small>수면 변화</small><b>${ds>=0?'+':'−'}${Math.abs(Math.round(ds))}분</b></div></div>
+   <div class="ct">기상 시각 분포 · 평일 vs 휴일</div><canvas id="dc1" height="170"></canvas>
+   <div class="ct">평균 수면시간</div><canvas id="dc2" height="84"></canvas>
+   <p class="note">${n<15?`표본이 ${n}명으로 적어서 참고용으로만 보세요. `:''}표본 ${N.toLocaleString()}명(2024 생활시간조사, 평일·휴일 일기를 모두 쓴 응답자를 가중 추출). 시차 = 휴일 기상 − 평일 기상. 기상 = 03~15시에 끝나는 가장 긴 수면의 끝.</p>`;
+  $('dx').onclick=()=>{S.you=null;S.age=null;S.job=null;applyState()};
+  el.classList.add('on');DVT=1;document.body.classList.add('dopen');
+  if(ref===null)$('who').style.display='none';else $('who').style.display='';
+  requestAnimationFrame(()=>{drawD1(L,{mw,mh,dj},ref);drawD2({sw,sh})});
+}
+function sizeCv(c){const w=c.clientWidth||300,h=+c.getAttribute('height'),d=Math.min(2,devicePixelRatio||1);c.width=w*d;c.height=h*d;c.style.height=h+'px';const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return{x,w,h}}
+function drawD1(L,s,ref){
+  const c=$('dc1');if(!c)return;const{x,w,h}=sizeCv(c);
+  const B0=180,B1=780,BS=20,nb=(B1-B0)/BS,Lm=8,Rm=8,T=22,Bm=22,iw=w-Lm-Rm,ih=h-T-Bm;
+  const hist=k=>{const a=new Array(nb).fill(0);for(const d of L)a[Math.max(0,Math.min(nb-1,Math.floor((d[k]-B0)/BS)))]++;
+    const sm=a.map((v,i)=>(a[i-1]??v)*.25+v*.5+(a[i+1]??v)*.25);return sm.map(v=>v/L.length*100)};
+  const wd=hist('wdw'),hd=hist('hdw'),mx=Math.max(...wd,...hd,5)*1.15;
+  const X=m=>Lm+(m-B0)/(B1-B0)*iw,Y=v=>T+ih*(1-v/mx);
+  x.strokeStyle='rgba(255,255,255,.12)';x.lineWidth=1;x.fillStyle='rgba(255,255,255,.55)';x.font="10px Pretendard,sans-serif";x.textAlign='center';
+  for(let t=3;t<=12;t+=3){const xx=X(t*60);x.beginPath();x.moveTo(xx,T);x.lineTo(xx,T+ih);x.stroke();x.fillText(String(t).padStart(2,'0')+':00',Math.min(w-14,Math.max(14,xx)),h-6)}
+  const path=(a,close)=>{x.beginPath();a.forEach((v,i)=>{const xx=X(B0+BS*(i+.5)),yy=Y(v);i?x.lineTo(xx,yy):x.moveTo(xx,yy)});if(close){x.lineTo(X(B0+BS*(nb-.5)),Y(0));x.lineTo(X(B0+BS*.5),Y(0));x.closePath()}};
+  const lav=`rgb(${dcol().join(',')})`;
+  path(hd,true);x.fillStyle=`rgba(${dcol().join(',')},.22)`;x.fill();path(hd);x.strokeStyle=lav;x.lineWidth=2.2;x.stroke();
+  path(wd,true);x.fillStyle='rgba(220,220,235,.1)';x.fill();path(wd);x.strokeStyle='rgba(235,235,245,.95)';x.lineWidth=1.8;x.setLineDash([5,4]);x.stroke();x.setLineDash([]);
+  const xw=X(s.mw),xh=X(s.mh),left=xw<=xh;
+  x.lineWidth=1.2;x.strokeStyle='rgba(235,235,245,.9)';x.beginPath();x.moveTo(xw,T-4);x.lineTo(xw,T+ih);x.stroke();
+  x.strokeStyle=lav;x.beginPath();x.moveTo(xh,T-4);x.lineTo(xh,T+ih);x.stroke();
+  x.font="700 11px Pretendard,sans-serif";x.textAlign=left?'right':'left';x.fillStyle='#e8e8f4';x.fillText('평일 '+hm(s.mw),xw+(left?-5:5),T+4);
+  x.textAlign=left?'left':'right';x.fillStyle=lav;x.fillText('휴일 '+hm(s.mh),xh+(left?5:-5),T+4);
+  if(Math.abs(xw-xh)>3){x.strokeStyle='#fff';x.lineWidth=1.4;x.beginPath();x.moveTo(xw,T+ih*.42);x.lineTo(xh,T+ih*.42);x.stroke();x.fillStyle='#fff';x.textAlign='center';x.fillText(sg(s.dj),(xw+xh)/2,T+ih*.42-7)}
+  if(ref){x.strokeStyle='#fff';x.fillStyle='#fff';x.lineWidth=1.4;[ref.wdw,ref.hdw].forEach(m=>{const xx=X(Math.max(B0,Math.min(B1,m)));x.beginPath();x.arc(xx,T+ih,4.5,0,6.2832);x.stroke();x.beginPath();x.arc(xx,T+ih,1.8,0,6.2832);x.fill()});
+    x.font="800 10px Pretendard,sans-serif";x.textAlign='center';x.fillText('YOU',X(Math.max(B0,Math.min(B1,ref.wdw))),T+ih-11)}
+}
+function drawD2(s){
+  const c=$('dc2');if(!c)return;const{x,w}=sizeCv(c);
+  const rows=[['평일',s.sw,'rgba(215,215,228,.92)'],['휴일',s.sh,`rgb(${dcol().join(',')})`]],max=12*60,Lm=36,Rm=96;
+  x.font="700 11px Pretendard,sans-serif";x.textBaseline='middle';
+  rows.forEach(([l,v,col],i)=>{const y=16+i*34,bw=(w-Lm-Rm)*Math.min(1,v/max);
+    x.fillStyle='rgba(255,255,255,.7)';x.textAlign='left';x.fillText(l,0,y);
+    x.fillStyle='rgba(255,255,255,.08)';x.fillRect(Lm,y-8,w-Lm-Rm,16);x.fillStyle=col;x.fillRect(Lm,y-8,bw,16);
+    x.fillStyle='#fff';x.fillText(dur(v),Lm+bw+8,y)});
+}
 /* ---------- 미니맵 · 시간 막대 ---------- */
 const mm=$('mm'),mx=mm.getContext('2d');
 function drawMini(){
@@ -346,7 +427,7 @@ function drawMini(){
   for(let q=1;q<8;q++){mx.moveTo(w*q/8,0);mx.lineTo(w*q/8,h)}for(let q=1;q<4;q++){mx.moveTo(0,h*q/4);mx.lineTo(w,h*q/4)}mx.stroke();
   const X=lo=>(((lo+180)%360+360)%360)/360*w,Y=la=>(90-la)/180*h;
   for(const hb of hubs){const lo=Math.atan2(hb.c[0],hb.c[2])/RAD,la=Math.asin(hb.c[1])/RAD,r=Math.max(7,Math.sqrt(hb.n)*.8),on=S.age===null||S.age===hb.age;
-    mx.fillStyle=`rgba(${AGEC[hb.age].join(',')},${on?.9:.25})`;mx.beginPath();mx.arc(X(lo),Y(la),r,0,6.2832);mx.fill();mx.font="500 15px 'Noto Sans KR',sans-serif";mx.fillStyle=`rgba(255,255,255,${on?.9:.3})`;mx.textAlign='center';mx.fillText(AGES[hb.age],X(lo),Y(la)-r-5)}
+    mx.fillStyle=`rgba(${AGEC[hb.age].join(',')},${on?.9:.25})`;mx.beginPath();mx.arc(X(lo),Y(la),r,0,6.2832);mx.fill();mx.font="500 15px Pretendard,sans-serif";mx.fillStyle=`rgba(255,255,255,${on?.9:.3})`;mx.textAlign='center';mx.fillText(AGES[hb.age],X(lo),Y(la)-r-5)}
   if(S.you!==null){const v=VX.slice(S.you*3,S.you*3+3),lo=Math.atan2(v[0],v[2])/RAD,la=Math.asin(v[1]/Math.hypot(...v))/RAD;mx.strokeStyle='#fff';mx.lineWidth=3;mx.beginPath();mx.arc(X(lo),Y(la),9,0,6.2832);mx.stroke();mx.beginPath();mx.arc(X(lo),Y(la),15,0,6.2832);mx.stroke()}
   const mk=(i,big)=>{const v=[VX[i*3],VX[i*3+1],VX[i*3+2]],lo=Math.atan2(v[0],v[2])/RAD,la=Math.asin(v[1]/Math.hypot(...v))/RAD;mx.strokeStyle='#fff';mx.fillStyle='#fff';mx.lineWidth=big?3:2;mx.beginPath();mx.arc(X(lo),Y(la),big?9:6,0,6.2832);mx.stroke();mx.beginPath();mx.arc(X(lo),Y(la),3,0,6.2832);mx.fill()};
   if(S.hover>=0&&S.hover!==S.you)mk(S.hover,false);
@@ -358,11 +439,11 @@ function drawTime(){
   const r=tb.getBoundingClientRect(),w=r.width,h=r.height,dpr=Math.min(2,devicePixelRatio||1);tb.width=w*dpr;tb.height=h*dpr;tx.setTransform(dpr,0,0,dpr,0,0);tx.clearRect(0,0,w,h);
   const L=D.filter(member),B=96,bw=w/B,hw=new Array(B).fill(0),hh=new Array(B).fill(0);L.forEach(d=>{hw[Math.min(B-1,Math.floor(d.wdw/1440*B))]++;hh[Math.min(B-1,Math.floor(d.hdw/1440*B))]++});
   const mxv=Math.max(...hw,...hh,1),base=h-18;
-  for(let i=0;i<B;i++){const a=hw[i]/mxv*(base-6),b=hh[i]/mxv*(base-6);tx.fillStyle='rgba(255,255,255,.85)';tx.fillRect(i*bw+bw*.12,base-a,bw*.38,a);tx.fillStyle='rgba(255,159,208,.85)';tx.fillRect(i*bw+bw*.5,base-b,bw*.38,b)}
+  for(let i=0;i<B;i++){const a=hw[i]/mxv*(base-6),b=hh[i]/mxv*(base-6);tx.fillStyle='rgba(255,255,255,.85)';tx.fillRect(i*bw+bw*.12,base-a,bw*.38,a);tx.fillStyle=`rgba(${dcol().join(',')},.9)`;tx.fillRect(i*bw+bw*.5,base-b,bw*.38,b)}
   tx.strokeStyle='rgba(255,255,255,.3)';tx.beginPath();tx.moveTo(0,base+.5);tx.lineTo(w,base+.5);tx.stroke();
-  tx.font="500 10px Raleway,sans-serif";tx.fillStyle='rgba(255,255,255,.7)';tx.textAlign='center';
+  tx.font="500 10px Pretendard,sans-serif";tx.fillStyle='rgba(255,255,255,.7)';tx.textAlign='center';
   [0,6,12,18,24].forEach(hh2=>{const x=hh2/24*w;tx.fillRect(Math.min(w-1,x),base,1,5);tx.textAlign=hh2===0?'left':hh2===24?'right':'center';tx.fillText(String(hh2).padStart(2,'0'),x,h-3)});
-  tx.textAlign='left';tx.fillStyle='rgba(255,255,255,.85)';tx.fillRect(w*.58,4,8,8);tx.fillStyle='rgba(255,255,255,.65)';tx.fillText('평일 기상',w*.58+13,12);tx.fillStyle='rgba(255,159,208,.85)';tx.fillRect(w*.58+82,4,8,8);tx.fillStyle='rgba(255,255,255,.65)';tx.fillText('휴일 기상',w*.58+95,12);
+  tx.textAlign='left';tx.fillStyle='rgba(255,255,255,.85)';tx.fillRect(w*.58,4,8,8);tx.fillStyle='rgba(255,255,255,.65)';tx.fillText('평일 기상',w*.58+13,12);tx.fillStyle=`rgba(${dcol().join(',')},.9)`;tx.fillRect(w*.58+82,4,8,8);tx.fillStyle='rgba(255,255,255,.65)';tx.fillText('휴일 기상',w*.58+95,12);
   if(S.you!==null){const d=D[S.you];tx.strokeStyle='#fff';tx.lineWidth=1.5;[d.wdw,d.hdw].forEach(m=>{const x=m/1440*w;tx.beginPath();tx.moveTo(x,6);tx.lineTo(x,base);tx.stroke()});tx.fillStyle='#fff';tx.fillText('YOU',d.wdw/1440*w+4,20)}
 }
 
@@ -370,12 +451,27 @@ function drawTime(){
 let RPX=300;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
   for(const c of [glc,lc]){c.width=W*DPR;c.height=H*DPR}renderer.setPixelRatio(DPR);renderer.setSize(W,H,false);
-  const narrow=W<=820&&!/desk/.test(location.search);PW=narrow?0:Math.min(340,W-36)+18;
+  layoutView();fitHead();if(DVT)renderDetail();drawTime()}
+/* 제목은 구와 겹치지 않는 가장 큰 크기로 맞춘다 (구는 상세 패널이 닫힌 상태 기준) */
+function fitHead(){
+  const h=$('head');if(!h)return;const narrow=W<=820,pw=narrow?0:Math.min(340,W-36)+18;
+  const rp=narrow?Math.min(W-40,H*.55)*.3:Math.max(80,Math.min(W/2-pw-24,(H-130)*.44)),cx0=W/2,cy0=narrow?H/2-H*.15:H/2,R=rp*1.03+16;
+  const fits=()=>{const r=h.getBoundingClientRect(),nx=Math.max(r.left,Math.min(cx0,r.right)),ny=Math.max(r.top,Math.min(cy0,r.bottom));return Math.hypot(nx-cx0,ny-cy0)>R};
+  const max=narrow?35:74,min=narrow?20:26;
+  for(let s=max;s>=min;s-=2){h.style.setProperty('--hs',s+'px');if(fits())break}
+}
+document.fonts.ready.then(()=>fitHead());
+/* 상세 패널이 열리면 구가 남은 영역의 가운데로 이동하고 조금 작아진다 */
+let DV=0,DVT=0;
+function layoutView(){
+  const narrow=W<=820;PW=narrow?0:Math.min(340,W-36)+18;
+  const LWf=narrow?0:Math.min(440,W*.5),LW=LWf*DV,cxs=narrow?W/2:W/2+DV*(LWf-PW)/2;   // cxs: 구의 가로 중심 (평소엔 화면 정중앙)
+  document.documentElement.style.setProperty('--lw',LW+'px');
   cam.aspect=W/H;
-  const availW=W-PW-40,availH=narrow?H*.55:H-130;RPX=Math.min(availW,availH)*(narrow?.3:.44);
+  const availH=narrow?H*(.55-.2*DV):H-130;RPX=narrow?Math.min(W-40,availH)*.3:Math.max(80,Math.min(cxs-LW-24,(W-PW)-cxs-24,availH*.44));
   const tanH=Math.tan(Math.asin(RS/DIST))*(H/2)/RPX;cam.fov=2*Math.atan(tanH)/RAD;
-  cam.setViewOffset(W,H,PW/2,narrow?H*.15:0,W,H);cam.updateProjectionMatrix();
-  U.uPR.value=DPR*Math.min(1.4,Math.max(.8,RPX/330));drawTime()}
+  cam.setViewOffset(W,H,W/2-cxs,narrow?H*.15+H*.25*DV:0,W,H);cam.updateProjectionMatrix();
+  U.uPR.value=DPR*Math.min(1.4,Math.max(.8,RPX/330))}
 addEventListener('resize',resize);
 let down=null;
 glc.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,m:false};ctl.autoRotate=false});
@@ -394,9 +490,12 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){S.you=null;S.age=null;S.job=
 $('reset').onclick=()=>{const v=norm([160,70,230]);cam.position.set(v[0]*DIST,v[1]*DIST,v[2]*DIST);ctl.target.set(0,0,0);ctl.autoRotate=true};
 $('zi').onclick=()=>{cam.position.multiplyScalar(.85)};$('zo').onclick=()=>{cam.position.multiplyScalar(1.18)};
 /* ---------- 루프 ---------- */
+let lastT=performance.now();
 function frame(now){
   requestAnimationFrame(frame);
   try{
+    const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+    if(Math.abs(DVT-DV)>.002){DV+=(DVT-DV)*Math.min(1,dt*7);layoutView()}else if(DV!==DVT){DV=DVT;layoutView()}
     ctl.update();U.uDist.value=cam.position.length();
     hMesh.visible=$('t_wk').checked;renderer.render(scene,cam);overlay(now);drawMini();
     if(grow>.98)$('hint').style.opacity=active()?0:1;
