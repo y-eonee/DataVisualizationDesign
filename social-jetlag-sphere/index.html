@@ -455,7 +455,7 @@ function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight
 /* 제목은 구와 겹치지 않는 가장 큰 크기로 맞춘다 (구는 상세 패널이 닫힌 상태 기준) */
 function fitHead(){
   const h=$('head');if(!h)return;const narrow=W<=820,pw=narrow?0:Math.min(340,W-36)+18;
-  const rp=narrow?Math.min(W-40,H*.55)*.3:Math.max(80,Math.min(W/2-pw-24,(H-130)*.44)),cx0=W/2,cy0=narrow?H/2-H*.15:H/2,R=rp*1.03+16;
+  const rp=narrow?Math.min(W-40,H*.55)*.3:Math.max(80,Math.min(W/2-pw+60,(H-96)*.49)),cx0=W/2,cy0=narrow?H/2-H*.15:H/2-H*.02,R=rp*1.03+16;
   const fits=()=>{const r=h.getBoundingClientRect(),nx=Math.max(r.left,Math.min(cx0,r.right)),ny=Math.max(r.top,Math.min(cy0,r.bottom));return Math.hypot(nx-cx0,ny-cy0)>R};
   const max=narrow?35:74,min=narrow?20:26;
   for(let s=max;s>=min;s-=2){h.style.setProperty('--hs',s+'px');if(fits())break}
@@ -468,9 +468,9 @@ function layoutView(){
   const LWf=narrow?0:Math.min(440,W*.5),LW=LWf*DV,cxs=narrow?W/2:W/2+DV*(LWf-PW)/2;   // cxs: 구의 가로 중심 (평소엔 화면 정중앙)
   document.documentElement.style.setProperty('--lw',LW+'px');
   cam.aspect=W/H;
-  const availH=narrow?H*(.55-.2*DV):H-130;RPX=narrow?Math.min(W-40,availH)*.3:Math.max(80,Math.min(cxs-LW-24,(W-PW)-cxs-24,availH*.44));
+  const availH=narrow?H*(.55-.2*DV):H-130;RPX=narrow?Math.min(W-40,availH)*.3:Math.max(80,Math.min(cxs-LW-24,(W-PW)-cxs+60,(H-96)*.49));
   const tanH=Math.tan(Math.asin(RS/DIST))*(H/2)/RPX;cam.fov=2*Math.atan(tanH)/RAD;
-  cam.setViewOffset(W,H,W/2-cxs,narrow?H*.15+H*.25*DV:0,W,H);cam.updateProjectionMatrix();
+  cam.setViewOffset(W,H,W/2-cxs,narrow?H*.15+H*.25*DV:H*.02,W,H);cam.updateProjectionMatrix();
   U.uPR.value=DPR*Math.min(1.4,Math.max(.8,RPX/330))}
 addEventListener('resize',resize);
 let down=null;
