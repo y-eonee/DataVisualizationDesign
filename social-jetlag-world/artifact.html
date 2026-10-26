@@ -1,0 +1,223 @@
+<title>Social Jetlag World</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Raleway:wght@500;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
+<style>
+:root{--bg:#000;--fg:#fff;--mute:rgba(255,255,255,.58);--line:rgba(255,255,255,.16);--lav:#b69cff;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:radial-gradient(ellipse at 50% 46%,#0a0a1a 0%,#000 68%);color:var(--fg);font-family:'Noto Sans KR',sans-serif;overflow:hidden}
+.mono{font-family:'DM Mono','Noto Sans KR',monospace}
+#A,#B{position:fixed;inset:0;transition:opacity .5s}
+#B{opacity:0;pointer-events:none}
+body.forest #A{opacity:0;pointer-events:none}body.forest #B{opacity:1;pointer-events:auto}
+canvas{display:block}
+#cvA{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+#head{position:absolute;left:26px;top:20px;z-index:3;pointer-events:none;max-width:min(620px,calc(100vw - 52px))}
+#head h1{font:800 clamp(22px,2.6vw,32px)/1 Raleway,'Noto Sans KR',sans-serif}
+#head h1 span{color:var(--lav)}
+#head p{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,.86);margin-top:9px}
+#head b{font-weight:700}
+#ctrlA{position:absolute;right:22px;top:20px;z-index:3;display:flex;gap:10px}
+.ghost{background:rgba(255,255,255,.04);border:1px solid var(--line);color:#fff;border-radius:99px;padding:7px 14px;font:400 12px 'DM Mono','Noto Sans KR',monospace;cursor:pointer}
+.ghost:hover{border-color:#fff}
+#legA{position:absolute;left:26px;bottom:18px;z-index:3;font-size:11.5px;color:var(--mute);line-height:1.8;pointer-events:none}
+#legA b{color:#fff;font-weight:500}
+#legA i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+#legA i.f{background:#fff}#legA i.r{border:1.5px solid #fff}
+#tipA{position:absolute;z-index:4;pointer-events:none;padding:8px 11px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(6,6,14,.94);font-size:12px;line-height:1.65;display:none}
+/* 숲 모드 */
+#B{display:grid;grid-template-columns:minmax(210px,17vw) 1fr minmax(280px,22vw);background:#000}
+#BL,#BR{overflow-y:auto;scrollbar-width:none;padding:0 0 20px}#BL::-webkit-scrollbar,#BR::-webkit-scrollbar{display:none}
+#BL{border-right:1px solid var(--line);padding:16px 14px}
+#BR{border-left:1px solid var(--line);font:400 11.5px/1.8 'DM Mono','Noto Sans KR',monospace;padding:18px 18px}
+#BR h4{font:500 10.5px 'DM Mono',monospace;color:var(--mute);letter-spacing:.14em;text-transform:uppercase;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--line)}
+#BR h4:first-child{border-top:0;margin-top:0;padding-top:0}
+#BR .row{display:flex;justify-content:space-between;gap:10px;color:rgba(255,255,255,.88)}
+#BR .row span:first-child{color:var(--mute)}
+#BR .big{font:300 54px/1 'DM Mono',monospace;color:var(--lav);margin:6px 0 2px}#BR .big small{font-size:15px;margin-left:6px}
+#BR .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+#BR .tags span{font:500 10px 'Noto Sans KR',sans-serif;padding:3px 7px;border-radius:5px;color:#111}
+#bars{display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:6px}
+#bars i{flex:1;background:var(--lav);min-height:2px;border-radius:1px}
+#BC{position:relative;min-width:0;min-height:0}
+#cvB{position:absolute;inset:0;width:100%;height:100%}
+#bback{position:absolute;left:18px;top:14px;z-index:3}
+#btitle{position:absolute;left:0;right:0;top:16px;text-align:center;z-index:2;pointer-events:none;font:400 13px 'Noto Sans KR',sans-serif}
+#btitle small{display:block;font:400 11px 'DM Mono','Noto Sans KR',monospace;color:var(--mute);margin-top:3px}
+#bhelp{position:absolute;left:18px;right:18px;bottom:12px;z-index:3;pointer-events:none;font-size:11.5px;line-height:1.7;color:var(--mute);text-align:center}
+#bhelp b{color:#fff;font-weight:500}
+.tag{display:inline-flex;align-items:center;gap:6px;margin:0 6px 7px 0;padding:6px 10px;border-radius:6px;font:700 10.5px/1 'Noto Sans KR',sans-serif;color:#111;cursor:pointer;transition:opacity .2s}
+.tag small{font:600 9.5px 'DM Mono',monospace;opacity:.65}
+.tag.off{opacity:.22}
+#BL h3{font:500 10.5px 'DM Mono',monospace;color:var(--mute);letter-spacing:.14em;margin:0 0 12px;text-transform:uppercase}
+@media(max-width:900px){#B{display:flex;flex-direction:column;overflow-y:auto}#BL{border-right:0;border-bottom:1px solid var(--line);order:1}#BC{height:62vh;flex:none;order:2}#BR{border-left:0;border-top:1px solid var(--line);order:3}#bhelp{display:none}}
+</style>
+<div id="A">
+ <canvas id="cvA"></canvas>
+ <div id="head"><h1>Social <span>Jetlag</span> World</h1>
+  <p>구 하나에 <b>연령대 클러스터 7개</b>가 들어 있습니다. 각 클러스터는 <b>가운데(시차 0)에서 바깥으로</b> 가지를 뻗어, 가지 끝에 <b>사람 한 명씩</b> 핍니다. <b>중심에서 멀수록 평일과 휴일의 기상 시각이 크게 어긋나는 사람</b>입니다. 클러스터를 누르면 그 연령대의 숲이 열립니다.</p></div>
+ <div id="ctrlA"><button class="ghost" id="regrowA">다시 피우기 ↻</button></div>
+ <div id="legA"><div><i style="background:rgb(143,208,255)"></i><i style="background:rgb(255,159,208)"></i><i style="background:rgb(255,226,138)"></i><b>색 = 직군</b> (가지 묶음 하나가 한 직군)</div><div><i class="f"></i><b>채운 점</b> 휴일에 더 늦게 · <i class="r"></i><b>빈 링</b> 휴일에 더 일찍 일어남</div><div><b>중심에서의 거리</b> = 평일과 휴일 기상 시각의 차이 (가장자리 ≈ 3시간 이상)</div></div>
+ <div id="tipA"></div>
+</div>
+<div id="B">
+ <aside id="BL"><h3>직군 태그</h3><div id="tags"></div></aside>
+ <main id="BC"><canvas id="cvB"></canvas><button class="ghost" id="bback">← 구로 돌아가기</button><div id="btitle"></div>
+  <div id="bhelp"><b>식물 한 그루</b> = 같은 직군(색)이 평일에 비슷한 시간대(1시간 칸)에 일어나는 사람들 · <b>가로</b> = 평일 기상 시각 · <b>세로</b> = 사회적 시차 (<b>0선 위</b> = 휴일에 늦게, <b>아래</b> = 일찍) · <b>꽃잎 끝 점</b> = 한 사람</div></main>
+ <aside id="BR"></aside>
+</div>
+<script src="data.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const AGES=['10대','20대','30대','40대','50대','60대','70대+'];
+const JOBS=['비취업','관리자','전문가·관련','사무','서비스','판매','농림어업','기능원','장치·기계','단순노무'];
+const JOBC=[[225,232,245],[255,226,138],[182,156,255],[143,208,255],[255,159,208],[255,181,133],[159,240,192],[127,230,224],[255,143,160],[217,240,138]];
+const hm=m=>{m=Math.round(m);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const sg=v=>(v>.5?'+':v<-.5?'−':'')+Math.abs(Math.round(v))+'분';
+const dur=m=>Math.floor(m/60)+'h '+String(Math.round(m)%60).padStart(2,'0')+'m';
+const ageGroup=a=>a<20?0:a<30?1:a<40?2:a<50?3:a<60?4:a<70?5:6;
+const rnd=(()=>{let a=777;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}})();
+const med=a=>{if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length/2)]};
+const CL=198;
+const D=window.PEOPLE.map(([age,sex,job,wdw,hdw,wds,hds],i)=>({i,age,sex,job,ag:ageGroup(age),wdw,hdw,wds,hds,j:hdw-wdw,aj:Math.abs(hdw-wdw),jc:Math.max(-198,Math.min(198,hdw-wdw)),r1:rnd(),r2:rnd()}));
+const norm=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return[v[0]/l,v[1]/l,v[2]/l]};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const fib=(i,n)=>{const y=1-2*(i+.5)/n,r=Math.sqrt(1-y*y),t=i*2.399963;return[r*Math.cos(t),y,r*Math.sin(t)]};
+const ages=[];for(let a=0;a<7;a++)if(D.some(d=>d.ag===a))ages.push(a);
+// ================== 구 모드 : 클러스터 = 중심에서 바깥으로 뻗는 3D 나무 ==================
+const CR=.27;                                     // 클러스터 반지름 (구 반지름 = 1)
+const cl=ages.map((a,ci)=>{const c=fib(ci,ages.length).map(v=>v*.55),list=D.filter(d=>d.ag===a),jobs=new Map();
+  for(const d of list){let g=jobs.get(d.job);if(!g){const ax=fib(d.job,10),u=norm(Math.abs(ax[1])>.9?cross(ax,[1,0,0]):cross(ax,[0,1,0])),v=cross(ax,u);g={job:d.job,ax,u,v,n:0};jobs.set(d.job,g)}g.n++;
+    const ph=2*Math.PI*(d.wdw-180)/720,th=.1+.36*d.r1,s=Math.sin(th),co=Math.cos(th);
+    d.dir=[g.ax[0]*co+(g.u[0]*Math.cos(ph)+g.v[0]*Math.sin(ph))*s,g.ax[1]*co+(g.u[1]*Math.cos(ph)+g.v[1]*Math.sin(ph))*s,g.ax[2]*co+(g.u[2]*Math.cos(ph)+g.v[2]*Math.sin(ph))*s];
+    d.rad=CR*(.07+.93*Math.min(CL,d.aj)/CL)*(.96+.08*d.r2);d.gg=g}
+  return{a,ci,c,list,jobs,gap:med(list.map(d=>d.aj))}});
+const cvA=$('cvA'),cA=cvA.getContext('2d');let W,H,DPR,RP,CX,CY;
+const SA={yaw:.5,pitch:.28,auto:true,drag:null,hov:-1,t0:performance.now(),dur:7000};
+function layoutA(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cvA.width=W*DPR;cvA.height=H*DPR;CX=W/2;CY=H/2+(W<800?40:14);RP=Math.min(W*.46,(H-120)*.5)}
+function rot(v){const cy=Math.cos(SA.yaw),sy=Math.sin(SA.yaw),x1=v[0]*cy+v[2]*sy,z1=-v[0]*sy+v[2]*cy,cp=Math.cos(SA.pitch),sp=Math.sin(SA.pitch);return[x1,v[1]*cp-z1*sp,v[1]*sp+z1*cp]}
+function prj(v){const r=rot(v),f=1+.14*r[2];return[CX+RP*r[0]*f,CY-RP*r[1]*f,r[2],f]}
+const add=(a,b,k)=>[a[0]+b[0]*k,a[1]+b[1]*k,a[2]+b[2]*k];
+const ease=g=>g>=1?1:1-Math.pow(1-g,2.4);
+let leafHits=[],labelHits=[];
+function drawShell(){
+  const gr=cA.createRadialGradient(CX-RP*.3,CY-RP*.35,RP*.1,CX,CY,RP);gr.addColorStop(0,'rgba(50,44,96,.35)');gr.addColorStop(.75,'rgba(12,11,26,.55)');gr.addColorStop(1,'rgba(10,9,24,.7)');cA.fillStyle=gr;cA.beginPath();cA.arc(CX,CY,RP,0,6.2832);cA.fill();
+  const rim=cA.createRadialGradient(CX,CY,RP*.9,CX,CY,RP*1.06);rim.addColorStop(0,'rgba(190,170,255,0)');rim.addColorStop(.6,'rgba(190,170,255,.2)');rim.addColorStop(1,'rgba(190,170,255,0)');cA.fillStyle=rim;cA.beginPath();cA.arc(CX,CY,RP*1.06,0,6.2832);cA.fill();
+  cA.strokeStyle='rgba(235,230,255,.4)';cA.lineWidth=1;cA.beginPath();cA.arc(CX,CY,RP,0,6.2832);cA.stroke();
+  // 위도·경도 격자 (깊이감)
+  cA.lineWidth=1;for(let q=-2;q<=2;q++){const y=q/3,rr=Math.sqrt(1-y*y);let pen=false;cA.beginPath();for(let k=0;k<=72;k++){const t=k/72*6.2832,p=prj([Math.cos(t)*rr,y,Math.sin(t)*rr]);if(p[2]<0){pen=false;continue}pen?cA.lineTo(p[0],p[1]):(cA.moveTo(p[0],p[1]),pen=true)}cA.strokeStyle='rgba(220,210,255,.1)';cA.stroke()}
+  for(let q=0;q<6;q++){const a=q*Math.PI/6;let pen=false;cA.beginPath();for(let k=0;k<=72;k++){const t=k/72*6.2832,p=prj([Math.cos(t)*Math.cos(a),Math.sin(t),Math.cos(t)*Math.sin(a)]);if(p[2]<0){pen=false;continue}pen?cA.lineTo(p[0],p[1]):(cA.moveTo(p[0],p[1]),pen=true)}cA.strokeStyle='rgba(220,210,255,.07)';cA.stroke()}
+}
+function drawCluster(c,p,dimA){
+  const{c:ctr}=c,pc=prj(ctr),sc=pc[3],al=dimA;
+  // 나무: 줄기(직군) → 가지(사람)
+  const trunkLen=.3*CR,front=p*1.15*CR;
+  for(const g of c.jobs.values()){const col=JOBC[g.job].join(','),K=add(ctr,g.ax,trunkLen),tl=Math.min(front,trunkLen),tip=add(ctr,g.ax,tl),a=prj(ctr),b=prj(tip);
+    cA.strokeStyle=`rgba(255,255,255,${.5*al})`;cA.lineWidth=(.8+Math.sqrt(g.n)*.12)*sc;cA.beginPath();cA.moveTo(a[0],a[1]);cA.lineTo(b[0],b[1]);cA.stroke();g.K=K}
+  const groups=new Map();const leaves=[];
+  for(const d of c.list){const g=d.gg,K=g.K||add(ctr,g.ax,trunkLen),useK=d.rad>trunkLen,S=useK?K:ctr,s0=useK?trunkLen:0,L=add(ctr,d.dir,d.rad);
+    if(front<=s0)continue;const u=Math.max(0,Math.min(1,(front-s0)/Math.max(.001,d.rad-s0))),ctl=add(add(S,[L[0]-S[0],L[1]-S[1],L[2]-S[2]],.5),g.ax,CR*.07);
+    const pS=prj(S),pL=prj(L),pC=prj(ctl);const dz=(pS[2]+pL[2])/2,bk=dz>.45?0:dz>-.1?1:2,key=d.job*3+bk;
+    let q=groups.get(key);if(!q){q=new Path2D();groups.set(key,q)}
+    q.moveTo(pS[0],pS[1]);const st=Math.max(2,Math.ceil(7*u));for(let k=1;k<=st;k++){const t=u*k/st,w=1-t,x=w*w*pS[0]+2*w*t*pC[0]+t*t*pL[0],y=w*w*pS[1]+2*w*t*pC[1]+t*t*pL[1];q.lineTo(x,y)}
+    if(front>=d.rad)leaves.push([pL,d])}
+  const BA=[.55,.34,.15];
+  for(const[key,q] of groups){const job=Math.floor(key/3),bk=key%3;cA.strokeStyle=`rgba(${JOBC[job].join(',')},${BA[bk]*al})`;cA.lineWidth=.8*sc;cA.stroke(q)}
+  // 잎 = 사람
+  const sz=Math.max(1.6,RP/190);
+  for(const pass of [0,1])for(const[pL,d] of leaves){if(pass===0?pL[2]>=0:pL[2]<0)continue;const dd=pL[2]>=0?.5+.5*pL[2]:.18;cA.globalAlpha=Math.min(1,dd*al);const col=`rgb(${JOBC[d.job].join(',')})`;
+    if(d.j>=0){cA.fillStyle=col;cA.beginPath();cA.arc(pL[0],pL[1],sz*pL[3],0,6.2832);cA.fill()}else{cA.strokeStyle=col;cA.lineWidth=1.1;cA.beginPath();cA.arc(pL[0],pL[1],sz*pL[3]*.9,0,6.2832);cA.stroke()}
+    if(pass&&dd>.6)leafHits.push([pL[0],pL[1],d.i,c.ci])}
+  cA.globalAlpha=1;
+  // 중심 핵
+  const hg=cA.createRadialGradient(pc[0],pc[1],0,pc[0],pc[1],RP*CR*.5*sc);hg.addColorStop(0,`rgba(255,255,255,${.55*al})`);hg.addColorStop(1,'rgba(255,255,255,0)');cA.fillStyle=hg;cA.beginPath();cA.arc(pc[0],pc[1],RP*CR*.5*sc,0,6.2832);cA.fill();
+  cA.fillStyle=`rgba(255,255,255,${al})`;cA.beginPath();cA.arc(pc[0],pc[1],2.4*sc,0,6.2832);cA.fill();
+  return pc;
+}
+function frameA(now){
+  requestAnimationFrame(frameA);if(document.body.classList.contains('forest'))return;
+  if(SA.auto&&!SA.drag)SA.yaw+=.0016;
+  cA.setTransform(DPR,0,0,DPR,0,0);cA.clearRect(0,0,W,H);leafHits=[];labelHits=[];
+  drawShell();
+  const g=Math.max(0,Math.min(1,(now-SA.t0)/SA.dur)),p=ease(g);
+  const order=cl.map(c=>({c,z:rot(c.c)[2]})).sort((a,b)=>a.z-b.z);
+  for(const{c} of order){const dimA=SA.hov>=0&&SA.hov!==c.ci?.28:1,pc=drawCluster(c,p,dimA);
+    const rpx=RP*CR*pc[3]*1.0;labelHits.push({x:pc[0],y:pc[1],r:Math.max(30,rpx),ci:c.ci,z:pc[2]})}
+  // 라벨
+  for(const h of labelHits){const c=cl[h.ci],on=SA.hov===h.ci,fz=h.z>-.3?1:.35;cA.textAlign='center';cA.textBaseline='alphabetic';
+    cA.font=`${on?800:700} ${Math.max(13,RP/24)}px 'Noto Sans KR',sans-serif`;cA.fillStyle=`rgba(255,255,255,${(SA.hov>=0&&!on?.35:1)*fz})`;cA.fillText(AGES[c.a],h.x,h.y-h.r*.92);
+    cA.font=`400 ${Math.max(10,RP/36)}px 'DM Mono',monospace`;cA.fillStyle=`rgba(255,255,255,${.6*fz})`;cA.fillText(`${c.list.length}명 · 중앙값 ${Math.round(c.gap)}분`,h.x,h.y-h.r*.92+Math.max(13,RP/26));
+    if(on){cA.strokeStyle='rgba(255,255,255,.55)';cA.lineWidth=1.2;cA.setLineDash([4,4]);cA.beginPath();cA.arc(h.x,h.y,h.r,0,6.2832);cA.stroke();cA.setLineDash([]);cA.fillStyle='#fff';cA.font="500 11px 'DM Mono','Noto Sans KR',monospace";cA.fillText('클릭하면 숲이 열립니다 →',h.x,h.y+h.r+16)}}
+}
+function pickCluster(x,y){let best=-1,bz=-9;for(const h of labelHits){if(Math.hypot(h.x-x,h.y-y)<h.r&&h.z>bz){bz=h.z;best=h.ci}}return best}
+cvA.addEventListener('pointerdown',e=>{SA.drag={x:e.clientX,y:e.clientY,yaw:SA.yaw,pitch:SA.pitch,m:false};cvA.setPointerCapture(e.pointerId)});
+cvA.addEventListener('pointermove',e=>{if(SA.drag){const dx=e.clientX-SA.drag.x,dy=e.clientY-SA.drag.y;if(Math.abs(dx)+Math.abs(dy)>4)SA.drag.m=true;if(SA.drag.m){SA.yaw=SA.drag.yaw+dx*.008;SA.pitch=Math.max(-1.2,Math.min(1.2,SA.drag.pitch+dy*.006))}return}
+  SA.hov=pickCluster(e.clientX,e.clientY);cvA.style.cursor=SA.hov>=0?'pointer':'grab';
+  let best=null,bd=64;for(const h of leafHits){const d=(h[0]-e.clientX)**2+(h[1]-e.clientY)**2;if(d<bd){bd=d;best=h}}const t=$('tipA');
+  if(best&&SA.hov>=0){const d=D[best[2]];t.innerHTML=`<b>${AGES[d.ag]} × ${JOBS[d.job]}</b> · ${d.age}세 ${d.sex===1?'남':'여'}<br>평일 ${hm(d.wdw)} → 휴일 ${hm(d.hdw)} (<b>${sg(d.j)}</b>)`;t.style.display='block';t.style.left=Math.min(W-260,e.clientX+14)+'px';t.style.top=(e.clientY+14)+'px'}else t.style.display='none'});
+cvA.addEventListener('pointerup',e=>{const m=SA.drag&&SA.drag.m;SA.drag=null;if(m)return;const ci=pickCluster(e.clientX,e.clientY);if(ci>=0)openForest(cl[ci].a)});
+cvA.addEventListener('pointerleave',()=>{SA.hov=-1;$('tipA').style.display='none'});
+$('regrowA').onclick=()=>{SA.t0=performance.now();SA.dur=7000};
+// ================== 숲 모드 : 연령 클러스터를 눌렀을 때 ==================
+const cvB=$('cvB'),cB=cvB.getContext('2d');let BW,BH,BD,F=null;
+const SB={age:0,off:new Set(),hover:null,pin:null,t0:0};
+function buildForest(a){
+  const list=D.filter(d=>d.ag===a),groups=new Map();
+  for(const d of list){const bin=Math.max(0,Math.min(7,Math.floor((d.wdw-240)/60)));const k=d.job*10+bin;let g=groups.get(k);if(!g){g={job:d.job,bin,list:[]};groups.set(k,g)}g.list.push(d)}
+  const plants=[...groups.values()].map(g=>{g.pos=g.list.filter(d=>d.j>=0).sort((x,y)=>x.aj-y.aj);g.neg=g.list.filter(d=>d.j<0).sort((x,y)=>x.aj-y.aj);
+    g.med=med(g.list.map(d=>d.aj));g.mean=g.list.reduce((s,d)=>s+d.j,0)/g.list.length;g.mp=med(g.pos.map(d=>d.aj));g.mn=med(g.neg.map(d=>d.aj));return g});
+  F={a,list,plants,strays:Array.from({length:60},()=>[rnd(),rnd(),rnd()])}
+}
+function layoutB(){const r=$('BC').getBoundingClientRect();BD=Math.min(2,devicePixelRatio||1);BW=r.width;BH=r.height;cvB.width=BW*BD;cvB.height=BH*BD}
+// 세로 = 사회적 시차 (0 = 땅, 위 = 휴일에 늦게, 아래 = 휴일에 일찍)
+const GEO=()=>{const top=84,bot=BH-96,y0=top+(bot-top)*.6,sc=Math.min(y0-top-4,bot-y0-4)/(CL/60);return{top,bot,y0,sc,binW:BW*.88/8,x0:BW*.06}}
+function plantGeom(g){const G=GEO();return{x:G.x0+(g.bin+.5)*G.binW+(g.job-4.5)*G.binW*.085,y0:G.y0,sc:G.sc,wd:Math.min(G.binW*.48,4+Math.sqrt(g.list.length)*3.2)}}
+let bHits=[];
+function frameB(now){
+  requestAnimationFrame(frameB);if(!document.body.classList.contains('forest')||!F)return;
+  cB.setTransform(BD,0,0,BD,0,0);cB.clearRect(0,0,BW,BH);bHits=[];
+  const G=GEO(),p=Math.max(0,Math.min(1,(now-SB.t0)/4200)),pe=1-Math.pow(1-p,2.0);
+  for(const s of F.strays){cB.fillStyle=`rgba(255,255,255,${.08+.2*s[2]})`;cB.fillRect(s[0]*BW,G.top+s[1]*(G.bot-G.top),1.3,1.3)}
+  // 시차 눈금 (가로선) : 위 = 늦게, 아래 = 일찍
+  cB.textBaseline='middle';cB.font="400 10px 'DM Mono','Noto Sans KR',monospace";
+  for(let h=-3;h<=3;h++){const y=G.y0-h*60*G.sc/60,z=h===0;cB.strokeStyle=z?'rgba(255,255,255,.7)':'rgba(255,255,255,.1)';cB.lineWidth=z?1.4:1;cB.setLineDash(z?[]:[2,5]);cB.beginPath();cB.moveTo(BW*.04,y);cB.lineTo(BW*.97,y);cB.stroke();cB.setLineDash([]);
+    cB.textAlign='left';cB.fillStyle=z?'#fff':'rgba(255,255,255,.55)';cB.fillText(z?'0 · 평일=휴일':(h>0?'+':'−')+Math.abs(h)+'시간'+(Math.abs(h)===3?'+':''),BW*.04+4,y-8)}
+  cB.textAlign='left';cB.fillStyle='rgba(255,255,255,.5)';cB.font="400 10.5px 'Noto Sans KR',sans-serif";cB.fillText('↑ 휴일에 더 늦게',BW*.04+4,G.top-14);cB.fillText('↓ 휴일에 더 일찍',BW*.04+4,G.bot+16);
+  // 가로 = 평일 기상 시각
+  cB.textAlign='center';cB.font="400 9.5px 'DM Mono',monospace";cB.fillStyle='rgba(255,255,255,.55)';
+  for(let b=0;b<=8;b++){const x=G.x0+b*G.binW;cB.fillStyle='rgba(255,255,255,.12)';cB.fillRect(x,G.top,1,G.bot-G.top);cB.fillStyle='rgba(255,255,255,.6)';cB.fillText(String(4+b).padStart(2,'0')+':00',x,BH-58)}
+  cB.fillStyle='rgba(255,255,255,.6)';cB.font="400 10.5px 'Noto Sans KR',sans-serif";cB.fillText('평일 기상 시각 →',BW/2,BH-40);
+  const hov=SB.pin||SB.hover;
+  for(const g of F.plants){const off=SB.off.has(g.job),dim=off?.07:(hov&&hov!==g?.4:1),P=plantGeom(g),col=JOBC[g.job].join(','),delay=g.bin/8*.18,ph=Math.max(0,Math.min(1,(pe-delay)/(1-.18)));
+    if(ph<=0)continue;const isH=hov===g;
+    for(const[dir,arr,m] of [[1,g.pos,g.mp],[-1,g.neg,g.mn]]){if(!arr.length)continue;const n=arr.length,stemH=Math.max(8,m*P.sc/60*.62)*Math.min(1,ph*1.6),sy=P.y0-dir*stemH;
+      cB.strokeStyle=isH?'#fff':`rgba(255,255,255,${.5*dim})`;cB.lineWidth=isH?1.8:1;cB.beginPath();cB.moveTo(P.x,P.y0);cB.lineTo(P.x,sy);cB.stroke();
+      arr.forEach((d,k)=>{const fr=n>1?k/(n-1):.5,lx=P.x+(fr-.5)*2*P.wd,full=Math.min(CL,d.aj)/CL,ly=P.y0-d.jc*P.sc/60*1,
+        // 작은 시차부터 먼저, 큰 시차는 나중에 (꽃잎이 열리듯)
+        lp=Math.max(0,Math.min(1,(ph*1.35-full*.75-.1)/.35));if(lp<=0)return;
+        const ex=P.x+(lx-P.x)*lp,ey=sy+(ly-sy)*lp;cB.strokeStyle=`rgba(${col},${.5*dim*Math.min(1,lp*2)})`;cB.lineWidth=.9;cB.beginPath();cB.moveTo(P.x,sy);cB.quadraticCurveTo(P.x+(lx-P.x)*.15,sy+(ly-sy)*.55,ex,ey);cB.stroke();
+        if(lp>=1){cB.globalAlpha=dim;cB.fillStyle=cB.strokeStyle=`rgb(${col})`;const r=2.5+(1-lp)*0;if(d.j>=0){cB.beginPath();cB.arc(lx,ly,r,0,6.2832);cB.fill()}else{cB.lineWidth=1.3;cB.beginPath();cB.arc(lx,ly,r-.1,0,6.2832);cB.stroke()}cB.globalAlpha=1}else if(lp>.7){cB.globalAlpha=dim*(lp-.7)/.3;cB.fillStyle=`rgb(${col})`;cB.beginPath();cB.arc(ex,ey,2.5*(lp-.7)/.3,0,6.2832);cB.fill();cB.globalAlpha=1}})}
+    bHits.push({g,x:P.x,w:Math.max(P.wd+6,10)})}
+  if(hov){const P=plantGeom(hov);cB.fillStyle='#fff';cB.font="500 11px 'Noto Sans KR',sans-serif";cB.textAlign='center';cB.fillText(`${JOBS[hov.job]} · ${hov.list.length}명`,P.x,G.y0+(G.bot-G.y0)*.08+14)}
+}
+function renderRight(g){
+  const L=F.list.filter(d=>!SB.off.has(d.job)),lat=L.filter(d=>d.j>0).length;
+  const bars=new Array(13).fill(0);for(const d of L)bars[Math.min(12,Math.floor(d.aj/15))]++;const mx=Math.max(...bars,1);
+  let h=`<h4>CLUSTER</h4><div class="row"><span>연령대</span><span>${AGES[F.a]}</span></div><div class="row"><span>인원</span><span>${L.length}명</span></div>`;
+  if(g){const l=g.list;h+=`<h4>PLANT (선택한 식물)</h4><div class="row"><span>직군</span><span>${JOBS[g.job]}</span></div><div class="row"><span>평일 기상대</span><span>${hm(240+g.bin*60)}–${hm(300+g.bin*60)}</span></div><div class="row"><span>인원</span><span>${l.length}명</span></div><div class="row"><span>평균 시차</span><span>${sg(g.mean)}</span></div><div class="row"><span>시차 중앙값</span><span>${Math.round(g.med)}분</span></div><div class="row"><span>평균 평일 기상</span><span>${hm(l.reduce((s,d)=>s+d.wdw,0)/l.length)}</span></div><div class="row"><span>평균 휴일 기상</span><span>${hm(l.reduce((s,d)=>s+d.hdw,0)/l.length)}</span></div>`}
+  else h+=`<div class="big">${Math.round(med(L.map(d=>d.aj)))}<small>분</small></div><div class="row"><span>평일–휴일 기상 차이</span><span></span></div><div class="row"><span style="font-size:10px">개인별 절댓값의 중앙값</span><span></span></div><div class="row"><span>휴일에 더 늦게</span><span>${L.length?Math.round(lat/L.length*100):0}%</span></div>`;
+  h+=`<h4>DISTRIBUTION</h4><div id="bars">${bars.map(v=>`<i style="height:${Math.max(3,v/mx*100)}%"></i>`).join('')}</div><div class="row" style="font-size:10px;margin-top:4px"><span>0</span><span>1</span><span>2</span><span>3h+</span></div>`;
+  h+=`<h4>TAGS</h4><div class="tags">${[...new Set(L.map(d=>d.job))].sort((a,b)=>a-b).map(j=>`<span style="background:rgb(${JOBC[j].join(',')})">${JOBS[j]}</span>`).join('')}</div>`;
+  $('BR').innerHTML=h}
+function buildTags(){const el=$('tags');el.innerHTML='';JOBS.forEach((n,j)=>{const c=F.list.filter(d=>d.job===j).length;if(!c)return;const t=document.createElement('span');t.className='tag'+(SB.off.has(j)?' off':'');t.style.background=`rgb(${JOBC[j].join(',')})`;t.innerHTML=`${n}<small>${c}</small>`;t.onclick=()=>{SB.off.has(j)?SB.off.delete(j):SB.off.add(j);buildTags();renderRight(SB.pin||SB.hover)};el.appendChild(t)})}
+function openForest(a){buildForest(a);SB.off.clear();SB.pin=null;SB.hover=null;layoutB();SB.t0=performance.now();document.body.classList.add('forest');
+  $('btitle').innerHTML=`${AGES[a]} · ${F.list.length}명<small>꽃처럼 피어난 숲 · 세로 = 사회적 시차</small>`;buildTags();renderRight(null)}
+$('bback').onclick=closeForest;function closeForest(){document.body.classList.remove('forest');$('tipA').style.display='none';SA.t0=performance.now()-2500}
+addEventListener('keydown',e=>{if(e.key==='Escape')closeForest()});
+function plantAt(x,y){const G=GEO();if(y<G.top-4||y>G.bot+4)return null;let b=null,bd=1e9;for(const h of bHits){const d=Math.abs(x-h.x);if(d<h.w&&d<bd&&!SB.off.has(h.g.job)){bd=d;b=h.g}}return b}
+cvB.addEventListener('pointermove',e=>{const r=cvB.getBoundingClientRect(),g=plantAt(e.clientX-r.left,e.clientY-r.top);if(g!==SB.hover){SB.hover=g;renderRight(SB.pin||g)}cvB.style.cursor=g?'pointer':'default'});
+cvB.addEventListener('click',e=>{const r=cvB.getBoundingClientRect(),g=plantAt(e.clientX-r.left,e.clientY-r.top);SB.pin=g&&SB.pin!==g?g:null;renderRight(SB.pin||g)});
+addEventListener('resize',()=>{layoutA();layoutB()});
+new ResizeObserver(layoutB).observe($('BC'));
+layoutA();requestAnimationFrame(frameA);requestAnimationFrame(frameB);
+})();
+</script>
