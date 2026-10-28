@@ -1,2 +1,5 @@
 @font-face{font-family:Pretendard;font-weight:45 920;font-style:normal;font-display:swap;src:url(PretendardVariable.woff2) format('woff2')}
 *{font-family:Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif!important;letter-spacing:-.05em!important;word-spacing:.05em!important}
+/* Page title, far top-left (a grid row above the header). */
+.detail-screen{grid-template-rows:auto auto minmax(0,1fr)!important}
+.detail-screen::before{content:'Social Jetlag';display:block;color:#fff;font-size:30px;font-weight:700;line-height:1.1;margin:2px 0 4px;pointer-events:none}
