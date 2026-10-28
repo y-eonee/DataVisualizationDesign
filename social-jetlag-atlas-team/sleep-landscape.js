@@ -31,6 +31,8 @@ const SleepLandscape = (() => {
         const weekend=.40+Math.min(4,n.weekendDuration-low)*.38;
         return weekday+(weekend-weekday)*phase;
     }
+    // Added: weekday->weekend stem height for large aggregates, same relative rule as sprouts.
+    function stemHeight(sd,phase){const low=Math.min(sd.wd,sd.we);return(.40+Math.min(4,sd.wd-low)*.38)*(1-phase)+(.40+Math.min(4,sd.we-low)*.38)*phase;}
     function simplifyRing(ring,tolerance=.0008){
         const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return (p.x-a.x-dx*t)**2+(p.y-a.y-dy*t)**2;};
         const open=points=>{const keep=new Uint8Array(points.length);keep[0]=keep[points.length-1]=1;const stack=[[0,points.length-1]];while(stack.length){const [a,b]=stack.pop();let far=-1,best=tolerance*tolerance;for(let i=a+1;i<b;i++){const d=distance(points[i],points[a],points[b]);if(d>best){best=d;far=i;}}if(far>=0){keep[far]=1;stack.push([a,far],[far,b]);}}return points.filter((_,i)=>keep[i]);};
@@ -124,6 +126,19 @@ const SleepLandscape = (() => {
         nodes.occupationProfiles=occupationProfiles(nodes);
         for(const n of nodes)n.land.occupationProfile=nodes.occupationProfiles[n.groupId];
         nodes.relief=buildRelief(nodes);
+        // Added: one stem per hill, on its highest member. Weekday/weekend durations are count-weighted means over every member
+        // (paired members contribute both sides; weekday-only / weekend-only members contribute their own side).
+        for(const hill of nodes.relief){
+            let wd=0,wn=0,we=0,en=0;
+            for(const m of hill.members){
+                if(m.kind==='paired'&&m.weekdayDuration!=null){wd+=m.count*m.weekdayDuration;wn+=m.count;we+=m.count*m.weekendDuration;en+=m.count;}
+                else if(m.kind==='weekday'){wd+=m.count*m.duration;wn+=m.count;}
+                else if(m.kind==='weekend'){we+=m.count*m.duration;en+=m.count;}
+            }
+            if(!wn||!en)continue;
+            hill.members.reduce((x,y)=>y.land.overlap>x.land.overlap?y:x).land.stemDur={wd:wd/wn,we:we/en};
+        }
+        for(const n of nodes)if(!n.land.sprout&&!n.land.fused&&n.kind==='paired'&&n.weekdayDuration!=null)n.land.stemDur={wd:n.weekdayDuration,we:n.weekendDuration};
         // Anchor each sprout on the nearest larger same-age disk as a visual support.
         // This display relation does not join or duplicate respondents.
         for(const n of nodes){
@@ -217,6 +232,7 @@ const SleepLandscape = (() => {
           ctx.globalAlpha=1;ctx.drawImage(surface,viewport.left,viewport.top,viewport.width,viewport.height);calls++;
          }else paintRelief(ctx);
         }
+        const lateStems=[];
         for(const {n,base} of ordered){
             const muted=filtered&&!matches(n),style=n.land.visualStyle||appearance(n),accent=filtered&&matches(n)?emphasis(n):null,alpha=opacity*(muted?.045:filtered?1:style.alpha)*(mode==='compare'||n.kind==='paired'||mode===n.kind?1:.35),r=n.radius*1.32,h=heights.get(n);
             const normal=n.land.normal,ref=Math.abs(normal.y)<.9?{x:0,y:1,z:0}:{x:1,y:0,z:0};
@@ -246,11 +262,21 @@ const SleepLandscape = (() => {
                 ctx.globalAlpha=alpha*(!n.land.sprout&&n.land.terrainHeight>0?.48:1);ctx.fillStyle=muted?'#55515B':color;if(!style.hollow){disk(y,rr,true);calls++;}
                 ctx.globalAlpha=alpha*(accent?1:!n.land.sprout&&n.land.terrainHeight>0?.35:.75);ctx.strokeStyle=accent||(style.hollow?style.color:'#35313C');ctx.lineWidth=accent?1.7:style.hollow?1:.55;disk(y,rr,false);calls++;
             }
+            if(n.land.stemDur){
+                // Large aggregates sit under terrain with near-zero alpha, so the stem uses its own alpha and is drawn last.
+                const hs=.5+stemHeight(n.land.stemDur,phase)*1.5,mr=r*.82*.95,sa=opacity*(muted?.045:.55+.4*blend);
+                lateStems.push(()=>{
+                    ctx.globalAlpha=sa;ctx.strokeStyle='#F2F6FF';ctx.lineWidth=.8+.9*blend;line(base,project(centerAt(hs)));calls++;
+                    ctx.globalAlpha=sa;ctx.fillStyle=muted?'#55515B':style.color;if(!style.hollow){disk(hs,mr,true);calls++;}
+                    ctx.globalAlpha=sa;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=1.4;disk(hs,mr,false);calls++;
+                });
+            }
             const world=centerAt(h),top=project(world),rr=r*.82;
             const axis=t=>{const p=project({x:world.x+t.x*rr,y:world.y+t.y*rr,z:world.z+t.z*rr});return {x:p.x-top.x,y:p.y-top.y};};
             const ellipseU=axis(u),ellipseV=axis(v),radius=Math.hypot(ellipseU.x,ellipseU.y,ellipseV.x,ellipseV.y);
             views.push({node:n,x:top.x,y:top.y,z:base.z,radius,ellipseU,ellipseV,muted,alpha,height:h,colorKind:style.kind,hollow:style.hollow,accent});
         }
+        for(const f of lateStems)f();
         const dataLabels=[];
         if(closeup){
             const candidates=[];
