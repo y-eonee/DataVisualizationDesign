@@ -12,17 +12,17 @@ const SleepOccupations = (() => {
         names:Object.freeze({"1": "관리자", "2": "전문가 및 관련 종사자", "3": "사무 종사자", "4": "서비스 종사자", "5": "판매 종사자", "6": "농림어업숙련·종사자", "7": "기능원 및 관련기능 종사자", "8": "장치,기계조작 및 조립 종사자", "9": "단순노무 종사자", "A": "직업군인"})
     });
     const definitions = [
-        {code:'1',shape:'circle',color:'#E4C84A',name:'Circle / yellow'},
-        {code:'2',shape:'triangle',color:'#D99450',name:'Triangle / orange'},
-        {code:'3',shape:'square',color:'#399EC4',name:'Square / blue'},
-        {code:'4',shape:'plus',color:'#8573CA',name:'Plus / magenta'},
-        {code:'5',shape:'diamond',color:'#73ADB2',name:'Diamond / cyan'},
-        {code:'6',shape:'hexagon',color:'#A9B879',name:'Hexagon / lavender'},
-        {code:'7',shape:'star',color:'#C8AB62',name:'Star / coral'},
-        {code:'8',shape:'pentagon',color:'#4B8E9B',name:'Pentagon / teal'},
-        {code:'9',shape:'cross',color:'#D7BF62',name:'Cross / ochre'},
-        {code:'A',shape:'chevron',color:'#697BC0',name:'Chevron / periwinkle'},
-        {code:'',shape:'ring',color:'#C5C7B6',name:'Open circle / grey',outline:true}
+        {code:'1',shape:'circle',color:'#FFE28A',name:'Circle / yellow'},
+        {code:'2',shape:'triangle',color:'#B69CFF',name:'Triangle / orange'},
+        {code:'3',shape:'square',color:'#8FD0FF',name:'Square / blue'},
+        {code:'4',shape:'plus',color:'#FF9FD0',name:'Plus / magenta'},
+        {code:'5',shape:'diamond',color:'#FFB585',name:'Diamond / cyan'},
+        {code:'6',shape:'hexagon',color:'#9FF0C0',name:'Hexagon / lavender'},
+        {code:'7',shape:'star',color:'#7FE6E0',name:'Star / coral'},
+        {code:'8',shape:'pentagon',color:'#FF8FA0',name:'Pentagon / teal'},
+        {code:'9',shape:'cross',color:'#D9F08A',name:'Cross / ochre'},
+        {code:'A',shape:'chevron',color:'#A8B4FF',name:'Chevron / periwinkle'},
+        {code:'',shape:'ring',color:'#E1E8F5',name:'Open circle / grey',outline:true}
     ].map((d,index)=>Object.freeze({...d,index,label:d.code?codebook.names[d.code]:'직업 코드 없음'}));
     const byCode=new Map(definitions.map(d=>[d.code,d]));
     const codeOf=i=>String(SleepDemographics.rows[i][2]??'');
