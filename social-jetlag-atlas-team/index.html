@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sleep Atlas — Social Jetlag</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-screen="detail" data-entry="globe">
+  <div id="atlas-screen" class="atlas-screen" hidden inert>
+  <header class="site-header">
+    <a class="logo" href="#main" aria-label="Sleep Atlas main">sleep atlas</a>
+    <nav class="navigation" aria-label="Main navigation">
+      <a class="active" href="#main" aria-current="page">Main</a>
+      <span role="link" aria-disabled="true" title="Page not yet available">About SJ</span>
+      <a href="data.js" download>Data</a>
+      <span role="link" aria-disabled="true" title="Page not yet available">Contact</span>
+    </nav>
+    <button class="about-us" type="button" disabled title="Page not yet available">About Us</button>
+  </header>
+  <main id="main">
+    <section class="top" aria-labelledby="page-title">
+      <h1 id="page-title">Social Jetlag</h1>
+      <p class="subtitle"><span id="record-total">48,621</span> sleep records in one landscape.</p>
+      <p class="desc">원본 수면 분포에서 출발한 개념적 밀도 지도입니다. 여섯 수면 구역의 집중과 전이를 탐색하세요.<br>화면 거리는 실제 시간 간격이 아닙니다.</p>
+    </section>
+    <div class="atlas-layout">
+      <aside class="sidebar" aria-label="Atlas information and day filters">
+        <div class="stats">
+          <div><small>EXTRACTED DIARIES</small><b id="diary-total">48,621</b></div>
+          <div><small>TIME RESOLUTION</small><b>10 min</b></div>
+        </div>
+        <section class="panel" aria-labelledby="filter-title">
+          <h2 id="filter-title">Explore / Day type</h2>
+          <label class="choice"><input type="checkbox" data-day="1" checked><span class="swatch weekday"></span><span>평일</span><span class="day-count" id="d1">29,167</span></label>
+          <label class="choice"><input type="checkbox" data-day="2" checked><span class="swatch saturday"></span><span>토요일</span><span class="day-count" id="d2">9,749</span></label>
+          <label class="choice"><input type="checkbox" data-day="3" checked><span class="swatch sunday"></span><span>일요일</span><span class="day-count" id="d3">9,705</span></label>
+          <div class="legend"><span class="legend-dot"></span>Dot Size = Record Count</div>
+        </section>
+        <footer class="bottom">
+          <div class="count" id="visible" aria-live="polite">48,621 visible records</div>
+          <div id="cluster-selection" class="region-selection" role="status" aria-live="polite" hidden>
+            <span id="cluster-selection-text"></span><button id="cluster-clear" type="button" aria-label="Clear selected sleep region">&times;</button>
+          </div>
+          <p class="note">개별 SJL 값이 아닌 일별 수면 기록입니다.</p>
+        </footer>
+      </aside>
+      <section class="visual-area" aria-label="Interactive sleep region atlas">
+        <canvas id="map" aria-label="Sleep atlas. Drag to pan, scroll to zoom, click a region to select it."></canvas>
+        <div class="controls" aria-label="Map zoom controls">
+          <button id="plus" type="button" aria-label="확대">+</button>
+          <button id="minus" type="button" aria-label="축소">−</button>
+          <button id="reset" type="button" aria-label="전체 보기">↻</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  </div>
+  <section id="detail-screen" class="detail-screen" aria-labelledby="detail-title" aria-hidden="false">
+    <header class="detail-header">
+      <button id="back-to-atlas" class="detail-back" type="button">sleep atlas / 전체 구</button>
+      <span class="detail-brand">Drag to rotate · Scroll to zoom</span><button id="focus-surface" class="detail-back" type="button">표면 확대</button>
+    </header>
+    <div class="detail-layout">
+      <div id="globe-loading" role="status">수면 지형을 불러오는 중…</div>
+      <div id="detail-visual" class="detail-visual" aria-label="Sleep globe: six age clusters with radial layered contour disks. Drag to orbit, scroll to zoom.">      <div class="network-clock"><output id="sleep-time" aria-label="Simulated time">00:00</output><span>24h / 60s &#183; comparison / 15s</span><span id="comparison-phase">Weekday emphasis</span></div></div>
+      <aside id="detail-panel" hidden inert class="detail-info data-explorer" aria-label="Sleep data explorer">
+        <header class="explorer-region">        <p id="detail-number" class="detail-eyebrow"></p>
+        <h2 id="detail-title"></h2>
+        <div class="detail-records"><b id="detail-count"></b><span>sleep records</span></div>
+        <details class="region-baseline"><summary>Region baseline</summary>        <p id="detail-percent"></p>
+        <dl class="detail-stats"><div><dt>MEAN ONSET</dt><dd id="detail-onset"></dd></div><div><dt>MEAN DURATION</dt><dd id="detail-duration"></dd></div></dl>
+        <p id="detail-days"></p>
+</details></header>
+        <section class="explorer-section"><div class="explorer-section-heading"><h3>GLOBAL OVERVIEW</h3><button id="occupation-clear" type="button">Reset filters</button></div><p class="explorer-hint">Unique respondents · selected region</p><div id="age-overview"></div></section>
+        <section class="explorer-section"><h3 class="explorer-heading">SELECTED DATA SUMMARY</h3>        <section class="age-summary" aria-labelledby="age-title">
+          <h3 id="age-title">All age groups</h3>
+          <div class="age-person-count"><b id="age-people"></b><span>unique people</span></div><p id="age-diaries"></p>
+          <dl class="age-means"><div><dt>WEEKDAY ONSET</dt><dd id="age-weekday"></dd></div><div><dt>WEEKEND ONSET</dt><dd id="age-weekend"></dd></div><div><dt>WEEKEND &#8722; WEEKDAY</dt><dd id="age-difference"></dd></div><div><dt>WEEKDAY DURATION</dt><dd id="age-weekday-duration"></dd></div><div><dt>WEEKEND DURATION</dt><dd id="age-weekend-duration"></dd></div></dl>
+          <p id="age-samples"></p><details><summary>Occupation distribution / original codes</summary><ul id="occupation-list"></ul></details>
+        </section>
+</section>
+        <section class="explorer-section"><h3 class="explorer-heading">OCCUPATION FILTERS</h3><p class="explorer-hint">Unique respondents · within selected age</p><p id="occupation-comparison-status" class="explorer-hint" role="status" aria-live="polite">Select up to 3 occupations to compare</p><ul id="occupation-key"></ul></section>
+        <section class="explorer-section"><h3 class="explorer-heading">AGE-GROUP FILTERS</h3><p class="explorer-hint">Unique respondents · within selected occupation</p><div id="age-list" class="age-list" aria-label="Filter age group"></div></section>
+        <section class="explorer-section"><h3 class="explorer-heading">COLOR / COMPARISON LEGEND</h3><div id="cluster-occupation-legend" class="cluster-occupation-legend"></div><p class="explorer-hint">연령대별 최다 직업의 색이 지형과 가지의 중심색입니다. 적은 직군은 옅게 표시합니다. 비중은 해당 연령대 전체 응답자 기준이며, 직업 코드 없음은 순위에서 제외하고 흐린 군집색으로 표시합니다. 직업 필터는 최대 3개까지 강조할 수 있습니다.</p><h3 class="explorer-heading">TIME / NETWORK LEGEND</h3>    <section class="sleep-timeline-panel" aria-label="Sleep activity over 24 hours">
+      <div class="timeline-top"><div class="sleep-modes" aria-label="Day-type emphasis; both datasets remain visible"><button data-sleep-mode="weekday" aria-pressed="false">Weekday</button><button data-sleep-mode="weekend" aria-pressed="false">Weekend</button><button data-sleep-mode="compare" aria-pressed="true">Compare</button></div><span id="compare-key">Clusters = age · Disks / sprouts = aggregate size · Color = occupation share within age cluster</span><span id="sleep-activity"></span></div>
+
+      <p id="comparison-note" class="comparison-note"></p>
+      <p id="network-scope"></p>
+    </section><p class="detail-preview-note">Unweighted, person-balanced means from selected-region diaries. Onset difference is not individual social jetlag. Occupation labels use the official MDIS 2024 response code table; blank means no recorded occupation code, not unemployment. Flat circles represent 2-hour aggregates of unique respondents; circle area is proportional to respondent count. Cluster terrain and branch hue follow the largest recorded occupation by unique respondents. Other occupation colors are subdued according to their share. Unrecorded occupation is excluded from leader ranking and shown as a faint cluster tint. Exact counts and paired duration differences remain available on hover. Overlapping larger disks share raised contour terrain on the sphere (display overlap, not measured geography or sleep height); smaller aggregates sprout from nearby larger disks within their age group. Sprout stems animate between paired person-balanced weekday and weekend sleep durations. Larger duration differences cause larger length changes; unpaired stems remain fixed. Supports and central branches are visual organizing structures, not respondent relationships. Sphere positions are categorical age clusters ordered by sleep bins. Matched weekday/weekend principal wake times are derived from verified sleep runs; unmatched respondents remain in onset/duration aggregates, without inferred wake pairs. Wake differences are not formal social jetlag.</p></section>
+      </aside>
+    </div>
+
+  </section>
+  <div id="transition-layer" class="transition-layer" aria-hidden="true" hidden></div>
+  <div id="sleep-clock-tooltip" class="sleep-clock-tooltip" role="tooltip" hidden></div>
+  <div id="region-tooltip" class="region-tooltip" role="tooltip" hidden></div>
+  <script src="data.js"></script>
+  <script src="sleep-regions.js"></script>
+  <script src="sleep-atlas.js"></script>
+  <script src="hybrid-atlas.js"></script>
+  <script src="region-map.js"></script>
+  <script src="liquid-dots.js"></script>
+  <script src="sleep-demographics.js"></script>
+  <script src="sleep-network-data.js"></script>
+  <script src="sleep-network-links.js"></script>
+  <script src="sleep-occupations.js"></script>
+  <script src="sleep-botany.js"></script>
+  <script src="vendor/earcut.min.js"></script>
+  <script src="sleep-terrain-gpu.js"></script>
+  <script src="sleep-landscape.js"></script>
+  <script src="sleep-network.js"></script>
+  <script src="atlas-transition.js"></script>
+  <script src="app.js"></script>
+  <script src="flow-link.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a51a66cb8c46aa40',t:'MTc5MzE5NTM0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

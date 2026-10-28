@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Social Jetlag Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Raleway:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--lav:#b69cff;--line:rgba(255,255,255,.16);--mute:rgba(255,255,255,.58);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:#000;color:#fff;font-family:'Noto Sans KR',sans-serif;overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+#head{position:fixed;left:24px;top:18px;z-index:2;pointer-events:none;max-width:min(560px,calc(100vw - 48px))}
+h1{font:800 clamp(20px,2.4vw,28px)/1 Raleway,sans-serif}h1 span{color:var(--lav)}
+#head p{font-size:12px;line-height:1.65;color:rgba(255,255,255,.82);margin-top:8px}
+#ages{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;pointer-events:auto}
+.chip{white-space:nowrap;background:none;border:1px solid var(--line);color:#fff;border-radius:99px;padding:4px 11px;font:400 11.5px 'Noto Sans KR',sans-serif;cursor:pointer}
+.chip:hover{border-color:#fff}.chip.on{background:#fff;color:#000}
+#mode{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;pointer-events:auto}
+#jobs{position:fixed;left:24px;bottom:16px;z-index:2;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100vw - 48px)}
+#jobs .chip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+#leg{position:fixed;right:22px;bottom:16px;z-index:2;font-size:11px;color:var(--mute);line-height:1.7;text-align:right;pointer-events:none}
+#tip{position:fixed;z-index:5;display:none;pointer-events:none;background:rgba(8,8,16,.92);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12px;line-height:1.5}
+
+#main{position:fixed;inset:0;z-index:3;display:flex;background:#07060d}
+body.flowv #main{display:none}
+body:not(.flowv) #head,body:not(.flowv) #jobs,body:not(.flowv) #cv,body:not(.flowv) #tip{display:none}
+#mleft{flex:1;min-width:0;display:flex;flex-direction:column;padding:16px 22px 12px}
+#mtop{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+#brand{font:500 12px 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85)}#brand span{color:var(--mute)}
+#nav{display:flex;gap:22px;font-size:13px}
+#nav a{color:#fff;padding-bottom:4px;border-bottom:2px solid transparent;cursor:pointer;opacity:.7}#nav a.on{border-color:#fff;opacity:1}
+#mwrap{position:relative;flex:1;min-height:360px}
+#mc{position:absolute;inset:0;width:100%;height:100%}
+#mhint{position:absolute;left:0;top:8px;font-size:12px;color:var(--lav)}
+#mfoot{font:400 11px 'DM Mono','Noto Sans KR',monospace;color:var(--mute)}
+#mpanel{width:340px;flex:none;border-left:1px solid rgba(255,255,255,.12);padding:18px 20px;overflow:auto;font-size:12px}
+#mpanel .kick{font:400 10px 'DM Mono',monospace;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#mpanel h2{font:500 28px/1.15 'Noto Sans KR',sans-serif;margin:10px 0 8px}
+#mpanel .big{font:500 24px/1.2 'Noto Sans KR',sans-serif}#mpanel .big small{font-size:12px;color:var(--mute);margin-left:6px}
+#mpanel hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:16px 0 12px}
+#mpanel .sub{color:var(--mute);margin:4px 0 8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.tile{border:1px solid rgba(255,255,255,.18);padding:7px 8px;border-radius:2px;cursor:pointer;background:none;color:#fff;text-align:left;font:400 11.5px 'Noto Sans KR',sans-serif;position:relative;overflow:hidden}
+.tile:hover,.tile.on{border-color:var(--lav)}.tile i{position:absolute;left:0;top:0;bottom:0;background:rgba(182,156,255,.2)}.tile span{position:relative}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:10px}.grid2 .k{font:400 9.5px 'DM Mono',monospace;letter-spacing:.08em;color:rgba(255,255,255,.55)}.grid2 .v{font:500 18px 'Noto Sans KR',sans-serif;margin-top:2px}
+.jf{display:flex;flex-wrap:wrap;gap:5px}.jf button{background:none;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:3px 9px;font:400 11px 'Noto Sans KR',sans-serif;cursor:pointer}.jf button i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.jf button.on{background:#fff;color:#000}
+.golink{display:block;width:100%;margin-top:14px;padding:10px;border:1px solid var(--lav);background:rgba(182,156,255,.1);color:#fff;border-radius:4px;font:500 13px 'Noto Sans KR',sans-serif;cursor:pointer}
+@media(max-width:900px){#main{flex-direction:column;overflow:auto}#mleft{flex:none;height:78vh}#mpanel{width:auto;border-left:0;border-top:1px solid rgba(255,255,255,.12)}}
+.back{border-color:var(--lav)!important;color:var(--lav)}
+
+#cap{position:fixed;left:24px;bottom:140px;z-index:2;max-width:min(520px,calc(100vw - 80px));pointer-events:none;text-shadow:0 0 12px #000,0 0 3px #000}
+#cap b{display:block;font:700 14px 'Noto Sans KR',sans-serif;color:var(--lav);margin-bottom:3px}#cap span{font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.88)}
+#steps{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:12px}
+#steps i{width:7px;height:7px;border-radius:50%;border:1px solid rgba(255,255,255,.55);display:block;transition:.2s}#steps i.on{background:var(--lav);border-color:var(--lav);transform:scale(1.5)}
+#scrollhint{position:fixed;left:50%;bottom:132px;transform:translateX(-50%);z-index:2;font:400 11px 'DM Mono',monospace;color:var(--lav);letter-spacing:.12em;pointer-events:none;animation:bob 1.6s ease-in-out infinite;transition:opacity .3s}
+@keyframes bob{50%{transform:translate(-50%,6px)}}
+body:not(.flowv) #cap,body:not(.flowv) #play{display:none}
+#cap em{display:block;font:500 clamp(34px,5vw,54px)/1 'DM Mono',monospace;font-style:normal;color:#fff;margin-bottom:4px}
+</style></head><body>
+<div id="main">
+ <div id="mleft"><div id="mtop"><div id="brand">social jetlag <span>/ age network</span></div><div id="nav"><a class="on" id="nMain">Main</a><a id="nFlow">Age Flow</a></div></div>
+  <div id="mwrap"><canvas id="mc"></canvas><div id="mhint">연령대 덩어리를 누르면 그 연령대의 플로우가 열립니다</div></div>
+  <div id="mfoot">타원 면적 = 인원 · 색 = 직군 · 가지 = 중심 → 연령대 → 직군</div></div>
+ <aside id="mpanel"></aside>
+</div>
+<canvas id="cv"></canvas>
+<div id="head"><h1>Social <span>Jetlag</span> Flow</h1>
+<p>가로는 <b>평일 기상 시각</b>, 세로 <b>높이가 사회적 시차</b>입니다. 점 하나가 한 사람이고, 아래 곡선은 그 사람이 속한 직군의 뿌리로 모입니다.</p><div id="ages"></div><div id="mode"></div></div><div id="jobs"></div>
+
+<div id="cap"></div><button class="chip" id="play" style="position:fixed;right:22px;bottom:150px;z-index:3">▶ 자동 재생</button><div id="tip"></div>
+<script src="data.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const AGES=['10대','20대','30대','40대','50대','60대','70대+'];
+const JOBS=['비취업','관리자','전문가·관련','사무','서비스','판매','농림어업','기능원','장치·기계','단순노무'];
+const JOBC=[[225,232,245],[255,226,138],[182,156,255],[143,208,255],[255,159,208],[255,181,133],[159,240,192],[127,230,224],[255,143,160],[217,240,138]];
+const hm=m=>{m=Math.round(m);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const sg=v=>(v>.5?'+':v<-.5?'−':'')+Math.abs(Math.round(v))+'분';
+const ag=a=>a<20?0:a<30?1:a<40?2:a<50?3:a<60?4:a<70?5:6;
+const rnd=(()=>{let a=91;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}})();
+const D=window.PEOPLE.map(([age,sex,job,wdw,hdw],i)=>({i,age,sex,job,ag:ag(age),wdw,hdw,j:hdw-wdw,aj:Math.abs(hdw-wdw),r1:rnd(),r2:rnd(),r3:rnd()}));
+const cv=$('cv'),c=cv.getContext('2d');let W,H,DPR,S=null,A=1,jobHi=null,t0=performance.now(),hov=null;
+const T0=180,T1=780,JMAX=198;
+function build(){
+  const list=D.filter(d=>d.ag===A),m={l:40,r:40},w=W-m.l-m.r;
+  const baseY=Math.round(H*.5),topY=$('head').getBoundingClientRect().bottom+34,rootY=H-(W<700?190:110),hh=baseY-topY-30;
+  const tx=v=>m.l+(Math.max(T0,Math.min(T1,v))-T0)/(T1-T0)*w;
+  const jobs=[...new Set(list.map(d=>d.job))].map(j=>{const l=list.filter(d=>d.job===j);return{job:j,n:l.length,x:tx(l.reduce((s,d)=>s+d.wdw,0)/l.length)}}).sort((a,b)=>a.x-b.x);
+  for(let it=0;it<200;it++)for(let i=1;i<jobs.length;i++){const gap=Math.min(120,w/jobs.length*.7),d=jobs[i].x-jobs[i-1].x;if(d<gap){const f=(gap-d)/2;jobs[i].x+=f;jobs[i-1].x-=f}}
+  for(const j of jobs)j.x=Math.max(m.l+30,Math.min(W-m.r-30,j.x));
+  const jx=new Map(jobs.map(j=>[j.job,j]));
+  const P=list.map(d=>{const x=tx(d.wdw)+(d.r1-.5)*3,h=Math.min(1,d.aj/JMAX)*hh,r=jx.get(d.job);return{d,x,y:baseY-8-h*(.88+.12*d.r2),h,rx:r.x+(d.r3-.5)*Math.min(46,10+r.n*.12),sx:x+(d.r2-.5)*2}});
+  // 바닥 점 : 가까운 x끼리 묶어 크기=인원
+  const bins=new Map();for(const p of P){const k=Math.round(p.x/6);let b=bins.get(k);if(!b){b={x:k*6,n:0,jc:new Array(10).fill(0)};bins.set(k,b)}b.n++;b.jc[p.d.job]++}
+  for(const b of bins.values())b.job=b.jc.indexOf(Math.max(...b.jc));
+  const curve=(arr)=>{const pts=[];for(let m0=T0;m0<=T1;m0+=20){const near=arr.filter(p=>Math.abs(p.d.wdw-m0)<=70);if(near.length<6)continue;const a=near.map(p=>p.d.aj).sort((x,y)=>x-y),md=a[a.length>>1];pts.push([tx(m0),baseY-8-Math.min(1,md/JMAX)*hh,md])}return pts};
+  const curves=jobs.filter(r=>r.n>=12).map(r=>({job:r.job,pts:curve(P.filter(p=>p.d.job===r.job))})).filter(k=>k.pts.length>2);curves.push({job:-1,pts:curve(P)});
+  S={curves,list,P,jobs,bins:[...bins.values()],baseY,topY,rootY,hh,tx,m};
+  t0=performance.now();
+}
+function layout(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;build()}
+const col=(j,a)=>`rgba(${JOBC[j].join(',')},${a})`;
+// ===== 스크롤 = 시간의 흐름 : 시각이 지나면 그 시각에 일어나는 사람이 차례로 깨어나 시차 높이로 솟는다 =====
+let SS=0,sm=0,CT=T0,auto=false,lastCap='';
+const cl01=v=>Math.max(0,Math.min(1,v)),ez=t=>t*t*(3-2*t),WT=p=>Math.min(T1,p.d.wdw),RISE=28;
+let GUARD=0;function addScroll(d){if(performance.now()<GUARD)return;auto=false;syncPlay();SS=cl01(SS+d)}
+addEventListener('wheel',e=>{if(V!=='flow')return;e.preventDefault();addScroll(e.deltaY*.0006)},{passive:false});
+let ty=null;addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchmove',e=>{if(V!=='flow'||ty===null)return;const y=e.touches[0].clientY;addScroll((ty-y)*.0025);ty=y},{passive:true});
+addEventListener('keydown',e=>{if(V!=='flow')return;if(['ArrowDown','PageDown'].includes(e.key)){addScroll(.04);e.preventDefault()}else if(['ArrowUp','PageUp'].includes(e.key)){addScroll(-.04);e.preventDefault()}else if(e.key===' '){auto=!auto;syncPlay();e.preventDefault()}});
+function syncPlay(){const b=$('play');if(b)b.textContent=auto?'❚❚ 멈춤':'▶ 자동 재생'}
+let lastNow=0;
+function frame(now){
+  requestAnimationFrame(frame);const dt=Math.min(60,now-lastNow||16);lastNow=now;if(!S)return;
+  if(auto){SS=cl01(SS+dt/24000);if(SS>=1){auto=false;syncPlay()}}
+  sm+=(SS-sm)*.18;if(Math.abs(SS-sm)<.0003)sm=SS;CT=T0+sm*(T1-T0);
+  c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,W,H);
+  const{P,jobs,baseY,rootY,hh,tx,m,curves}=S,ld=jobHi!==null,cx=tx(CT);const SK=Math.max(1,Math.round(P.length/2200));
+  // 시간 눈금
+  c.font="400 10px 'DM Mono',monospace";c.textAlign='center';c.fillStyle='rgba(255,255,255,.45)';
+  for(let h=3;h<=13;h++){const x=tx(h*60);c.fillRect(x,baseY+3,1,5);c.fillText(String(h).padStart(2,'0')+':00',x,baseY+22)}
+  c.fillStyle='rgba(255,255,255,.4)';c.fillText('평일 기상 시각 →',W/2,baseY+40);
+  // 시차 기준선 (1·2·3시간)
+  c.setLineDash([2,6]);c.lineWidth=1;c.strokeStyle='rgba(255,255,255,.14)';c.textAlign='left';
+  for(const hr of [1,2,3]){const y=baseY-8-Math.min(1,hr*60/JMAX)*hh;c.beginPath();c.moveTo(m.l,y);c.lineTo(W-m.l,y);c.stroke();c.fillStyle='rgba(255,255,255,.4)';c.fillText(hr+'h',m.l,y-4)}c.setLineDash([]);
+  // 깨어난 사람 계산
+  let nAw=0;const bins=new Map(),rn=new Map(),byJob=new Map();
+  for(const p of P){const t=CT-WT(p);p.ph=t<=0?0:ez(cl01(t/RISE));p.u=cl01((t-6)/70);if(t<=0)continue;nAw++;
+    const k=Math.round(p.x/6);let b=bins.get(k);if(!b){b={x:k*6,n:0,jc:new Array(10).fill(0)};bins.set(k,b)}b.n++;b.jc[p.d.job]++;
+    rn.set(p.d.job,(rn.get(p.d.job)||0)+1);let a=byJob.get(p.d.job);if(!a){a=[];byJob.set(p.d.job,a)}a.push(p)}
+  // 곡선 : 일어난 사람 → 자기 직군 뿌리
+  c.globalCompositeOperation='lighter';
+  for(const[j,arr] of byJob){const q=new Path2D(),dy=rootY-baseY;
+    for(const p of arr){const u=p.u;if(u<=0||p.d.i%SK)continue;const x0=p.sx,y0=baseY+10,x3=p.rx,y3=rootY,c1x=x0+(x3-x0)*.04,c1y=y0+dy*.55,c2x=x3,c2y=y3-dy*.38,st=26,n=Math.max(2,Math.ceil(st*u));
+      q.moveTo(x3,y3);for(let i=1;i<=n;i++){const t=1-i/st,w=1-t;q.lineTo(w*w*w*x0+3*w*w*t*c1x+3*w*t*t*c2x+t*t*t*x3,w*w*w*y0+3*w*w*t*c1y+3*w*t*t*c2y+t*t*t*y3)}}
+    const dim=ld&&jobHi!==j;c.strokeStyle=col(j,dim?.025:.28);c.lineWidth=.75;c.stroke(q)}
+  c.globalCompositeOperation='source-over';
+  for(const r of jobs){const n=rn.get(r.job)||0;if(!n)continue;const dim=ld&&jobHi!==r.job;c.fillStyle=col(r.job,dim?.25:1);c.beginPath();c.arc(r.x,rootY,2.5+Math.sqrt(n)*.5,0,6.2832);c.fill()}
+  // 시간대 점 열 (일어난 사람만)
+  for(const b of bins.values()){const jb=b.jc.indexOf(Math.max(...b.jc)),dim=ld&&jobHi!==jb;c.fillStyle=col(jb,dim?.2:.95);c.beginPath();c.arc(b.x,baseY,1.6+Math.sqrt(b.n)*.75,0,6.2832);c.fill()}
+  // 사람 점 : 일어나는 순간 흰 점으로 솟았다가 직군 색이 켜진다
+  for(const p of P){if(p.ph<=0)continue;const dim=ld&&jobHi!==p.d.job,on=hov===p,ph=p.ph,y=baseY-8-(baseY-8-p.y)*ph,jc=JOBC[p.d.job].map(v=>Math.round(255+(v-255)*ph)).join(',');
+    c.globalAlpha=dim?.12:on?1:.92;c.fillStyle=on?'#fff':`rgb(${jc})`;c.beginPath();
+    if(p.d.j>=0){c.arc(p.x,y,2.3,0,6.2832);c.fill()}else{c.strokeStyle=c.fillStyle;c.lineWidth=1;c.arc(p.x,y,2.2,0,6.2832);c.stroke()}
+    if(ph<1){c.globalAlpha=(1-ph)*.7;c.strokeStyle='#fff';c.lineWidth=1;c.beginPath();c.arc(p.x,baseY,3+ph*9,0,6.2832);c.stroke()}}
+  c.globalAlpha=1;
+  c.lineWidth=.5;for(const[j,arr] of byJob){const dim=ld&&jobHi!==j;c.strokeStyle=col(j,dim?.02:.09);c.beginPath();for(const p of arr){c.moveTo(p.x,baseY-4);c.lineTo(p.x,baseY-8-(baseY-8-p.y)*p.ph+5)}c.stroke()}
+  // 시간 커서
+  const gr=c.createLinearGradient(0,baseY-hh-20,0,baseY+4);gr.addColorStop(0,'rgba(182,156,255,0)');gr.addColorStop(1,'rgba(182,156,255,.9)');c.strokeStyle=gr;c.lineWidth=1.4;c.beginPath();c.moveTo(cx,baseY-hh-20);c.lineTo(cx,baseY+4);c.stroke();
+  c.fillStyle='#b69cff';c.beginPath();c.arc(cx,baseY,3.5,0,6.2832);c.fill();
+  // 직군별 시차 중앙값 곡선 (커서까지 그려짐)
+  c.lineJoin='round';for(const k of curves){const dim=ld&&jobHi!==k.job&&k.job!==-1,tot=k.job===-1;if(ld&&tot)continue;
+    const Q=k.pts.filter(p=>p[0]<=cx-8);if(Q.length<2)continue;c.beginPath();
+    Q.forEach((p,i,a)=>{if(!i)c.moveTo(p[0],p[1]);else if(i<a.length-1){const n=a[i+1];c.quadraticCurveTo(p[0],p[1],(p[0]+n[0])/2,(p[1]+n[1])/2)}else c.lineTo(p[0],p[1])});
+    c.strokeStyle=tot?'rgba(255,255,255,.9)':col(k.job,dim?.12:.9);c.lineWidth=tot?2:(dim?1:1.8);if(tot)c.setLineDash([6,4]);c.stroke();c.setLineDash([])}
+  if(hov&&hov.ph>.6){const y=baseY-8-(baseY-8-hov.y)*hov.ph;c.strokeStyle='#fff';c.lineWidth=1;c.beginPath();c.arc(hov.x,y,8,0,6.2832);c.stroke();c.strokeStyle='rgba(182,156,255,.9)';c.lineWidth=1.4;c.beginPath();c.moveTo(hov.x,y+8);c.lineTo(hov.x,baseY);c.stroke()}
+  // 캡션 (시각 · 일어난 사람 수)
+  const txt=`${hm(CT)}|${nAw}`;if(txt!==lastCap){lastCap=txt;$('cap').innerHTML=`<em>${hm(CT)}</em><b>${nAw} / ${P.length}명이 일어났습니다</b><span>${CT<=T0+2?'스크롤해서 시간을 흘려 보세요 ↓ 평일 기상 시각이 되면 그 사람이 깨어나 점이 시차만큼 솟고, 곡선이 직군 뿌리로 이어집니다.':sm>=.999?'하루가 끝났습니다. 굵은 곡선은 직군별 시차 크기의 중앙값, 흰 점선은 이 연령대 전체입니다.':'점의 높이 = 평일과 휴일 기상 시각의 차이(사회적 시차). 점은 일어나는 순간 흰색에서 직군 색으로 바뀝니다.'}</span>`}
+}
+const baseYof=p=>S.baseY-8-(S.baseY-8-p.y)*p.ph;
+cv.addEventListener('pointermove',e=>{if(!S){return}let b=null,bd=150;for(const p of S.P){if(!(p.ph>.6)||(jobHi!==null&&p.d.job!==jobHi))continue;const d=(p.x-e.clientX)**2+(baseYof(p)-e.clientY)**2;if(d<bd){bd=d;b=p}}hov=b;const t=$('tip');
+  if(b){const d=b.d;t.innerHTML=`<b>${JOBS[d.job]}</b> · ${d.age}세${d.sex===1?' 남':d.sex===2?' 여':''}<br>평일 ${hm(d.wdw)} → 휴일 ${hm(d.hdw)} (<b>${sg(d.j)}</b>)`;t.style.display='block';t.style.left=Math.min(W-230,e.clientX+14)+'px';t.style.top=(e.clientY+14)+'px'}else t.style.display='none'});
+function chips(){$('ages').innerHTML='<button class="chip back" id="bk">← Main</button>'+AGES.map((a,i)=>`<button class="chip ${i===A?'on':''}" data-a="${i}">${a}</button>`).join('');
+  $('ages').querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>{A=+b.dataset.a;jobHi=null;chips();build();jobChips();history.replaceState(null,'','#flow'+A)});$('bk').onclick=showMain}
+function modeUI(){$('mode').innerHTML='<span style="font-size:11px;color:var(--mute)">채운 점=휴일에 더 늦게 · 빈 링=더 일찍 · 굵은 곡선=직군별 시차 크기 중앙값 · 흰 점선=전체</span>'}
+function jobChips(){$('jobs').innerHTML=S.jobs.slice().sort((a,b)=>b.n-a.n).map(r=>`<button class="chip ${jobHi===r.job?'on':''}" data-j="${r.job}"><i style="background:rgb(${JOBC[r.job].join(',')})"></i>${JOBS[r.job]} ${r.n}</button>`).join('');
+  $('jobs').querySelectorAll('button').forEach(b=>b.onclick=()=>{const j=+b.dataset.j;jobHi=jobHi===j?null:j;jobChips()})}
+$('play').onclick=()=>{if(SS>=1)SS=sm=0;auto=!auto;syncPlay()};
+addEventListener('resize',()=>{layout();jobChips();mlayout()});
+// ===== Main : 연령대 방사형 네트워크 =====
+const mc=$('mc'),m2=mc.getContext('2d');let MW,MH,MD,hovA=-1,mt0=performance.now(),V='main',jobF=null,G=null;
+const mean=a=>a.reduce((s,x)=>s+x,0)/(a.length||1),medn=a=>{const t=[...a].sort((x,y)=>x-y);return t.length?t[t.length>>1]:0};
+const GR=AGES.map((nm,a)=>{const list=D.filter(d=>d.ag===a),by=new Map();for(const d of list){let l=by.get(d.job);if(!l){l=[];by.set(d.job,l)}l.push(d)}
+  return{a,nm,list,n:list.length,jobs:[...by].map(([job,l])=>({job,n:l.length,list:l})).sort((x,y)=>y.n-x.n)}});
+function mlayout(){const r=$('mwrap').getBoundingClientRect();MD=Math.min(2,devicePixelRatio||1);MW=r.width;MH=r.height;mc.width=MW*MD;mc.height=MH*MD;
+  const cx=MW/2,cy=MH/2+4,R=Math.min(MW*.29,MH*.36),k=R*.0056;G={cx,cy,R,k};
+  GR.forEach((g,i)=>{g.ang=-Math.PI/2+i*2*Math.PI/7+.12;g.ax=cx+Math.cos(g.ang)*R*.78;g.ay=cy+Math.sin(g.ang)*R*.78;
+    g.jobs.forEach((j,q)=>{const rad=Math.sqrt(j.n)*k*1.5,rr=q?R*.075*Math.sqrt(q+.6)+rad*.35:0,t=q*2.4+g.a;j.rx=Math.max(4,rad*1.25);j.ry=j.rx*.56;j.x=g.ax+Math.cos(t)*rr*1.25;j.y=g.ay+Math.sin(t)*rr*.9});
+    for(let it=0;it<80;it++)for(let p=0;p<g.jobs.length;p++)for(let q=p+1;q<g.jobs.length;q++){const A=g.jobs[p],B=g.jobs[q];let dx=B.x-A.x,dy=(B.y-A.y)*1.5,d=Math.hypot(dx,dy)||1,need=(A.rx+B.rx)*.92+3;if(d<need){const f=(need-d)/2*.5;dx/=d;dy/=d;A.x-=dx*f;A.y-=dy*f/1.5;B.x+=dx*f;B.y+=dy*f/1.5}}
+    g.hr=Math.max(R*.2,...g.jobs.map(j=>Math.hypot(j.x-g.ax,j.y-g.ay)+j.rx))})}
+const mcol=(j,a)=>`rgba(${JOBC[j].join(',')},${a})`;
+function ell(x,y,rx,ry,fill,stroke,al){m2.globalAlpha=al;m2.beginPath();m2.ellipse(x,y,rx,ry,0,0,6.2832);m2.fillStyle=fill;m2.fill();m2.strokeStyle=stroke;m2.lineWidth=1;m2.stroke()}
+function mframe(now){requestAnimationFrame(mframe);if(V!=='main'||!G)return;
+  m2.setTransform(MD,0,0,MD,0,0);m2.clearRect(0,0,MW,MH);const{cx,cy,R}=G,g0=Math.min(1,(now-mt0)/2200),e=1-Math.pow(1-g0,3);
+  // 링
+  m2.globalAlpha=1;m2.strokeStyle='rgba(255,255,255,.14)';m2.lineWidth=1;for(const f of [1,.55,.25]){m2.beginPath();m2.arc(cx,cy,R*f,0,6.2832);m2.stroke()}
+  m2.strokeStyle='rgba(255,255,255,.06)';for(let q=0;q<14;q++){const t=q*Math.PI/7;m2.beginPath();m2.moveTo(cx,cy);m2.lineTo(cx+Math.cos(t)*R,cy+Math.sin(t)*R);m2.stroke()}
+  // 가지 : 중심 → 연령대 → 직군 (+ 사람 실)
+  for(const g of GR){const on=hovA===g.a,dim=hovA>=0&&!on?.25:1,sg=g.a%2?1:-1;
+    const mx=(cx+g.ax)/2-(g.ay-cy)*.22*sg,my=(cy+g.ay)/2+(g.ax-cx)*.22*sg;
+    m2.strokeStyle=`rgba(236,230,255,${(on?.9:.5)*dim})`;m2.lineWidth=on?2.2:1.4;m2.beginPath();m2.moveTo(cx,cy);
+    const st=24,up=e;for(let i=1;i<=st*up;i++){const t=i/st,w=1-t;m2.lineTo(w*w*cx+2*w*t*mx+t*t*g.ax,w*w*cy+2*w*t*my+t*t*g.ay)}m2.stroke();
+    for(const j of g.jobs){if(jobF!==null&&jobF!==j.job)continue;const jd=jobF!==null?1:dim;
+      m2.strokeStyle=mcol(j.job,.55*jd);m2.lineWidth=.9;m2.beginPath();
+      const bx=(g.ax+j.x)/2+(j.y-g.ay)*.25*sg,by=(g.ay+j.y)/2-(j.x-g.ax)*.25*sg;m2.moveTo(g.ax,g.ay);for(let i=1;i<=14;i++){const t=i/14*e,w=1-t;m2.lineTo(w*w*g.ax+2*w*t*bx+t*t*j.x,w*w*g.ay+2*w*t*by+t*t*j.y)}m2.stroke();
+      // 사람 실 : 직군 타원에서 퍼지는 가는 선
+      const n=Math.min(40,Math.ceil(j.n/3));m2.strokeStyle=mcol(j.job,.1*jd);m2.lineWidth=.5;m2.beginPath();for(let q=0;q<n;q++){const d=j.list[(q*7)%j.n],t=(d.r1-.5)*2,u=(d.r2-.5)*2;m2.moveTo(j.x,j.y);m2.quadraticCurveTo((j.x+g.ax)/2+t*R*.05,(j.y+g.ay)/2+u*R*.05,j.x+Math.cos(g.ang)*R*.14*(.5+d.r3)*e+t*j.rx,j.y+Math.sin(g.ang)*R*.14*(.5+d.r3)*e+u*j.ry)}m2.stroke()}}
+  // 직군 타원 (겹겹이 쌓은 원판)
+  for(const g of GR){const on=hovA===g.a,dim=hovA>=0&&!on?.3:1;
+    for(const j of [...g.jobs].reverse()){const f=jobF!==null&&jobF!==j.job?.18:1,m=Math.min(5,1+Math.ceil(j.n/30));
+      for(let q=m-1;q>=0;q--)ell(j.x,j.y-q*3.2*e,j.rx*e,j.ry*e,q?mcol(j.job,.55):mcol(j.job,.95),'rgba(0,0,0,.65)',dim*f)}
+    m2.globalAlpha=1;m2.fillStyle=on?'#fff':'rgba(255,255,255,.85)';m2.beginPath();m2.arc(g.ax,g.ay,on?4:3,0,6.2832);m2.fill()}
+  // 중심
+  const hg=m2.createRadialGradient(cx,cy,0,cx,cy,22);hg.addColorStop(0,'rgba(255,255,255,.95)');hg.addColorStop(1,'rgba(182,156,255,0)');m2.fillStyle=hg;m2.beginPath();m2.arc(cx,cy,22,0,6.2832);m2.fill();
+  // 라벨
+  m2.font="500 13px 'Noto Sans KR',sans-serif";m2.textBaseline='middle';
+  for(const g of GR){const lx=cx+Math.cos(g.ang)*(R*1.1),ly=cy+Math.sin(g.ang)*(R*1.1),c=Math.cos(g.ang),on=hovA===g.a;m2.textAlign=c<-.25?'right':c>.25?'left':'center';
+    m2.fillStyle=on?'#b69cff':'rgba(255,255,255,'+(hovA>=0?.55:.9)+')';m2.fillText(`${g.nm} / ${g.n}`,lx,ly+(Math.abs(c)<=.25?(Math.sin(g.ang)>0?10:-10):0))}
+  m2.textBaseline='alphabetic'}
+function pickAge(x,y){if(!G)return -1;let b=-1,bd=1e9;for(const g of GR){const d=Math.hypot(x-g.ax,y-g.ay);if(d<g.hr*1.05&&d<bd){bd=d;b=g.a}}return b}
+function panel(a){const g=a>=0?GR[a]:null,L=(g?g.list:D).filter(d=>jobF===null||d.job===jobF),tot=GR.reduce((s,x)=>s+x.n,0);
+  const st=L.length?{md:medn(L.map(d=>d.aj)),wd:mean(L.map(d=>d.wdw)),hd:mean(L.map(d=>d.hdw)),late:L.filter(d=>d.j>0).length/L.length*100,mj:mean(L.map(d=>d.j))}:{md:0,wd:0,hd:0,late:0,mj:0};
+  const jc=new Array(10).fill(0);for(const d of (g?g.list:D))jc[d.job]++;
+  $('mpanel').innerHTML=`<div class="kick">Region 01 / Age &amp; jet lag network</div><h2>${g?g.nm:'모든 연령대'}</h2>
+  <div class="big">${L.length.toLocaleString()}<small>명${jobF!==null?' · '+JOBS[jobF]:''}</small></div>
+  <hr><div class="kick">Global overview</div><div class="sub">연령대를 누르면 그 연령대의 플로우가 열립니다</div>
+  <div class="tiles">${GR.map(x=>`<button class="tile ${a===x.a?'on':''}" data-a="${x.a}"><i style="width:${x.n/Math.max(...GR.map(y=>y.n))*100}%"></i><span>${x.nm} ${x.n}</span></button>`).join('')}</div>
+  <hr><div class="kick">Selected data summary</div><div class="big" style="margin-top:8px">${Math.round(st.md)}<small>분 · 시차 중앙값</small></div>
+  <div class="grid2"><div><div class="k">WEEKDAY WAKE</div><div class="v">${hm(st.wd)}</div></div><div><div class="k">WEEKEND WAKE</div><div class="v">${hm(st.hd)}</div></div>
+  <div><div class="k">AVG DIFFERENCE</div><div class="v">${sg(st.mj)}</div></div><div><div class="k">LATER ON WEEKEND</div><div class="v">${Math.round(st.late)}%</div></div></div>
+  <hr><div class="kick">Occupation filters</div><div class="sub">${g?g.nm+' 안에서':'전체에서'} 직군으로 걸러 봅니다</div>
+  <div class="jf">${jc.map((n,j)=>n?`<button data-j="${j}" class="${jobF===j?'on':''}"><i style="background:rgb(${JOBC[j].join(',')})"></i>${JOBS[j]} ${n}</button>`:'').join('')}</div>
+  ${g?`<button class="golink" data-go="${g.a}">${g.nm} 플로우 열기 →</button>`:''}`;
+  $('mpanel').querySelectorAll('.tile').forEach(b=>{b.onclick=()=>showFlow(+b.dataset.a);b.onmouseenter=()=>{hovA=+b.dataset.a}});
+  $('mpanel').querySelectorAll('.jf button').forEach(b=>b.onclick=()=>{const j=+b.dataset.j;jobF=jobF===j?null:j;panel(hovA)});
+  const go=$('mpanel').querySelector('.golink');if(go)go.onclick=()=>showFlow(+go.dataset.go)}
+let lastP=-2;
+mc.addEventListener('pointermove',e=>{const r=mc.getBoundingClientRect();hovA=pickAge(e.clientX-r.left,e.clientY-r.top);mc.style.cursor=hovA>=0?'pointer':'default';if(hovA!==lastP){lastP=hovA;panel(hovA)}});
+mc.addEventListener('pointerleave',()=>{hovA=-1;lastP=-1;panel(-1)});
+mc.addEventListener('click',e=>{const r=mc.getBoundingClientRect(),a=pickAge(e.clientX-r.left,e.clientY-r.top);if(a>=0)showFlow(a)});
+function showFlow(a){GUARD=performance.now()+1800;SS=0;sm=0;auto=true;syncPlay();A=a;V='flow';jobHi=null;document.body.classList.add('flowv');chips();layout();jobChips();history.replaceState(null,'','#flow'+a);$('nMain').classList.remove('on');$('nFlow').classList.add('on')}
+function showMain(){V='main';document.body.classList.remove('flowv');history.replaceState(null,'','#');mt0=performance.now();mlayout();panel(-1);$('nMain').classList.add('on');$('nFlow').classList.remove('on')}
+$('nMain').onclick=showMain;$('nFlow').onclick=()=>showFlow(A);
+requestAnimationFrame(mframe);
+chips();modeUI();layout();jobChips();requestAnimationFrame(frame);mlayout();panel(-1);{const mm=location.hash.match(/flow(\d)/);if(mm)showFlow(+mm[1])}
+})();
+</script></body></html>
