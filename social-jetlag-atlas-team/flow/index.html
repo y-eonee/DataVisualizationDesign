@@ -56,7 +56,7 @@ body:not(.flowv) #cap,body:not(.flowv) #play{display:none}
 #cap em{display:block;font:500 clamp(34px,5vw,54px)/1 'DM Mono',monospace;font-style:normal;color:#fff;margin-bottom:4px}
 </style><link rel="stylesheet" href="theme.css"><script src="theme.js"></script></head><body>
 <div id="main">
- <div id="mleft"><div id="mtop"><div id="brand">social jetlag <span>/ age network</span></div><div id="nav"><a class="on" id="nMain">Main</a><a id="nFlow">Age Flow</a></div></div>
+ <div id="mleft"><div id="mtop"><div id="brand">social jetlag <span>/ 연령대 네트워크</span></div><div id="nav"><a class="on" id="nMain">메인</a><a id="nFlow">연령대 Flow</a></div></div>
   <div id="mwrap"><canvas id="mc"></canvas><div id="mhint">연령대 덩어리를 누르면 그 연령대의 플로우가 열립니다</div></div>
   <div id="mfoot">타원 면적 = 인원 · 색 = 직군 · 가지 = 중심 → 연령대 → 직군</div></div>
  <aside id="mpanel"></aside>
@@ -161,8 +161,8 @@ function frame(now){
 const baseYof=p=>S.baseY-8-(S.baseY-8-p.y)*p.ph;
 cv.addEventListener('pointermove',e=>{if(!S){return}let b=null,bd=150;for(const p of S.P){if(!(p.ph>.6)||(jobHi!==null&&p.d.job!==jobHi))continue;const d=(p.x-e.clientX)**2+(baseYof(p)-e.clientY)**2;if(d<bd){bd=d;b=p}}hov=b;const t=$('tip');
   if(b){const d=b.d;t.innerHTML=`<b>${JOBS[d.job]}</b> · ${d.age}세${d.sex===1?' 남':d.sex===2?' 여':''}<br>평일 ${hm(d.wdw)} → 휴일 ${hm(d.hdw)} (<b>${sg(d.j)}</b>)`;t.style.display='block';t.style.left=Math.min(W-230,e.clientX+14)+'px';t.style.top=(e.clientY+14)+'px'}else t.style.display='none'});
-function chips(){$('ages').innerHTML='<button class="chip back" id="bk">← Main</button>'+AGES.map((a,i)=>`<button class="chip ${i===A?'on':''}" data-a="${i}">${a}</button>`).join('');
-  $('ages').querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>{A=+b.dataset.a;jobHi=null;chips();build();jobChips();history.replaceState(null,'','#flow'+A)});$('bk').onclick=EMBED?()=>parent.postMessage('sj-close','*'):showMain;if(EMBED)$('bk').textContent='← Back to Atlas'}
+function chips(){$('ages').innerHTML='<button class="chip back" id="bk">← 메인</button>'+AGES.map((a,i)=>`<button class="chip ${i===A?'on':''}" data-a="${i}">${a}</button>`).join('');
+  $('ages').querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>{A=+b.dataset.a;jobHi=null;chips();build();jobChips();history.replaceState(null,'','#flow'+A)});$('bk').onclick=EMBED?()=>parent.postMessage('sj-close','*'):showMain;if(EMBED)$('bk').textContent='← 구로 돌아가기'}
 function modeUI(){$('mode').innerHTML='<span style="font-size:11px;color:var(--mute)">채운 점=휴일에 더 늦게 · 빈 링=더 일찍 · 굵은 곡선=직군별 시차 크기 중앙값 · 흰 점선=전체</span>'}
 function jobChips(){$('jobs').innerHTML=S.jobs.slice().sort((a,b)=>b.n-a.n).map(r=>`<button class="chip ${jobHi===r.job?'on':''}" data-j="${r.job}"><i style="background:rgb(${JOBC[r.job].join(',')})"></i>${JOBS[r.job]} ${r.n}</button>`).join('');
   $('jobs').querySelectorAll('button').forEach(b=>b.onclick=()=>{const j=+b.dataset.j;jobHi=jobHi===j?null:j;jobChips()})}

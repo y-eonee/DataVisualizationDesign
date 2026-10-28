@@ -26,7 +26,7 @@
   box.style.cssText='margin:14px 0 4px;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.14);font-size:12px;line-height:1.7;color:#e8e1f2';
   means.parentNode.insertBefore(box,means.nextSibling);
   var $=function(id){return document.getElementById(id)};
-  var mins=function(t){var m=/(\d+)h\s*(\d+)m/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+  var mins=function(t){var m=/(\d+)\s*(?:h|시간)\s*(\d+)/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
   var hm=function(m){m=Math.round(Math.abs(m));return m>=60?Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':''):m+'분'};
   var AGE={'10s':'10대','20s':'20대','30s':'30대','40s':'40대','50s':'50대','60+':'60대 이상'};
   function subject(t){if(t==='All respondents'||t==='All selected-region data')return '전체 응답자';
@@ -36,7 +36,7 @@
     var d=parseFloat(($('age-difference').textContent||'').replace('−','-')),
         wdur=mins($('age-weekday-duration').textContent),edur=mins($('age-weekend-duration').textContent),
         wd=$('age-weekday').textContent,we=$('age-weekend').textContent,who=subject($('age-title').textContent||'');
-    if(isNaN(d)){box.innerHTML='<b style="display:block;font-size:11px;color:#b69cff;margin-bottom:6px">SOCIAL JETLAG</b>평일·주말 기록이 함께 있는 응답자가 없어 이 집단의 사회적 시차는 계산할 수 없습니다.';return}
+    if(isNaN(d)){box.innerHTML='<b style="display:block;font-size:11px;color:#b69cff;margin-bottom:6px">사회적 시차</b>평일·주말 기록이 함께 있는 응답자가 없어 이 집단의 사회적 시차는 계산할 수 없습니다.';return}
     var a=Math.abs(d),dir=d>0?'늦게':'일찍';
     var s1=a<1?'주말에도 평일과 거의 같은 시각에 잠들기 시작합니다':'주말에는 평일보다 평균 <b>'+hm(a)+' '+dir+'</b> 잠들기 시작합니다';
     s1+=' (평일 '+wd+' → 주말 '+we+').';
@@ -46,8 +46,8 @@
     var mid=(wdur!==null&&edur!==null)?d+(edur-wdur)/2:d,am=Math.abs(mid);
     var lvl=am<15?'거의 없는 수준':am<30?'작은 편':am<60?'중간 정도':'큰 편';
     var s3=' 수면의 중간 시각으로 보면 주말이 평일보다 약 <b>'+hm(am)+(mid>=0?' 늦어':' 빨라')+'</b>, 사회적 시차는 <b>'+lvl+'</b>입니다.';
-    box.innerHTML='<b style="display:block;font-size:11px;color:#b69cff;margin-bottom:6px">SOCIAL JETLAG · '+who+'</b>'+who+' 집단은 '+s1+s2+s3
-      +'<span style="display:block;margin-top:8px;font-size:10.5px;line-height:1.6;color:#8e80a1">사회적 시차(social jetlag)는 평일 일정에 맞춘 생활 리듬과 쉬는 날의 자연스러운 리듬이 얼마나 어긋나는지를 뜻하며, 주말과 평일의 수면 중간 시각 차이로 잽니다. 여기서는 집단 평균 취침 시각과 수면 시간으로 근사한 값이라 개인별 SJL 값은 아닙니다. 구분 기준(15분·30분·1시간)은 읽기 편하게 정한 참고 기준입니다.</span>';
+    box.innerHTML='<b style="display:block;font-size:11px;color:#b69cff;margin-bottom:6px">사회적 시차 · '+who+'</b>'+who+' 집단은 '+s1+s2+s3
+      +'<span style="display:block;margin-top:8px;font-size:10.5px;line-height:1.6;color:#8e80a1">사회적 시차(SJL)는 평일 일정에 맞춘 생활 리듬과 쉬는 날의 자연스러운 리듬이 얼마나 어긋나는지를 뜻하며, 주말과 평일의 수면 중간 시각 차이로 잽니다. 여기서는 집단 평균 취침 시각과 수면 시간으로 근사한 값이라 개인별 SJL 값은 아닙니다. 구분 기준(15분·30분·1시간)은 읽기 편하게 정한 참고 기준입니다.</span>';
   }
   var mo=new MutationObserver(render);
   ['age-title','age-difference','age-weekday','age-weekend','age-weekday-duration','age-weekend-duration'].forEach(function(id){mo.observe($(id),{childList:true,characterData:true,subtree:true})});
