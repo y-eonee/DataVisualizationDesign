@@ -2,281 +2,480 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sleep Atlas ? Social Jetlag</title>
-  <link rel="stylesheet" href="styles.css?v=personal-terrain-marker">
-  <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="평일과 주말 사이, 우리 몸이 겪는 사회적 시차를 살펴봅니다.">
+  <meta name="theme-color" content="#000000">
+  <title>Social Jetlag — Sleep Atlas</title>
+  <style>
+    :root{color-scheme:dark;--ink:#fff;--line:#363636;--muted:#bfbfbf;--gutter:clamp(1.25rem,6vw,7rem);--orbit-size:clamp(122px,24vw,360px)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:#000;color:var(--ink);font-family:Geist,Inter,"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
+    a{color:inherit}
+    a:focus-visible{outline:2px solid #fff;outline-offset:6px}
+    main{position:relative;z-index:1}
+    .intro-orbit{
+      position:fixed;left:82%;top:49%;z-index:0;
+      width:var(--orbit-size);aspect-ratio:1;pointer-events:none;
+      transform:translate(-50%,-50%);
+      opacity:.68
+    }
+    .intro-orbit svg{
+      display:block;width:100%;height:100%;overflow:visible
+    }
+    .orbit-ring{
+      opacity:0;transition:opacity .42s ease;
+      transform-box:view-box;transform-origin:50% 50%;
+      animation:orbit-spin var(--orbit-period,32s) linear infinite
+    }
+    .orbit-ring:nth-child(even){animation-direction:reverse}
+    .orbit-ring.is-visible,.intro-leaving .orbit-ring{opacity:1}
+    .orbit-track,.orbit-extra{fill:none;stroke:currentColor;stroke-width:1.15;vector-effect:non-scaling-stroke}
+    .orbit-dot{fill:currentColor}
+    .orbit-extra{
+      color:#fff;transform-box:view-box;transform-origin:50% 50%;
+      animation:orbit-burst .46s cubic-bezier(.13,.72,.27,1) both;
+      animation-delay:var(--ring-delay)
+    }
+    .orbit-exit{height:32svh}
+    .orbit-exit[hidden]{display:none}
+    .orbit-scroll-hint{font-size:.77rem;color:var(--muted);margin:1.15rem 0 0}
+    .intro-leaving main{opacity:0;transition:opacity .24s ease;pointer-events:none}
+    @keyframes orbit-burst{
+      0%{transform:scale(var(--ring-start));opacity:0}
+      24%{opacity:.78}
+      100%{transform:scale(1);opacity:.18}
+    }
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
+    .hero,.chapter,.outro{padding-inline:var(--gutter)}
+    .hero{--shift:0px;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding-block:clamp(1.5rem,4vh,3rem);overflow:hidden}
+    .brand,.scroll-link{font:500 .74rem/1.35 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase}
+    .brand{display:flex;align-items:center;gap:.7rem}
+    .brand::before{content:"";width:.5rem;height:.5rem;border:1px solid currentColor;border-radius:50%}
+    .hero-title{align-self:center;margin:.25em 0 .25em;font-family:Geist,Inter,Arial,sans-serif;font-size:clamp(3.65rem,17vw,17rem);font-weight:800;letter-spacing:-.07em;line-height:.77}
+    .title-mask{display:block;overflow:hidden;padding:.065em .12em .275em 0;margin-bottom:-.22em}
+    .title-mask:nth-child(2){padding-left:clamp(.2em,13vw,1em)}
+    .title-word{display:block;width:max-content;transform:translateX(var(--shift))}
+    .title-mask:nth-child(2) .title-word{transform:translateX(calc(-1 * var(--shift)))}
+    .title-letter{display:inline-block}
+    .motion .title-letter{opacity:0}
+    .motion .hero-title.is-visible .title-letter{animation:title-in .9s cubic-bezier(.2,.8,.2,1) calc(var(--letter) * 85ms) both}
+    @keyframes title-in{from{translate:0 .65em;opacity:0}to{translate:0 0;opacity:1}}
+    .hero-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:1.25rem;gap:1rem}
+    .hero-footer p{margin:0;font-size:.84rem;color:var(--muted)}
+    .scroll-link{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;min-height:2.75rem;white-space:nowrap}
+    .scroll-link span,.cta span{display:inline-block;transition:transform .25s ease}
+    .scroll-link:hover span{transform:translateY(.25rem)}
+    .chapter{
+      display:grid;grid-template-columns:clamp(9rem,12vw,15rem) minmax(0,1fr);
+      gap:clamp(1.5rem,3.5vw,4rem);padding-block:clamp(5rem,13vh,11rem);
+      padding-right:calc(18% + var(--orbit-size) / 2 + clamp(12px,2.5vw,40px));
+      min-height:82svh;align-content:center;border-top:1px solid var(--line)
+    }
+    .chapter h2{font-size:clamp(1rem,1.6vw,1.35rem);letter-spacing:-.035em;margin:.5rem 0 0;font-weight:600}
+    .chapter-body{max-width:50rem}
+    .chapter p{margin:0 0 1.5em;font-size:clamp(1rem,1.65vw,1.3rem);line-height:1.85;color:var(--muted);letter-spacing:-.025em}
+    .chapter p:last-child{margin-bottom:0}
+    .chapter .sentence{display:block}
+    .chapter .sentence + .sentence{margin-top:.45em}
+    .chapter .lead{font-size:clamp(1.65rem,3.6vw,3.6rem);line-height:1.28;letter-spacing:-.065em;font-weight:650;color:var(--ink);margin-bottom:.8em}
+    .chapter strong{color:var(--ink)}
+    .shift-study{container-type:inline-size}
+    .shift-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:1.75rem 0 .9rem}
+    .shift-options button{
+      border:0;border-bottom:1px solid var(--line);padding:.6rem .2rem;background:transparent;
+      color:var(--muted);font:inherit;text-align:left;cursor:pointer
+    }
+    .shift-options button[aria-pressed=true]{border-color:#a3ead1;color:#d3f5e9;background:#a3ead111}
+    .shift-options button:focus-visible{outline:1px solid #fff;outline-offset:2px}
+    .shift-options strong,.shift-options span{display:block;font-size:clamp(.64rem,2.5cqw,.95rem);line-height:1.5}
+    .shift-options span{font-size:clamp(.58rem,2.2cqw,.76rem)}
+    .shift-demo{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;align-items:center}
+    .shift-clock{width:100%;max-width:250px;justify-self:center}
+    .shift-clock text{fill:#aaa;font:11px monospace;text-anchor:middle}
+    .shift-clock .track{fill:none;stroke:#ffffff21;stroke-width:8}
+    .shift-clock .sleep-arc{fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-dasharray:480 960}
+    .shift-clock .midpoint{fill:currentColor;stroke:#000;stroke-width:2}
+    .shift-clock .clock-day{transform-box:view-box;transform-origin:center;transform:rotate(var(--clock-angle));transition:transform .65s cubic-bezier(.22,.68,.28,1)}
+    .shift-weekday{color:#a3ead1}
+    .shift-weekend{color:#fff}
+    .shift-reading{min-width:0}
+    .chapter .shift-label,.chapter .shift-note{font-size:.75rem;line-height:1.55;margin:.65rem 0;color:var(--muted)}
+    .shift-result{display:block;color:#d3f5e9;font-size:clamp(1.7rem,8cqw,3.5rem);line-height:1;font-weight:700;letter-spacing:-.04em}
+    .shift-times{display:grid;gap:.48rem;margin:.85rem 0}
+    .shift-times div{display:flex;flex-wrap:wrap;gap:.2rem .55rem;align-items:baseline}
+    .shift-times dt,.shift-times dd{margin:0;font-size:.76rem;line-height:1.4}
+    .shift-times dd{font-variant-numeric:tabular-nums}
+    @container (min-width:430px){
+      .shift-demo{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:1rem}
+    }
+    .outro{min-height:64svh;display:grid;place-items:center;text-align:center;border-top:1px solid var(--line);padding-block:5rem}
+    .outro h2{font-size:clamp(1.65rem,4.3vw,4.25rem);line-height:1.15;letter-spacing:.025em;text-wrap:balance;max-width:17em;margin:0 auto 1.8rem}
+    .cta{display:inline-flex;align-items:center;gap:2rem;border:1px solid #fff;border-radius:99px;padding:1rem 1.5rem;text-decoration:none;transition:background .25s,color .25s}
+    .cta:hover{background:#fff;color:#000}
+    .cta:hover span{transform:translateY(.25rem)}
+    .motion .reveal{opacity:0;transform:translateY(2.7rem)}
+    .motion .reveal.is-visible{opacity:1;transform:none;transition:opacity 1.15s ease,transform 1.45s cubic-bezier(.22,.68,.28,1)}
+    .motion .chapter-body .reveal.is-visible{transition-delay:var(--sentence-delay,0ms)}
+    .motion .reveal:focus-within{opacity:1;transform:none;transition:none}
+    @media(max-width:900px){
+      .chapter{grid-template-columns:1fr;gap:1.65rem;min-height:auto}
+      .chapter h2{margin:0}
+    }
+    @media(max-width:650px){
+      :root{--orbit-size:clamp(112px,36vw,180px)}
+      .hero-title{font-size:clamp(3rem,17vw,7rem)}
+      .title-mask:nth-child(2){padding-left:.35em}
+      .hero-footer{gap:.5rem}
+      .hero-footer p{font-size:.76rem}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation:none!important;transition:none!important}
+      .motion .reveal,.motion .title-letter{opacity:1;transform:none}
+    }
+  </style>
 </head>
-<body data-screen="detail" data-entry="globe">
-  <div id="atlas-screen" class="atlas-screen" hidden inert>
-  <header class="site-header">
-    <a class="logo" href="#main" aria-label="Sleep Atlas main">sleep atlas</a>
-    <nav class="navigation" aria-label="Main navigation">
-      <a class="active" href="#main" aria-current="page">Main</a>
-      <span role="link" aria-disabled="true" title="Page not yet available">About SJ</span>
-      <a href="data.js" download>Data</a>
-      <span role="link" aria-disabled="true" title="Page not yet available">Contact</span>
-    </nav>
-    <button class="about-us" type="button" disabled title="Page not yet available">About Us</button>
-  </header>
-  <main id="main">
-    <section class="top" aria-labelledby="page-title">
-      <h1 id="page-title">Social Jetlag</h1>
-      <p class="subtitle"><span id="record-total">48,621</span> sleep records in one landscape.</p>
-      <p class="desc">원본 수면 분포에서 출발한 개념적 밀도 지도입니다. 여섯 수면 구역의 집중과 전이를 탐색하세요.<br>화면 거리는 실제 시간 간격이 아닙니다.</p>
-    </section>
-    <div class="atlas-layout">
-      <aside class="sidebar" aria-label="Atlas information and day filters">
-        <div class="stats">
-          <div><small>EXTRACTED DIARIES</small><b id="diary-total">48,621</b></div>
-          <div><small>TIME RESOLUTION</small><b>10 min</b></div>
-        </div>
-        <section class="panel" aria-labelledby="filter-title">
-          <h2 id="filter-title">Explore / Day type</h2>
-          <label class="choice"><input type="checkbox" data-day="1" checked><span class="swatch weekday"></span><span>평일</span><span class="day-count" id="d1">29,167</span></label>
-          <label class="choice"><input type="checkbox" data-day="2" checked><span class="swatch saturday"></span><span>토요일</span><span class="day-count" id="d2">9,749</span></label>
-          <label class="choice"><input type="checkbox" data-day="3" checked><span class="swatch sunday"></span><span>일요일</span><span class="day-count" id="d3">9,705</span></label>
-          <div class="legend"><span class="legend-dot"></span>Dot Size = Record Count</div>
-        </section>
-        <footer class="bottom">
-          <div class="count" id="visible" aria-live="polite">48,621 visible records</div>
-          <div id="cluster-selection" class="region-selection" role="status" aria-live="polite" hidden>
-            <span id="cluster-selection-text"></span><button id="cluster-clear" type="button" aria-label="Clear selected sleep region">&times;</button>
-          </div>
-          <p class="note">개별 SJL 값이 아닌 일별 수면 기록입니다.</p>
-        </footer>
-      </aside>
-      <section class="visual-area" aria-label="Interactive sleep region atlas">
-        <canvas id="map" aria-label="Sleep atlas. Drag to pan, scroll to zoom, click a region to select it."></canvas>
-        <div class="controls" aria-label="Map zoom controls">
-          <button id="plus" type="button" aria-label="확대">+</button>
-          <button id="minus" type="button" aria-label="축소">−</button>
-          <button id="reset" type="button" aria-label="전체 보기">↻</button>
-        </div>
-      </section>
-    </div>
-  </main>
+<body>
+  <div class="intro-orbit" aria-hidden="true">
+    <svg viewBox="0 0 320 320" focusable="false">
+      <g class="orbit-ring is-visible" style="color:#a3ead1;--orbit-period:17s">
+        <circle class="orbit-track" cx="160" cy="160" r="28"/><circle class="orbit-dot" cx="183.11" cy="175.81" r="3.2"/><circle class="orbit-dot" cx="133.62" cy="169.38" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#a9ecd6;--orbit-period:26s">
+        <circle class="orbit-track" cx="160" cy="160" r="44"/><circle class="orbit-dot" cx="149.58" cy="202.75" r="3.2"/><circle class="orbit-dot" cx="123.90" cy="134.85" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#b5efdd;--orbit-period:21s">
+        <circle class="orbit-track" cx="160" cy="160" r="66"/><circle class="orbit-dot" cx="94.49" cy="168.01" r="3.2"/><circle class="orbit-dot" cx="159.18" cy="94.01" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#c0f1e2;--orbit-period:39s">
+        <circle class="orbit-track" cx="160" cy="160" r="79"/><circle class="orbit-dot" cx="123.35" cy="90.01" r="3.2"/><circle class="orbit-dot" cx="223.69" cy="113.25" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#cef3e8;--orbit-period:32s">
+        <circle class="orbit-track" cx="160" cy="160" r="103"/><circle class="orbit-dot" cx="228.50" cy="83.08" r="3.2"/><circle class="orbit-dot" cx="257.87" cy="192.09" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#daf6ee;--orbit-period:45s">
+        <circle class="orbit-track" cx="160" cy="160" r="115"/><circle class="orbit-dot" cx="267.35" cy="201.24" r="3.2"/><circle class="orbit-dot" cx="194.42" cy="269.73" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#e8f9f4;--orbit-period:37s">
+        <circle class="orbit-track" cx="160" cy="160" r="132"/><circle class="orbit-dot" cx="159.21" cy="292.00" r="3.2"/><circle class="orbit-dot" cx="80.53" cy="265.40" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#f3fcf9;--orbit-period:52s">
+        <circle class="orbit-track" cx="160" cy="160" r="140"/><circle class="orbit-dot" cx="28.72" cy="208.63" r="3.2"/><circle class="orbit-dot" cx="20.04" cy="156.47" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#ffffff;--orbit-period:46s">
+        <circle class="orbit-track" cx="160" cy="160" r="151"/><circle class="orbit-dot" cx="60.94" cy="46.04" r="3.2"/><circle class="orbit-dot" cx="75.29" cy="35.00" r="2.3"/>
+      </g>
+    </svg>
   </div>
-  <section id="detail-screen" class="detail-screen" aria-labelledby="detail-title" aria-hidden="false">
-    <header class="detail-header">
-      <a id="back-to-atlas" class="detail-back" href="index.html"><span aria-hidden="true">←</span> Back</a>
+  <main>
+    <header class="hero">
+      <div class="brand">Sleep Atlas</div>
+      <h1 class="hero-title" lang="en" aria-label="Social Jetlag">
+        <span class="title-mask" aria-hidden="true"><span class="title-word">Social</span></span>
+        <span class="title-mask" aria-hidden="true"><span class="title-word">Jetlag</span></span>
+      </h1>
+      <div class="hero-footer">
+        <p>평일과 주말 사이, 몸이 겪는 시차</p>
+        <a class="scroll-link" href="#definition" aria-label="스크롤해서 사회적 시차 읽기">Scroll <span aria-hidden="true">↓</span></a>
+      </div>
     </header>
-    <div class="detail-layout">
-      <div id="globe-loading" role="status">수면 지형을 불러오는 중…</div>
-      <div id="detail-visual" class="detail-visual" aria-label="Sleep globe: six age clusters with radial layered contour disks. Drag to orbit, scroll to zoom.">      <div class="network-clock"><output id="sleep-time" aria-label="Simulated time">00:00</output><span>24h / 60s &#183; comparison / 15s</span><span id="comparison-phase">Weekday emphasis</span></div></div>
-      <aside id="detail-panel" hidden inert tabindex="0" class="detail-info data-explorer" aria-label="수면 데이터 탐색">
-        <header class="explorer-region" data-panel-reveal>
-          <p id="detail-number" class="detail-eyebrow"></p>
-          <h2 id="detail-title"></h2>
-          <div class="detail-records"><b id="detail-count"></b><span>건의 수면 기록</span></div>
-          <p class="explorer-hint">구를 돌려 연령대별 수면 지형을 살펴보세요. 아래에서 평일과 주말의 수면 패턴을 비교할 수 있습니다.</p>
-          <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
-        </header>
 
-        <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
-          <div data-panel-reveal>
-            <p class="explorer-kicker" lang="en">Weekday / Weekend</p>
-            <h3 class="explorer-heading" id="summary-heading">평일과 주말</h3>
-          </div>
-          <div class="age-summary" data-panel-reveal>
-            <h4 id="age-title">전체 응답자</h4>
-            <div class="age-person-count"><b id="age-people"></b><span>명</span></div>
-            <p id="age-diaries"></p>
-            <dl class="age-means">
-              <div><dt>평일 평균 취침</dt><dd id="age-weekday"></dd></div>
-              <div><dt>주말 평균 취침</dt><dd id="age-weekend"></dd></div>
-              <div><dt>평일 평균 수면</dt><dd id="age-weekday-duration"></dd></div>
-              <div><dt>주말 평균 수면</dt><dd id="age-weekend-duration"></dd></div>
-              <div><dt>취침 시각 차이 · 주말 − 평일</dt><dd id="age-difference"></dd></div>
-            </dl>
-            <p id="age-samples"></p>
-            <details><summary>선택한 응답자의 직업 분포</summary><ul id="occupation-list"></ul></details>
-          </div>
-        </section>
+    <section class="chapter" id="definition" aria-labelledby="definition-title">
+      <h2 class="reveal" id="definition-title">사회적 시차란</h2>
+      <div class="chapter-body">
+        <p class="lead reveal">비행기를 타지 않아도 우리 몸은 매주 작은 시차를 겪습니다.</p>
+        <p class="reveal">월요일 아침 알람에 맞춰 일어나고, 금요일 밤에는 늦게 자고, 주말에는 늦잠을 잡니다.</p>
+        <p>
+          <span class="sentence reveal">이것을 <strong>사회적 시차(Social Jetlag)</strong>라고 부릅니다.</span>
+          <span class="sentence reveal">몸이 원하는 수면 리듬과 학교·직장이 정한 시간표가 어긋나면서 생기는 시차입니다.</span>
+        </p>
+        <p class="reveal">시간생물학자 틸 뢰네베르크 연구팀이 2006년에 이 개념을 제안했고, 보통 쉬는 날과 일하는 날의 수면 중간 시각이 얼마나 다른가로 잽니다.</p>
+      </div>
+    </section>
 
-        <section class="explorer-section" aria-labelledby="filter-heading">
-          <div data-panel-reveal>
-            <p class="explorer-kicker" lang="en">Explore</p>
-            <h3 class="explorer-heading" id="filter-heading">어떤 수면을 볼까요?</h3>
-            <p class="explorer-hint">연령대를 선택하면 수면 시차 지형을 볼 수 있습니다. 직업을 고르면 구와 수면 요약이 바뀝니다.</p>
+    <section class="chapter" aria-labelledby="background-title">
+      <h2 class="reveal" id="background-title">만들게 된 배경</h2>
+      <div class="chapter-body">
+        <p class="lead reveal">수면 이야기는 대부분 ‘몇 시간 잤는가’에서 멈춥니다.</p>
+        <p class="reveal">하지만 같은 7시간이라도 언제 자고 평일과 주말에 얼마나 달라지는지는 사람마다 다릅니다.</p>
+        <p>
+          <span class="sentence reveal">통계청 생활시간조사는 하루를 10분 단위로 기록합니다.</span>
+          <span class="sentence reveal">그래서 언제 잠들고 언제 깼는지를 평일과 주말로 나란히 놓고 볼 수 있습니다.</span>
+          <span class="sentence reveal">평일과 주말 기록을 모두 남긴 응답자 <strong>9,634명</strong>의 하루를 연령대와 직업별로 묶어 한눈에 비교해 보고 싶었습니다.</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="chapter" aria-labelledby="shift-title">
+      <h2 class="reveal" id="shift-title">시차를 읽는 법</h2>
+      <div class="chapter-body shift-study">
+        <p class="lead reveal">평일과 주말, 수면의 중간 시각은 얼마나 다를까요?</p>
+        <p class="reveal">잠든 시각과 깬 시각의 한가운데가 수면 중간 시각입니다. 평일과 주말의 중간 시각이 몇 분 차이 나는지 비교합니다.</p>
+        <div class="reveal">
+          <div class="shift-options" role="group" aria-label="수면 시차 구간 예시">
+            <button type="button" data-shift="15" aria-pressed="false"><strong>거의 같음</strong><span>30분 미만</span></button>
+            <button type="button" data-shift="45" aria-pressed="true"><strong>보통</strong><span>30분–60분 미만</span></button>
+            <button type="button" data-shift="90" aria-pressed="false"><strong>큼</strong><span>60분 이상</span></button>
           </div>
-          <div class="explorer-controls" data-panel-reveal>
-            <div class="explorer-section-heading"><h4>연령대</h4><button id="occupation-clear" type="button">선택 초기화</button></div>
-            <div id="age-overview"></div>
-            <details><summary>직업 선택</summary>
-              <p id="occupation-comparison-status" class="explorer-hint" role="status" aria-live="polite">최대 3개 직업을 비교할 수 있습니다.</p>
-              <ul id="occupation-key"></ul>
-              <details><summary>선택한 직업의 연령 분포</summary><div id="age-list" class="age-list" aria-label="직업 내 연령대 선택"></div></details>
-            </details>
-            <h4>요일 강조</h4>
-            <div class="sleep-modes" aria-label="요일 강조">
-              <button data-sleep-mode="weekday" aria-pressed="false">평일</button>
-              <button data-sleep-mode="weekend" aria-pressed="false">주말</button>
-              <button data-sleep-mode="compare" aria-pressed="true">비교</button>
+          <div class="shift-demo">
+            <svg class="shift-clock" viewBox="0 0 240 240" aria-hidden="true">
+              <circle class="track" cx="120" cy="120" r="86"/>
+              <circle class="track" cx="120" cy="120" r="66"/>
+              <g class="clock-day shift-weekday" style="--clock-angle:-105deg">
+                <circle class="sleep-arc" cx="120" cy="120" r="86" pathLength="1440"/>
+                <circle class="midpoint" cx="163" cy="194.48" r="6"/>
+              </g>
+              <g class="clock-day shift-weekend" id="shift-weekend-arc" style="--clock-angle:-93.75deg">
+                <circle class="sleep-arc" cx="120" cy="120" r="66" pathLength="1440"/>
+                <circle class="midpoint" cx="153" cy="177.16" r="6"/>
+              </g>
+              <text x="120" y="19">00</text><text x="225" y="124">06</text>
+              <text x="120" y="228">12</text><text x="15" y="124">18</text>
+              <text x="120" y="124">24시간</text>
+            </svg>
+            <div class="shift-reading" aria-live="polite">
+              <p class="shift-label">수면 중간 시각 차이 · 예시</p>
+              <output class="shift-result" id="shift-result">45분</output>
+              <dl class="shift-times">
+                <div class="shift-weekday"><dt>● 평일</dt><dd>03:00</dd></div>
+                <div class="shift-weekend"><dt>● 주말</dt><dd id="shift-weekend-time">03:45</dd></div>
+              </dl>
             </div>
-            <p id="sleep-activity"></p>
           </div>
-        </section>
+          <p class="shift-note">원호는 잠들어 있던 구간, 점은 그 한가운데를 표시합니다. 30분과 60분은 이 프로젝트에서 시차를 설명하기 위해 나눈 기준입니다.</p>
+        </div>
+      </div>
+    </section>
 
-        <section class="explorer-section" aria-labelledby="guide-heading">
-          <div data-panel-reveal>
-            <h3 class="explorer-heading" id="guide-heading">구를 읽는 법</h3>
-            <p id="compare-key" class="explorer-hint">군집은 연령대를, 원의 면적은 응답자 규모를 나타냅니다. 지형의 높이는 원이 얼마나 겹쳤는지를 보여줍니다.</p>
-          </div>
-          <div data-panel-reveal>
-            <details><summary>군집별 대표 직업과 색상</summary>
-              <div id="cluster-occupation-legend" class="cluster-occupation-legend"></div>
-              <p id="comparison-note" class="comparison-note"></p>
-            </details>
-            <details><summary>집계 기준과 수면 시간</summary>
-              <p id="network-scope"></p>
-              <p>평균은 응답자마다 같은 비중을 두고 계산했습니다. 여기에 표시한 취침 시각 차이는 개인별 수면 중간 시각으로 계산하는 사회적 시차와 구분됩니다.</p>
-              <p>작은 원의 줄기는 평일·주말 수면 기록이 모두 있는 응답자의 수면 시간 차이를 보여줍니다. 한쪽 기록만 있는 경우 줄기 길이는 고정됩니다. 직업 분류는 통계청 생활시간조사의 원본 코드를 따릅니다.</p>
-            </details>
-            <details class="region-baseline"><summary>전체 수면 기록 기준</summary>
-              <p id="detail-percent"></p>
-              <dl class="detail-stats"><div><dt>평균 취침 시각</dt><dd id="detail-onset"></dd></div><div><dt>평균 수면 시간</dt><dd id="detail-duration"></dd></div></dl>
-              <p id="detail-days"></p>
-            </details>
-          </div>
-        </section>
-        <section class="explorer-section" id="personal-shift" aria-labelledby="personal-heading">
-          <div data-panel-reveal>
-            <h3 class="explorer-heading" id="personal-heading">나는 어디에 위치할까?</h3>
-            <p class="explorer-hint">평일과 주말의 취침·기상 시각으로 나의 사회적 시차를 계산해 보세요.</p>
-            <a class="explorer-personal-link" href="sleep_calculator.html">알아보러 가기 <span aria-hidden="true">↗</span></a>
-          </div>
-        </section>
-      </aside>
-    </div>
-
-  </section>
-  <div id="personal-globe-marker" role="status" hidden><strong>나는 여기에 위치해 있어요</strong><span></span></div>
-  <aside id="personal-result-card" aria-labelledby="personal-result-title" hidden>
-    <h2 id="personal-result-title"></h2>
-    <p id="personal-result-value"></p>
-    <p id="personal-result-direction"></p>
-    <div class="personal-result-scale" aria-hidden="true">
-      <div><i></i></div><span></span><span>0</span><span></span>
-    </div>
-    <p id="personal-result-comparison"></p>
-    <p id="personal-result-duration"></p>
-    <div class="personal-result-actions">
-      <a href="sleep_calculator.html">다시 입력하기</a>
-      <button id="personal-terrain-link" type="button">직종별 데이터 보기 ↗</button>
-    </div>
-  </aside>
-  <dialog id="age-terrain" class="age-terrain" aria-labelledby="age-terrain-title">
-    <div class="terrain-page">
-      <header class="terrain-header">
-        <button id="terrain-back" class="detail-back" type="button" autofocus><span aria-hidden="true">←</span> 전체 구로</button>
-        <div>
-          <p class="terrain-kicker" lang="en">Social Jetlag</p>
-          <h2 id="age-terrain-title"></h2>
-          <p class="terrain-subtitle">평일과 주말의 수면 시차</p>
-        </div>
-        <dl class="terrain-stats">
-          <div><dt>비교한 응답자</dt><dd id="terrain-count"></dd></div>
-          <div><dt>평균 시차 크기</dt><dd id="terrain-mean"></dd></div>
-        </dl>
-      </header>
-      <figure class="terrain-figure">
-        <div class="terrain-view-controls" role="group" aria-label="지형 시점">
-          <button type="button" data-terrain-view="overview" aria-pressed="true">입체</button>
-          <button type="button" data-terrain-view="left" aria-pressed="false">왼쪽</button>
-          <button type="button" data-terrain-view="right" aria-pressed="false">오른쪽</button>
-          <button type="button" data-terrain-view="top" aria-pressed="false">탑뷰</button>
-          <button id="terrain-occupations" type="button">직업별 시차 ↗</button>
-          <span id="terrain-orbit-hint">드래그로 시점 전환 · 블록을 눌러 직업별 비교</span>
-          <span id="terrain-view-note" class="terrain-view-note" role="status"></span>
-        </div>
-        <div id="terrain-plot" class="terrain-plot">
-          <canvas id="terrain-canvas" role="img" tabindex="0" aria-describedby="terrain-orbit-hint" aria-label="평일 수면 중간 시각과 주말 시차별 3D 블록 지형. 방향키로 시점 조절"></canvas>
-          <output id="terrain-hover" class="terrain-hover" hidden></output>
-          <p id="terrain-empty" hidden>평일과 주말을 모두 기록한 응답자가 없습니다.</p>
-        </div>
-        <figcaption><span id="terrain-personal-position" hidden></span>평일 수면 중간 시각 × 주말−평일 시차 · 블록 한 개 = 응답자 한 명</figcaption>
-      </figure>
-      <details class="terrain-method">
-        <summary>시차 계산 기준과 집계</summary>
-        <p>취침 시각에 수면 시간의 절반을 더해 수면 중간 시각을 구합니다. 응답자별로 평일과 주말의 중간 시각을 각각 평균한 뒤, 24시간 원에서 가장 짧은 방향의 차이를 계산합니다.</p>
-        <p>평일 수면 중간 시각과 주말 시차를 각각 10분 단위로 집계했습니다. 자정 전과 오전 9시 이후, 그리고 −4시간 미만과 +4시간 이상의 시차는 각 축의 양끝에 모았습니다. 각 구간에 응답자 한 명당 블록 한 개를 쌓았습니다.</p>
-        <p id="terrain-bin-summary"></p>
-      </details>
-    </div>
-  </dialog>
-  <dialog id="occupation-shifts" aria-labelledby="occupation-shifts-title">
-    <main class="occupation-shift-page">
-      <button id="occupation-shifts-back" class="detail-back" type="button" autofocus>← 연령대 지형으로</button>
-      <header>
-        <h2 id="occupation-shifts-title"></h2>
-        <p id="occupation-shifts-summary"></p>
-      </header>
-      <table class="occupation-shift-table" aria-describedby="occupation-shifts-method">
-        <thead><tr><th scope="col">직업군</th><th scope="col">
-          <div class="occupation-shift-directions"><span>앞당겨짐</span><span>늦어짐</span></div>
-          <div id="occupation-shifts-axis" class="occupation-shift-axis"></div>
-        </th></tr></thead>
-        <tbody id="occupation-shifts-rows"></tbody>
-      </table>
-      <p id="occupation-shifts-method">시차는 주말 수면 중간 시각에서 평일 수면 중간 시각을 뺀 값입니다. 각 막대는 해당 방향으로 바뀐 응답자의 평균입니다. 0분인 응답자는 직업군 인원수에 포함됩니다.</p>
-    </main>
-  </dialog>
-  <div id="transition-layer" class="transition-layer" aria-hidden="true" hidden></div>
-  <div id="sleep-clock-tooltip" class="sleep-clock-tooltip" role="tooltip" hidden></div>
-  <div id="region-tooltip" class="region-tooltip" role="tooltip" hidden></div>
-  <script src="data.js"></script>
-  <script src="sleep-regions.js"></script>
-  <script src="sleep-atlas.js"></script>
-  <script src="hybrid-atlas.js"></script>
-  <script src="region-map.js"></script>
-  <script src="liquid-dots.js"></script>
-  <script src="sleep-demographics.js"></script>
-  <script src="sleep-network-data.js"></script>
-  <script src="sleep-network-links.js"></script>
-  <script src="sleep-occupations.js"></script>
-  <script src="sleep-botany.js"></script>
-  <script src="vendor/earcut.min.js"></script>
-  <script src="sleep-terrain-gpu.js"></script>
-  <script src="sleep-landscape.js?v=personal-globe"></script>
-  <script src="sleep-network.js?v=personal-terrain-marker"></script>
-  <script src="atlas-transition.js"></script>
-  <script src="app.js"></script>
-  <script src="sleep-age-terrain.js?v=personal-terrain-marker"></script>
-  <script src="sleep-occupation-shifts.js"></script>
-  <script src="sleep-globe-intro.js?v=personal-globe"></script>
+    <section class="outro" aria-labelledby="outro-title">
+      <div class="reveal">
+        <h2 id="outro-title">평일과 주말의 사회적 시차를 살펴보세요.</h2>
+        <a class="cta" href="sleep_atlas_data_landscape_matte.html">시각화 보러가기 <span aria-hidden="true">↓</span></a>
+        <p class="orbit-scroll-hint" hidden>더 내리면 시각화로 이어집니다 ↓</p>
+      </div>
+    </section>
+    <div class="orbit-exit" aria-hidden="true" hidden></div>
+  </main>
   <script>
-    const explorerPanel = document.getElementById('detail-panel');
-    if (new URLSearchParams(location.search).has('personal')) {
-      try {
-        const personal = JSON.parse(sessionStorage.getItem('sleep-atlas-personal'));
-        sessionStorage.removeItem('sleep-atlas-personal');
-        history.replaceState(null, '', location.pathname);
-        if (personal && SleepNetworkData.definitions.some(group => group.id === personal.age)
-            && SleepOccupations.definitions.some(item => item.code === personal.occupation)
-            && [personal.weekdayWake, personal.weekendWake].every(wake => Number.isFinite(wake) && wake >= 0 && wake < 1440)
-            && Number.isFinite(personal.weekday) && personal.weekday >= 0 && personal.weekday < 1440
-            && [personal.weekdayDuration, personal.weekendDuration].every(duration => Number.isFinite(duration) && duration > 0 && duration < 1440)
-            && Number.isFinite(personal.shift) && personal.shift >= -720 && personal.shift < 720) {
-          const showPersonal = () => SleepNetwork.focusPersonalLocation(personal);
-          if (SleepNetwork.model) showPersonal();
-          else {
-            window.addEventListener('sleepdetailready', showPersonal, {once: true});
-            AtlasTransition.openGlobe();
-          }
-        }
-      } catch {
-        history.replaceState(null, '', location.pathname);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    if (!reducedMotion.matches) {
+      let letterIndex = 0;
+      for (const word of document.querySelectorAll('.title-word')) {
+        const letters = Array.from(word.textContent, character => {
+          const letter = document.createElement('span');
+          letter.className = 'title-letter';
+          letter.style.setProperty('--letter', letterIndex++);
+          letter.textContent = character;
+          return letter;
+        });
+        word.replaceChildren(...letters);
       }
+
+      const title = document.querySelector('.hero-title');
+      const reveals = Array.from(document.querySelectorAll('.reveal'));
+      const sentences = new Set(document.querySelectorAll('.chapter-body .reveal'));
+      let frame = 0;
+      let nextSentenceStart = 0;
+
+      function updateMotion() {
+        frame = 0;
+        const height = window.innerHeight;
+        const titleBounds = title.getBoundingClientRect();
+        const revealBounds = reveals.map(element => element.getBoundingClientRect());
+        const now = performance.now();
+        title.classList.toggle('is-visible', titleBounds.bottom > 0 && titleBounds.top < height);
+        reveals.forEach((element, index) => {
+          const bounds = revealBounds[index];
+          if (bounds.top >= height) {
+            element.classList.remove('is-visible');
+          } else if (bounds.top < height * 0.92 && bounds.bottom > 0 && !element.classList.contains('is-visible')) {
+            if (sentences.has(element)) {
+              const start = Math.max(now, nextSentenceStart);
+              element.style.setProperty('--sentence-delay', `${start - now}ms`);
+              nextSentenceStart = start + 180;
+            }
+            element.classList.add('is-visible');
+          }
+        });
+      }
+
+      function scheduleMotion() {
+        if (!frame) frame = requestAnimationFrame(updateMotion);
+      }
+
+      document.documentElement.classList.add('motion');
+      window.addEventListener('scroll', scheduleMotion, { passive: true });
+      window.addEventListener('resize', scheduleMotion);
+      window.addEventListener('pageshow', scheduleMotion);
+      updateMotion();
     }
-    if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const explorerObserver = new IntersectionObserver(entries => {
-        for (const entry of entries) {
-          entry.target.classList.toggle('is-visible', entry.isIntersecting);
+
+    const hero = document.querySelector('.hero');
+    const shiftButtons = [...document.querySelectorAll('[data-shift]')];
+    for (const button of shiftButtons) {
+      button.addEventListener('click', () => {
+        const shift = Number(button.dataset.shift);
+        const weekend = 180 + shift;
+        const clock = String(Math.floor(weekend / 60)).padStart(2,'0') + ':' + String(weekend % 60).padStart(2,'0');
+        document.getElementById('shift-weekend-time').textContent = clock;
+        document.getElementById('shift-result').textContent = shift + '분';
+        document.getElementById('shift-weekend-arc').style.setProperty('--clock-angle', (-105 + shift / 4) + 'deg');
+        shiftButtons.forEach(item => item.setAttribute('aria-pressed',String(item === button)));
+      });
+    }
+    if (matchMedia('(pointer: fine)').matches) {
+      hero.addEventListener('pointermove', event => {
+        if (reducedMotion.matches) return;
+        const position = event.clientX / hero.clientWidth - 0.5;
+        hero.style.setProperty('--shift', `${position * 30}px`);
+      });
+      hero.addEventListener('pointerleave', () => hero.style.removeProperty('--shift'));
+    }
+
+    (() => {
+      const orbit = document.querySelector('.intro-orbit');
+      const orbitGraphic = orbit.querySelector('svg');
+      const rings = [...orbitGraphic.querySelectorAll('.orbit-ring')];
+      const svgNamespace = 'http://www.w3.org/2000/svg';
+      const outlines = rings.map(ring => {
+        const circle = ring.querySelector('.orbit-track');
+        const radius = Number(circle.getAttribute('r'));
+        const path = document.createElementNS(svgNamespace,'path');
+        path.setAttribute('class','orbit-track');
+        const exact = `M${160 + radius} 160 a${radius} ${radius} 0 1 0 ${-2 * radius} 0 a${radius} ${radius} 0 1 0 ${2 * radius} 0`;
+        path.setAttribute('d',exact);
+        circle.replaceWith(path);
+        const dots = [...ring.querySelectorAll('.orbit-dot')].map(dot => ({
+          dot, angle:Math.atan2(Number(dot.getAttribute('cy'))-160,Number(dot.getAttribute('cx'))-160)
+        }));
+        return {path,radius,exact,dots};
+      });
+      const exit = document.querySelector('.orbit-exit');
+      const link = document.querySelector('.cta');
+      const hint = document.querySelector('.orbit-scroll-hint');
+      let frame = 0;
+      let leaving = false;
+      let lastY = window.scrollY;
+      let expansion;
+      let ripple = 0;
+      let velocity = 0;
+      let previousFrame = 0;
+      let warped = false;
+
+      function shapeOrbits(progress) {
+        if (!ripple && !warped) return;
+        warped = Boolean(ripple);
+        const phase = progress * Math.PI * 3;
+        outlines.forEach(({path,radius,exact,dots},index) => {
+          const amount = ripple / 19 * Math.min(3.6,radius * .1);
+          function position(angle) {
+            const wave = .74 * Math.sin(3 * angle + phase + index * .12)
+              + .26 * Math.cos(5 * angle - phase);
+            const distance = radius + amount * wave;
+            return [160 + distance * Math.cos(angle),160 + distance * Math.sin(angle)];
+          }
+          if (warped) {
+            const points = Array.from({length:64},(_,i) => position(i * Math.PI / 32).map(value => value.toFixed(2)).join(' '));
+            path.setAttribute('d','M' + points.join('L') + 'Z');
+          } else path.setAttribute('d',exact);
+          for (const {dot,angle} of dots) {
+            const [x,y] = position(angle);
+            dot.setAttribute('cx',x.toFixed(2));
+            dot.setAttribute('cy',y.toFixed(2));
+          }
+        });
+      }
+
+      exit.hidden = false;
+      hint.hidden = false;
+
+      function enterGlobe() {
+        if (leaving) return;
+        leaving = true;
+        if (reducedMotion.matches || !orbit.animate) {
+          location.assign(link.href);
+          return;
         }
-      }, { root: explorerPanel, threshold: 0.05 });
-      for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
-    }
+        const rect = orbit.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        const outer = Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y)) * 320 / rect.width;
+        document.body.classList.add('intro-leaving');
+        const outerSteps = [.08,.17,.24,.38,.50,.67,.79,1];
+        for (const [i,step] of outerSteps.entries()) {
+          const circle = document.createElementNS(svgNamespace,'circle');
+          circle.setAttribute('class','orbit-extra');
+          circle.setAttribute('cx','160');
+          circle.setAttribute('cy','160');
+          const radius = 151 + (Math.max(outer,240) - 151) * step;
+          circle.setAttribute('r',String(radius));
+          circle.style.setProperty('--ring-start', String((95 + i * 6) / radius));
+          circle.style.setProperty('--ring-delay', `${i * 12}ms`);
+          orbitGraphic.append(circle);
+        }
+        expansion = orbit.animate([
+          {opacity:.68},
+          {opacity:.88,offset:.25},
+          {opacity:.66,offset:.65},
+          {opacity:0}
+        ], {duration:550,fill:'forwards'});
+        expansion.finished.then(() => location.assign(link.href), () => {});
+      }
+
+      function updateOrbit(now = performance.now()) {
+        frame = 0;
+        const y = window.scrollY;
+        const bottom = document.documentElement.scrollHeight - innerHeight;
+        const progress = Math.max(0, Math.min(1, y / Math.max(1, bottom)));
+        if (!reducedMotion.matches) {
+          const dt = previousFrame ? Math.min(.035,(now - previousFrame) / 1000) : 1 / 60;
+          previousFrame = now;
+          const impulse = Math.max(-180, Math.min(180, (y - lastY) * 1.1));
+          velocity = Math.max(-230, Math.min(230, velocity - impulse));
+          velocity = (velocity - 112 * ripple * dt) * Math.exp(-7.5 * dt);
+          ripple = Math.max(-19, Math.min(19, ripple + velocity * dt));
+          if (Math.abs(ripple) < .05 && Math.abs(velocity) < .15) ripple = velocity = 0;
+        } else {
+          ripple = velocity = 0;
+          previousFrame = 0;
+        }
+        shapeOrbits(progress);
+        const initialCount = 5;
+        const visibleCount = initialCount + Math.floor(progress * (rings.length - initialCount + 1));
+        rings.forEach((ring,index) => ring.classList.toggle('is-visible', index < visibleCount));
+        if (y > lastY && bottom > 0 && y >= bottom - 3) enterGlobe();
+        lastY = y;
+        if (ripple || velocity) scheduleOrbit();
+      }
+
+      function scheduleOrbit() {
+        if (!frame && !leaving) frame = requestAnimationFrame(updateOrbit);
+      }
+
+      window.addEventListener('scroll', scheduleOrbit, {passive:true});
+      window.addEventListener('resize', scheduleOrbit);
+      window.addEventListener('pageshow', event => {
+        if (!event.persisted) return;
+        expansion?.cancel();
+        ripple = velocity = previousFrame = 0;
+        orbitGraphic.querySelectorAll('.orbit-extra').forEach(circle => circle.remove());
+        leaving = false;
+        document.body.classList.remove('intro-leaving');
+        const bottom = document.documentElement.scrollHeight - innerHeight;
+        if (window.scrollY >= bottom - 3) {
+          window.scrollTo({top:Math.max(0,bottom - exit.offsetHeight),behavior:'instant'});
+        }
+        lastY = window.scrollY;
+        scheduleOrbit();
+      });
+      link.addEventListener('click', event => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        enterGlobe();
+      });
+      updateOrbit();
+    })();
   </script>
 </body>
 </html>
