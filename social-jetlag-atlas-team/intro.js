@@ -4,20 +4,7 @@
   'use strict';
   // 계산기에서 넘어오거나(?personal) 특정 위치로 바로 이동(#...)하는 경우에는 도입부를 건너뛴다.
   if (new URLSearchParams(location.search).has('personal') || location.hash) return;
-  var SCENES = [
-    { id: 's0', a: 0, b: .1, cover: true,
-      h: '주말에 몰아 자는 건, 게으름일까요?',
-      sub: '평일에 빌려 쓴 잠을 주말에 갚는 사람들의 하루를 지도로 그렸습니다.' },
-    { id: 's1', a: .1, b: .3, n: '01', label: '사회적 시차란', h: '사회적 시차란',
-      body: '<p>월요일 아침 알람에 맞춰 일어나고, 금요일 밤에는 늦게 자고, 주말에는 늦잠을 잡니다. 비행기를 타지 않아도 우리 몸은 매주 작은 시차를 겪습니다.</p>' +
-        '<p>이것을 <b>사회적 시차(Social Jetlag)</b>라고 부릅니다. 몸이 원하는 수면 리듬과 학교·직장이 정한 시간표가 어긋나면서 생기는 시차입니다. 시간생물학자 틸 뢰네베르크 연구팀이 2006년에 이 개념을 제안했고, 보통 쉬는 날과 일하는 날의 수면 중간 시각이 얼마나 다른가로 잽니다.</p>' },
-    { id: 's2', a: .3, b: .5, n: '02', label: '만들게 된 배경', h: '만들게 된 배경',
-      body: '<p>수면 이야기는 대부분 "몇 시간 잤는가"에서 멈춥니다. 하지만 같은 7시간이라도 <b>언제</b> 자고 평일과 주말에 얼마나 달라지는지는 사람마다 다릅니다.</p>' +
-        '<p>통계청 생활시간조사는 하루를 10분 단위로 기록합니다. 그래서 언제 잠들고 언제 깼는지를 평일과 주말로 나란히 놓고 볼 수 있습니다. 평일과 주말 기록을 모두 남긴 응답자 9,634명의 하루를 연령대와 직업별로 묶어 한눈에 비교해 보고 싶었습니다.</p>' },
-    { id: 's3', a: .5, b: .72, n: '03', label: '이렇게 보세요', h: '이렇게 보세요',
-      body: '<p>구를 돌려보세요.</p><ul><li>구 위의 영역은 연령대입니다.</li><li>원판의 크기는 그 집단에 속한 사람의 수입니다.</li><li>원판의 색은 그 집단에서 가장 많은 직업입니다.</li><li>줄기는 평일과 주말 사이에서 수면 시간이 늘고 줄어드는 폭을 보여 줍니다.</li></ul>' +
-        '<p>드래그로 회전하고 스크롤로 확대할 수 있습니다. 직업은 최대 3개까지 골라 비교할 수 있습니다.</p>' }
-  ];
+  var SCENES = [];                          // 행성 모션만 사용 (텍스트 장면 없음)
   var REVEAL_A = .74;                       // 이 지점부터 구가 열린다
   var PAL = ['#F68CC0', '#EDCD72', '#78DCAD', '#72BFED', '#BB9BFF'];
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -32,8 +19,7 @@
   root.setAttribute('role', 'region');
   root.setAttribute('aria-label', '도입부. 스크롤하면 지도가 열립니다.');
   root.innerHTML = '<div class="is-bg"></div><canvas></canvas><div class="is-stage"></div>' +
-    '<div class="is-brand"><i></i>Social Jetlag</div>' +
-    '<button class="is-skip" type="button">건너뛰기 →</button>' +
+        '<button class="is-skip" type="button">건너뛰기 →</button>' +
     '<div class="is-steps"></div><div class="is-hint">SCROLL</div>';
   document.body.appendChild(root);
   document.body.classList.add('intro-on');
@@ -108,7 +94,7 @@
 
   // ---------- 상태 ----------
   var target = 0, cur = 0, done = false, t0 = performance.now(), last = t0, loadT = 0;
-  var total = 7.2;                                // 화면 N장 분량의 휠 거리
+  var total = 3.6;                                // 화면 N장 분량의 휠 거리
   function add(d) { if (!done) target = clamp(target + d); }
   root.addEventListener('wheel', function (e) {
     e.preventDefault();
