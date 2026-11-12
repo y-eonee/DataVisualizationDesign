@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Sleep Atlas ? Social Jetlag</title>
   <link rel="stylesheet" href="styles.css?v=personal-terrain-marker">
+  <link rel="stylesheet" href="intro.css">
   <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
+
 </head>
 <body data-screen="detail" data-entry="globe">
   <div id="atlas-screen" class="atlas-screen" hidden inert>
@@ -257,6 +259,7 @@
   <script src="sleep-age-terrain.js?v=personal-terrain-marker"></script>
   <script src="sleep-occupation-shifts.js"></script>
   <script src="sleep-globe-intro.js?v=personal-globe"></script>
+  <script src="intro.js"></script>
   <script>
     const explorerPanel = document.getElementById('detail-panel');
     if (new URLSearchParams(location.search).has('personal')) {
@@ -290,12 +293,14 @@
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
     }
 
-    // 전체 탐색을 마친 뒤 구 첫 화면으로 돌아오면, 아래로 스크롤할 때 마무리 결론이 나타난다.
+    // 지형 탑뷰를 본 뒤 다시 구로 돌아오면, 구 첫 화면에서 아래로 스크롤할 때 마무리 결론이 나타난다.
     {
       const conclusion = document.getElementById('conclusion');
       const scrollLink = explorerPanel.querySelector('.explorer-scroll');
-      const lastSection = document.getElementById('personal-shift');
-      const KEY = 'sleep-atlas-explored';
+      const terrain = document.getElementById('age-terrain');
+      const topButton = document.querySelector('[data-terrain-view="top"]');
+      const KEY = 'sleep-atlas-top-viewed';
+      let viewedTop = false;
       let explored = false;
       try { explored = sessionStorage.getItem(KEY) === '1'; } catch {}
       const reveal = () => {
@@ -303,13 +308,17 @@
         conclusion.hidden = false;
         if (scrollLink) scrollLink.setAttribute('href', '#conclusion');
       };
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver(entries => {
-          if (!entries.some(entry => entry.isIntersecting) || explored) return;
-          explored = true;
-          try { sessionStorage.setItem(KEY, '1'); } catch {}
-        }, { root: explorerPanel, threshold: 0.6 }).observe(lastSection);
+      if (topButton) {
+        const markTop = () => { if (topButton.getAttribute('aria-pressed') === 'true') viewedTop = true; };
+        new MutationObserver(markTop).observe(topButton, {attributes: true, attributeFilter: ['aria-pressed']});
+        markTop();
       }
+      terrain.addEventListener('close', () => {
+        if (!viewedTop) return;
+        explored = true;
+        try { sessionStorage.setItem(KEY, '1'); } catch {}
+        if (explorerPanel.scrollTop < 40) reveal();
+      });
       explorerPanel.addEventListener('scroll', () => { if (explorerPanel.scrollTop < 40) reveal(); }, { passive: true });
       reveal();
     }
