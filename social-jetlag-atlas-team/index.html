@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#000000">
   <title>Social Jetlag — Sleep Atlas</title>
   <style>
-    :root{color-scheme:dark;--ink:#fff;--line:#363636;--muted:#bfbfbf;--gutter:clamp(1.25rem,6vw,7rem);--orbit-size:clamp(122px,24vw,360px)}
+    :root{color-scheme:dark;--ink:#fff;--line:#363636;--muted:#bfbfbf;--gutter:clamp(1.25rem,6vw,7rem);--orbit-size:clamp(300px,94svh,1000px)}
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{margin:0;background:#000;color:var(--ink);font-family:Geist,Inter,"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
@@ -15,7 +15,7 @@
     a:focus-visible{outline:2px solid #fff;outline-offset:6px}
     main{position:relative;z-index:1}
     .intro-orbit{
-      position:fixed;left:82%;top:49%;z-index:0;
+      position:fixed;left:72%;top:50%;z-index:0;
       width:var(--orbit-size);aspect-ratio:1;pointer-events:none;
       transform:translate(-50%,-50%);
       opacity:.68
@@ -27,7 +27,7 @@
     .orbit-exit[hidden]{display:none}
     .orbit-scroll-hint{font-size:.77rem;color:var(--muted);margin:1.15rem 0 0}
     .intro-leaving main{opacity:0;transition:opacity .24s ease;pointer-events:none}
-    .hero,.chapter,.outro{padding-inline:var(--gutter)}
+    .hero,.outro{padding-inline:var(--gutter)}
     .hero{--shift:0px;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding-block:clamp(1.5rem,4vh,3rem);overflow:hidden}
     .brand,.scroll-link{font:500 .74rem/1.35 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase}
     .brand{display:flex;align-items:center;gap:.7rem}
@@ -46,49 +46,6 @@
     .scroll-link{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;min-height:2.75rem;white-space:nowrap}
     .scroll-link span,.cta span{display:inline-block;transition:transform .25s ease}
     .scroll-link:hover span{transform:translateY(.25rem)}
-    .chapter{
-      display:grid;grid-template-columns:clamp(9rem,12vw,15rem) minmax(0,1fr);
-      gap:clamp(1.5rem,3.5vw,4rem);padding-block:clamp(5rem,13vh,11rem);
-      padding-right:calc(18% + var(--orbit-size) / 2 + clamp(12px,2.5vw,40px));
-      min-height:82svh;align-content:center;border-top:1px solid var(--line)
-    }
-    .chapter h2{font-size:clamp(1rem,1.6vw,1.35rem);letter-spacing:-.035em;margin:.5rem 0 0;font-weight:600}
-    .chapter-body{max-width:50rem}
-    .chapter p{margin:0 0 1.5em;font-size:clamp(1rem,1.65vw,1.3rem);line-height:1.85;color:var(--muted);letter-spacing:-.025em}
-    .chapter p:last-child{margin-bottom:0}
-    .chapter .sentence{display:block}
-    .chapter .sentence + .sentence{margin-top:.45em}
-    .chapter .lead{font-size:clamp(1.65rem,3.6vw,3.6rem);line-height:1.28;letter-spacing:-.065em;font-weight:650;color:var(--ink);margin-bottom:.8em}
-    .chapter strong{color:var(--ink)}
-    .shift-study{container-type:inline-size}
-    .shift-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:1.75rem 0 .9rem}
-    .shift-options button{
-      border:0;border-bottom:1px solid var(--line);padding:.6rem .2rem;background:transparent;
-      color:var(--muted);font:inherit;text-align:left;cursor:pointer
-    }
-    .shift-options button[aria-pressed=true]{border-color:#a3ead1;color:#d3f5e9;background:#a3ead111}
-    .shift-options button:focus-visible{outline:1px solid #fff;outline-offset:2px}
-    .shift-options strong,.shift-options span{display:block;font-size:clamp(.64rem,2.5cqw,.95rem);line-height:1.5}
-    .shift-options span{font-size:clamp(.58rem,2.2cqw,.76rem)}
-    .shift-demo{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;align-items:center}
-    .shift-clock{width:100%;max-width:250px;justify-self:center}
-    .shift-clock text{fill:#aaa;font:11px monospace;text-anchor:middle}
-    .shift-clock .track{fill:none;stroke:#ffffff21;stroke-width:8}
-    .shift-clock .sleep-arc{fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-dasharray:480 960}
-    .shift-clock .midpoint{fill:currentColor;stroke:#000;stroke-width:2}
-    .shift-clock .clock-day{transform-box:view-box;transform-origin:center;transform:rotate(var(--clock-angle));transition:transform .65s cubic-bezier(.22,.68,.28,1)}
-    .shift-weekday{color:#a3ead1}
-    .shift-weekend{color:#fff}
-    .shift-reading{min-width:0}
-    .chapter .shift-label,.chapter .shift-note{font-size:.75rem;line-height:1.55;margin:.65rem 0;color:var(--muted)}
-    .shift-result{display:block;color:#d3f5e9;font-size:clamp(1.7rem,8cqw,3.5rem);line-height:1;font-weight:700;letter-spacing:-.04em}
-    .shift-times{display:grid;gap:.48rem;margin:.85rem 0}
-    .shift-times div{display:flex;flex-wrap:wrap;gap:.2rem .55rem;align-items:baseline}
-    .shift-times dt,.shift-times dd{margin:0;font-size:.76rem;line-height:1.4}
-    .shift-times dd{font-variant-numeric:tabular-nums}
-    @container (min-width:430px){
-      .shift-demo{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:1rem}
-    }
     .outro{min-height:64svh;display:grid;place-items:center;text-align:center;border-top:1px solid var(--line);padding-block:5rem}
     .outro h2{font-size:clamp(1.65rem,4.3vw,4.25rem);line-height:1.15;letter-spacing:.025em;text-wrap:balance;max-width:17em;margin:0 auto 1.8rem}
     .cta{display:inline-flex;align-items:center;gap:2rem;border:1px solid #fff;border-radius:99px;padding:1rem 1.5rem;text-decoration:none;transition:background .25s,color .25s}
@@ -98,12 +55,8 @@
     .motion .reveal.is-visible{opacity:1;transform:none;transition:opacity 1.15s ease,transform 1.45s cubic-bezier(.22,.68,.28,1)}
     .motion .chapter-body .reveal.is-visible{transition-delay:var(--sentence-delay,0ms)}
     .motion .reveal:focus-within{opacity:1;transform:none;transition:none}
-    @media(max-width:900px){
-      .chapter{grid-template-columns:1fr;gap:1.65rem;min-height:auto}
-      .chapter h2{margin:0}
-    }
     @media(max-width:650px){
-      :root{--orbit-size:clamp(112px,36vw,180px)}
+      :root{--orbit-size:clamp(260px,86vw,520px)}
       .hero-title{font-size:clamp(3rem,17vw,7rem)}
       .title-mask:nth-child(2){padding-left:.35em}
       .hero-footer{gap:.5rem}
@@ -129,76 +82,9 @@
       </h1>
       <div class="hero-footer">
         <p>평일과 주말 사이, 몸이 겪는 시차</p>
-        <a class="scroll-link" href="#definition" aria-label="스크롤해서 사회적 시차 읽기">Scroll <span aria-hidden="true">↓</span></a>
+        <a class="scroll-link" href="#outro-title" aria-label="스크롤해서 시각화로 이동">Scroll <span aria-hidden="true">↓</span></a>
       </div>
     </header>
-
-    <section class="chapter" id="definition" aria-labelledby="definition-title">
-      <h2 class="reveal" id="definition-title">사회적 시차란</h2>
-      <div class="chapter-body">
-        <p class="lead reveal">비행기를 타지 않아도 우리 몸은 매주 작은 시차를 겪습니다.</p>
-        <p class="reveal">월요일 아침 알람에 맞춰 일어나고, 금요일 밤에는 늦게 자고, 주말에는 늦잠을 잡니다.</p>
-        <p>
-          <span class="sentence reveal">이것을 <strong>사회적 시차(Social Jetlag)</strong>라고 부릅니다.</span>
-          <span class="sentence reveal">몸이 원하는 수면 리듬과 학교·직장이 정한 시간표가 어긋나면서 생기는 시차입니다.</span>
-        </p>
-        <p class="reveal">시간생물학자 틸 뢰네베르크 연구팀이 2006년에 이 개념을 제안했고, 보통 쉬는 날과 일하는 날의 수면 중간 시각이 얼마나 다른가로 잽니다.</p>
-      </div>
-    </section>
-
-    <section class="chapter" aria-labelledby="background-title">
-      <h2 class="reveal" id="background-title">만들게 된 배경</h2>
-      <div class="chapter-body">
-        <p class="lead reveal">수면 이야기는 대부분 ‘몇 시간 잤는가’에서 멈춥니다.</p>
-        <p class="reveal">하지만 같은 7시간이라도 언제 자고 평일과 주말에 얼마나 달라지는지는 사람마다 다릅니다.</p>
-        <p>
-          <span class="sentence reveal">통계청 생활시간조사는 하루를 10분 단위로 기록합니다.</span>
-          <span class="sentence reveal">그래서 언제 잠들고 언제 깼는지를 평일과 주말로 나란히 놓고 볼 수 있습니다.</span>
-          <span class="sentence reveal">평일과 주말 기록을 모두 남긴 응답자 <strong>9,634명</strong>의 하루를 연령대와 직업별로 묶어 한눈에 비교해 보고 싶었습니다.</span>
-        </p>
-      </div>
-    </section>
-
-    <section class="chapter" aria-labelledby="shift-title">
-      <h2 class="reveal" id="shift-title">시차를 읽는 법</h2>
-      <div class="chapter-body shift-study">
-        <p class="lead reveal">평일과 주말, 수면의 중간 시각은 얼마나 다를까요?</p>
-        <p class="reveal">잠든 시각과 깬 시각의 한가운데가 수면 중간 시각입니다. 평일과 주말의 중간 시각이 몇 분 차이 나는지 비교합니다.</p>
-        <div class="reveal">
-          <div class="shift-options" role="group" aria-label="수면 시차 구간 예시">
-            <button type="button" data-shift="15" aria-pressed="false"><strong>거의 같음</strong><span>30분 미만</span></button>
-            <button type="button" data-shift="45" aria-pressed="true"><strong>보통</strong><span>30분–60분 미만</span></button>
-            <button type="button" data-shift="90" aria-pressed="false"><strong>큼</strong><span>60분 이상</span></button>
-          </div>
-          <div class="shift-demo">
-            <svg class="shift-clock" viewBox="0 0 240 240" aria-hidden="true">
-              <circle class="track" cx="120" cy="120" r="86"/>
-              <circle class="track" cx="120" cy="120" r="66"/>
-              <g class="clock-day shift-weekday" style="--clock-angle:-105deg">
-                <circle class="sleep-arc" cx="120" cy="120" r="86" pathLength="1440"/>
-                <circle class="midpoint" cx="163" cy="194.48" r="6"/>
-              </g>
-              <g class="clock-day shift-weekend" id="shift-weekend-arc" style="--clock-angle:-93.75deg">
-                <circle class="sleep-arc" cx="120" cy="120" r="66" pathLength="1440"/>
-                <circle class="midpoint" cx="153" cy="177.16" r="6"/>
-              </g>
-              <text x="120" y="19">00</text><text x="225" y="124">06</text>
-              <text x="120" y="228">12</text><text x="15" y="124">18</text>
-              <text x="120" y="124">24시간</text>
-            </svg>
-            <div class="shift-reading" aria-live="polite">
-              <p class="shift-label">수면 중간 시각 차이 · 예시</p>
-              <output class="shift-result" id="shift-result">45분</output>
-              <dl class="shift-times">
-                <div class="shift-weekday"><dt>● 평일</dt><dd>03:00</dd></div>
-                <div class="shift-weekend"><dt>● 주말</dt><dd id="shift-weekend-time">03:45</dd></div>
-              </dl>
-            </div>
-          </div>
-          <p class="shift-note">원호는 잠들어 있던 구간, 점은 그 한가운데를 표시합니다. 30분과 60분은 이 프로젝트에서 시차를 설명하기 위해 나눈 기준입니다.</p>
-        </div>
-      </div>
-    </section>
 
     <section class="outro" aria-labelledby="outro-title">
       <div class="reveal">
@@ -226,7 +112,7 @@
 
       const title = document.querySelector('.hero-title');
       const reveals = Array.from(document.querySelectorAll('.reveal'));
-      const sentences = new Set(document.querySelectorAll('.chapter-body .reveal'));
+      const sentences = new Set();
       let frame = 0;
       let nextSentenceStart = 0;
 
@@ -264,18 +150,6 @@
     }
 
     const hero = document.querySelector('.hero');
-    const shiftButtons = [...document.querySelectorAll('[data-shift]')];
-    for (const button of shiftButtons) {
-      button.addEventListener('click', () => {
-        const shift = Number(button.dataset.shift);
-        const weekend = 180 + shift;
-        const clock = String(Math.floor(weekend / 60)).padStart(2,'0') + ':' + String(weekend % 60).padStart(2,'0');
-        document.getElementById('shift-weekend-time').textContent = clock;
-        document.getElementById('shift-result').textContent = shift + '분';
-        document.getElementById('shift-weekend-arc').style.setProperty('--clock-angle', (-105 + shift / 4) + 'deg');
-        shiftButtons.forEach(item => item.setAttribute('aria-pressed',String(item === button)));
-      });
-    }
     if (matchMedia('(pointer: fine)').matches) {
       hero.addEventListener('pointermove', event => {
         if (reducedMotion.matches) return;
@@ -330,7 +204,7 @@
         cx.save(); cx.translate(W / 2,H / 2);
         cx.lineJoin = 'round'; cx.globalCompositeOperation = 'lighter';
         const base = size * .5;
-        const grow = reducedMotion.matches ? 1 : easeO(loadT / 2.6) * clamp(.28 + progress * 2.2);
+        const grow = reducedMotion.matches ? 1 : easeO(loadT / 2.6);
         const fade = 1 - er;
         for (let k = 0; k < N; k++) {
           const f = k / (N - 1),a = clamp((grow - f * .85) * 5);
