@@ -50,3 +50,7 @@ body.intro-on #detail-screen{transform-origin:50% 50%;will-change:transform}
   .is-hint{display:none}
 }
 @media(prefers-reduced-motion:reduce){.is-hint::after{animation:none}}
+
+/* 아티팩트의 theme.css와 동일: Pretendard, 자간 -5% (도입부에만 적용) */
+@font-face{font-family:Pretendard;font-weight:45 920;font-style:normal;font-display:swap;src:url(PretendardVariable.woff2) format('woff2')}
+#intro,#intro *,#intro-replay{font-family:Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif!important;letter-spacing:-.05em!important;word-spacing:.05em!important}
