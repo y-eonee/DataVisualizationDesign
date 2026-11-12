@@ -20,33 +20,13 @@
       transform:translate(-50%,-50%);
       opacity:.68
     }
-    .intro-orbit svg{
-      display:block;width:100%;height:100%;overflow:visible
-    }
-    .orbit-ring{
-      opacity:0;transition:opacity .42s ease;
-      transform-box:view-box;transform-origin:50% 50%;
-      animation:orbit-spin var(--orbit-period,32s) linear infinite
-    }
-    .orbit-ring:nth-child(even){animation-direction:reverse}
-    .orbit-ring.is-visible,.intro-leaving .orbit-ring{opacity:1}
-    .orbit-track,.orbit-extra{fill:none;stroke:currentColor;stroke-width:1.15;vector-effect:non-scaling-stroke}
-    .orbit-dot{fill:currentColor}
-    .orbit-extra{
-      color:#fff;transform-box:view-box;transform-origin:50% 50%;
-      animation:orbit-burst .46s cubic-bezier(.13,.72,.27,1) both;
-      animation-delay:var(--ring-delay)
+    .intro-orbit canvas{
+      position:absolute;left:-60%;top:-60%;width:220%;height:220%;display:block
     }
     .orbit-exit{height:32svh}
     .orbit-exit[hidden]{display:none}
     .orbit-scroll-hint{font-size:.77rem;color:var(--muted);margin:1.15rem 0 0}
     .intro-leaving main{opacity:0;transition:opacity .24s ease;pointer-events:none}
-    @keyframes orbit-burst{
-      0%{transform:scale(var(--ring-start));opacity:0}
-      24%{opacity:.78}
-      100%{transform:scale(1);opacity:.18}
-    }
-    @keyframes orbit-spin{to{transform:rotate(360deg)}}
     .hero,.chapter,.outro{padding-inline:var(--gutter)}
     .hero{--shift:0px;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding-block:clamp(1.5rem,4vh,3rem);overflow:hidden}
     .brand,.scroll-link{font:500 .74rem/1.35 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase}
@@ -138,35 +118,7 @@
 </head>
 <body>
   <div class="intro-orbit" aria-hidden="true">
-    <svg viewBox="0 0 320 320" focusable="false">
-      <g class="orbit-ring is-visible" style="color:#a3ead1;--orbit-period:17s">
-        <circle class="orbit-track" cx="160" cy="160" r="28"/><circle class="orbit-dot" cx="183.11" cy="175.81" r="3.2"/><circle class="orbit-dot" cx="133.62" cy="169.38" r="2.3"/>
-      </g>
-      <g class="orbit-ring is-visible" style="color:#a9ecd6;--orbit-period:26s">
-        <circle class="orbit-track" cx="160" cy="160" r="44"/><circle class="orbit-dot" cx="149.58" cy="202.75" r="3.2"/><circle class="orbit-dot" cx="123.90" cy="134.85" r="2.3"/>
-      </g>
-      <g class="orbit-ring is-visible" style="color:#b5efdd;--orbit-period:21s">
-        <circle class="orbit-track" cx="160" cy="160" r="66"/><circle class="orbit-dot" cx="94.49" cy="168.01" r="3.2"/><circle class="orbit-dot" cx="159.18" cy="94.01" r="2.3"/>
-      </g>
-      <g class="orbit-ring is-visible" style="color:#c0f1e2;--orbit-period:39s">
-        <circle class="orbit-track" cx="160" cy="160" r="79"/><circle class="orbit-dot" cx="123.35" cy="90.01" r="3.2"/><circle class="orbit-dot" cx="223.69" cy="113.25" r="2.3"/>
-      </g>
-      <g class="orbit-ring is-visible" style="color:#cef3e8;--orbit-period:32s">
-        <circle class="orbit-track" cx="160" cy="160" r="103"/><circle class="orbit-dot" cx="228.50" cy="83.08" r="3.2"/><circle class="orbit-dot" cx="257.87" cy="192.09" r="2.3"/>
-      </g>
-      <g class="orbit-ring" style="color:#daf6ee;--orbit-period:45s">
-        <circle class="orbit-track" cx="160" cy="160" r="115"/><circle class="orbit-dot" cx="267.35" cy="201.24" r="3.2"/><circle class="orbit-dot" cx="194.42" cy="269.73" r="2.3"/>
-      </g>
-      <g class="orbit-ring" style="color:#e8f9f4;--orbit-period:37s">
-        <circle class="orbit-track" cx="160" cy="160" r="132"/><circle class="orbit-dot" cx="159.21" cy="292.00" r="3.2"/><circle class="orbit-dot" cx="80.53" cy="265.40" r="2.3"/>
-      </g>
-      <g class="orbit-ring" style="color:#f3fcf9;--orbit-period:52s">
-        <circle class="orbit-track" cx="160" cy="160" r="140"/><circle class="orbit-dot" cx="28.72" cy="208.63" r="3.2"/><circle class="orbit-dot" cx="20.04" cy="156.47" r="2.3"/>
-      </g>
-      <g class="orbit-ring" style="color:#ffffff;--orbit-period:46s">
-        <circle class="orbit-track" cx="160" cy="160" r="151"/><circle class="orbit-dot" cx="60.94" cy="46.04" r="3.2"/><circle class="orbit-dot" cx="75.29" cy="35.00" r="2.3"/>
-      </g>
-    </svg>
+    <canvas id="planet"></canvas>
   </div>
   <main>
     <header class="hero">
@@ -334,58 +286,86 @@
     }
 
     (() => {
+      // 컬러 등고선 행성 (온보딩 모션): 계속 도는 행성이 스크롤하면 고리가 늘어나고, 맨 아래에서 열리며 구로 이어진다.
       const orbit = document.querySelector('.intro-orbit');
-      const orbitGraphic = orbit.querySelector('svg');
-      const rings = [...orbitGraphic.querySelectorAll('.orbit-ring')];
-      const svgNamespace = 'http://www.w3.org/2000/svg';
-      const outlines = rings.map(ring => {
-        const circle = ring.querySelector('.orbit-track');
-        const radius = Number(circle.getAttribute('r'));
-        const path = document.createElementNS(svgNamespace,'path');
-        path.setAttribute('class','orbit-track');
-        const exact = `M${160 + radius} 160 a${radius} ${radius} 0 1 0 ${-2 * radius} 0 a${radius} ${radius} 0 1 0 ${2 * radius} 0`;
-        path.setAttribute('d',exact);
-        circle.replaceWith(path);
-        const dots = [...ring.querySelectorAll('.orbit-dot')].map(dot => ({
-          dot, angle:Math.atan2(Number(dot.getAttribute('cy'))-160,Number(dot.getAttribute('cx'))-160)
-        }));
-        return {path,radius,exact,dots};
-      });
+      const cv = document.getElementById('planet');
+      const cx = cv.getContext('2d');
       const exit = document.querySelector('.orbit-exit');
       const link = document.querySelector('.cta');
       const hint = document.querySelector('.orbit-scroll-hint');
-      let frame = 0;
-      let leaving = false;
-      let lastY = window.scrollY;
-      let expansion;
-      let ripple = 0;
-      let velocity = 0;
-      let previousFrame = 0;
-      let warped = false;
-
-      function shapeOrbits(progress) {
-        if (!ripple && !warped) return;
-        warped = Boolean(ripple);
-        const phase = progress * Math.PI * 3;
-        outlines.forEach(({path,radius,exact,dots},index) => {
-          const amount = ripple / 19 * Math.min(3.6,radius * .1);
-          function position(angle) {
-            const wave = .74 * Math.sin(3 * angle + phase + index * .12)
-              + .26 * Math.cos(5 * angle - phase);
-            const distance = radius + amount * wave;
-            return [160 + distance * Math.cos(angle),160 + distance * Math.sin(angle)];
-          }
-          if (warped) {
-            const points = Array.from({length:64},(_,i) => position(i * Math.PI / 32).map(value => value.toFixed(2)).join(' '));
-            path.setAttribute('d','M' + points.join('L') + 'Z');
-          } else path.setAttribute('d',exact);
-          for (const {dot,angle} of dots) {
-            const [x,y] = position(angle);
-            dot.setAttribute('cx',x.toFixed(2));
-            dot.setAttribute('cy',y.toFixed(2));
-          }
-        });
+      const PAL = ['#F68CC0','#EDCD72','#78DCAD','#72BFED','#BB9BFF'];
+      const clamp = (x,a = 0,b = 1) => Math.min(b,Math.max(a,x));
+      const easeO = x => 1 - Math.pow(1 - clamp(x),4);
+      const easeIO = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2,3) / 2; };
+      const N = 18;
+      const rings = [];
+      for (let k = 0; k < N; k++) {
+        const dots = [];
+        for (let d = 0; d < 3 + (k % 5); d++) dots.push({a:Math.random() * 6.283,s:(Math.random() < .5 ? -1 : 1) * (.08 + Math.random() * .22),r:1.6 + Math.random() * 2.6});
+        rings.push({ph:k * 1.7,c:PAL[k % 5],dots,a1:.035 + .03 * Math.sin(k * 1.3),a2:.02 + .02 * Math.cos(k * .9)});
       }
+      let W = 0,H = 0,dpr = 1,size = 0;
+      function resize() {
+        dpr = Math.min(2,devicePixelRatio || 1);
+        const box = cv.getBoundingClientRect();
+        W = box.width; H = box.height;
+        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+        size = orbit.getBoundingClientRect().width;
+      }
+      function blob(R,ring,t,steps,extra) {
+        cx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const th = i / steps * 6.2832;
+          const r = R * (1 + ring.a1 * Math.sin(3 * th + ring.ph + t * .5) + ring.a2 * Math.sin(5 * th - ring.ph * 1.3 - t * .35) + (extra || 0));
+          const x = Math.cos(th) * r,y = Math.sin(th) * r * .94;
+          i ? cx.lineTo(x,y) : cx.moveTo(x,y);
+        }
+      }
+      let leaving = false,openT = 0,openStart = 0,ripple = 0,velocity = 0,lastY = window.scrollY,progress = 0,previousFrame = 0;
+      const t0 = performance.now();
+      function draw(now) {
+        const t = now / 1000,loadT = (now - t0) / 1000;
+        const er = leaving ? easeIO((now - openStart) / 900) : 0;
+        cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
+        cx.save(); cx.translate(W / 2,H / 2);
+        cx.lineJoin = 'round'; cx.globalCompositeOperation = 'lighter';
+        const base = size * .5;
+        const grow = reducedMotion.matches ? 1 : easeO(loadT / 2.6) * clamp(.28 + progress * 2.2);
+        const fade = 1 - er;
+        for (let k = 0; k < N; k++) {
+          const f = k / (N - 1),a = clamp((grow - f * .85) * 5);
+          if (a <= 0 || fade <= 0) continue;
+          const Rk = base * (.1 + .9 * Math.pow(f,.85)) * (1 + er * 3.2);
+          const ring = rings[k];
+          cx.globalAlpha = a * fade * (.22 + .3 * (1 - f)) * 1.5;
+          cx.strokeStyle = ring.c; cx.lineWidth = 1.1 + (k % 4 === 0 ? .8 : 0);
+          cx.save(); cx.rotate(t * .03 * (k % 2 ? 1 : -1) + progress * 2.4 * (k % 2 ? 1 : -1));
+          blob(Rk,ring,t,160,ripple * .004); cx.stroke();
+          if (k % 6 === 2) { cx.globalAlpha *= .12; cx.fillStyle = ring.c; cx.fill(); }
+          cx.restore();
+          cx.globalAlpha = a * fade * .9;
+          for (const d of ring.dots) {
+            const th = d.a + t * d.s + progress * 3 * (k % 2 ? 1 : -1);
+            const r = Rk * (1 + ring.a1 * Math.sin(3 * th + ring.ph + t * .5) + ripple * .004);
+            cx.fillStyle = ring.c; cx.beginPath(); cx.arc(Math.cos(th) * r,Math.sin(th) * r * .94,d.r,0,6.2832); cx.fill();
+          }
+        }
+        cx.restore();
+      }
+      let frame = 0;
+      function tick(now) {
+        frame = 0;
+        if (!reducedMotion.matches) {
+          const dt = previousFrame ? Math.min(.035,(now - previousFrame) / 1000) : 1 / 60;
+          previousFrame = now;
+          velocity = (velocity - 112 * ripple * dt) * Math.exp(-7.5 * dt);
+          ripple = Math.max(-19,Math.min(19,ripple + velocity * dt));
+          if (Math.abs(ripple) < .05 && Math.abs(velocity) < .15) ripple = velocity = 0;
+        }
+        draw(now);
+        if (!reducedMotion.matches || leaving) frame = requestAnimationFrame(tick);
+      }
+      const schedule = () => { if (!frame) frame = requestAnimationFrame(tick); };
 
       exit.hidden = false;
       hint.hidden = false;
@@ -393,88 +373,42 @@
       function enterGlobe() {
         if (leaving) return;
         leaving = true;
-        if (reducedMotion.matches || !orbit.animate) {
-          location.assign(link.href);
-          return;
-        }
-        const rect = orbit.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        const outer = Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y)) * 320 / rect.width;
+        if (reducedMotion.matches) { location.assign(link.href); return; }
+        openStart = performance.now();
         document.body.classList.add('intro-leaving');
-        const outerSteps = [.08,.17,.24,.38,.50,.67,.79,1];
-        for (const [i,step] of outerSteps.entries()) {
-          const circle = document.createElementNS(svgNamespace,'circle');
-          circle.setAttribute('class','orbit-extra');
-          circle.setAttribute('cx','160');
-          circle.setAttribute('cy','160');
-          const radius = 151 + (Math.max(outer,240) - 151) * step;
-          circle.setAttribute('r',String(radius));
-          circle.style.setProperty('--ring-start', String((95 + i * 6) / radius));
-          circle.style.setProperty('--ring-delay', `${i * 12}ms`);
-          orbitGraphic.append(circle);
-        }
-        expansion = orbit.animate([
-          {opacity:.68},
-          {opacity:.88,offset:.25},
-          {opacity:.66,offset:.65},
-          {opacity:0}
-        ], {duration:550,fill:'forwards'});
-        expansion.finished.then(() => location.assign(link.href), () => {});
+        setTimeout(() => location.assign(link.href),950);
       }
-
-      function updateOrbit(now = performance.now()) {
-        frame = 0;
+      function onScroll() {
         const y = window.scrollY;
         const bottom = document.documentElement.scrollHeight - innerHeight;
-        const progress = Math.max(0, Math.min(1, y / Math.max(1, bottom)));
+        progress = clamp(y / Math.max(1,bottom));
         if (!reducedMotion.matches) {
-          const dt = previousFrame ? Math.min(.035,(now - previousFrame) / 1000) : 1 / 60;
-          previousFrame = now;
-          const impulse = Math.max(-180, Math.min(180, (y - lastY) * 1.1));
-          velocity = Math.max(-230, Math.min(230, velocity - impulse));
-          velocity = (velocity - 112 * ripple * dt) * Math.exp(-7.5 * dt);
-          ripple = Math.max(-19, Math.min(19, ripple + velocity * dt));
-          if (Math.abs(ripple) < .05 && Math.abs(velocity) < .15) ripple = velocity = 0;
-        } else {
-          ripple = velocity = 0;
-          previousFrame = 0;
+          const impulse = Math.max(-180,Math.min(180,(y - lastY) * 1.1));
+          velocity = Math.max(-230,Math.min(230,velocity - impulse));
         }
-        shapeOrbits(progress);
-        const initialCount = 5;
-        const visibleCount = initialCount + Math.floor(progress * (rings.length - initialCount + 1));
-        rings.forEach((ring,index) => ring.classList.toggle('is-visible', index < visibleCount));
         if (y > lastY && bottom > 0 && y >= bottom - 3) enterGlobe();
         lastY = y;
-        if (ripple || velocity) scheduleOrbit();
+        schedule();
       }
-
-      function scheduleOrbit() {
-        if (!frame && !leaving) frame = requestAnimationFrame(updateOrbit);
-      }
-
-      window.addEventListener('scroll', scheduleOrbit, {passive:true});
-      window.addEventListener('resize', scheduleOrbit);
-      window.addEventListener('pageshow', event => {
+      window.addEventListener('scroll',onScroll,{passive:true});
+      window.addEventListener('resize',() => { resize(); schedule(); });
+      window.addEventListener('pageshow',event => {
         if (!event.persisted) return;
-        expansion?.cancel();
-        ripple = velocity = previousFrame = 0;
-        orbitGraphic.querySelectorAll('.orbit-extra').forEach(circle => circle.remove());
-        leaving = false;
+        leaving = false; openStart = 0; ripple = velocity = previousFrame = 0;
         document.body.classList.remove('intro-leaving');
         const bottom = document.documentElement.scrollHeight - innerHeight;
-        if (window.scrollY >= bottom - 3) {
-          window.scrollTo({top:Math.max(0,bottom - exit.offsetHeight),behavior:'instant'});
-        }
+        if (window.scrollY >= bottom - 3) window.scrollTo({top:Math.max(0,bottom - exit.offsetHeight),behavior:'instant'});
         lastY = window.scrollY;
-        scheduleOrbit();
+        schedule();
       });
-      link.addEventListener('click', event => {
+      link.addEventListener('click',event => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         enterGlobe();
       });
-      updateOrbit();
+      resize();
+      onScroll();
+      schedule();
     })();
   </script>
 </body>
