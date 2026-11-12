@@ -9,7 +9,8 @@ const SleepNetwork = (() => {
     let yaw = .62, pitch = -.22, zoom = 1, selected = null, hover = null, hoverPoint = null, hoverNode = null, pointer = null;
     let animationSeconds = 0, metrics = {}, phaseCache = null, flexCache = null;
     let botanicals = [];
-    let surfaceView=false,surfaceBlend=0,cameraFlight=null,meanDrawMs=0;
+    let meanDrawMs=0;
+    let introCamera = null;
     let occupationData = null, occupationFocus = null, displayDistributions = [];
     const selection={selectedAgeGroup:null,selectedOccupation:null,selectedOccupations:[]};
     let selectionStats=null;
@@ -110,8 +111,9 @@ const SleepNetwork = (() => {
     let mode = 'compare', time = 0, playing = false, frame = 0, previous = null, rotationResumeAt = 0, shownInfo = '';
     let centerX = 0, centerY = 0, sphereRadius = 1;
     let cy = 1, sy = 0, cp = 1, sp = 0, cameraYaw = NaN, cameraPitch = NaN;
+    const displayAge = group => group.id === 5 ? '60대 이상' : group.min + '대';
     const clock = value => value === null ? '\u2014' : SleepRegions.clock(value);
-    const delta = value => value === null ? '\u2014' : (value >= 0 ? '+' : '\u2212') + Math.abs(value).toFixed(1) + ' min';
+    const delta = value => value === null ? '\u2014' : (value >= 0 ? '+' : '\u2212') + Math.abs(value).toFixed(1) + '분';
     const point = SleepNetworkLinks.surfacePoint;
     const tooltip = $('sleep-clock-tooltip');
     function rotate(v) {
@@ -142,7 +144,7 @@ const SleepNetwork = (() => {
         for(const p of botanicals.occupationProfiles){
             if(!p.total)continue;const row=document.createElement('div'),swatch=document.createElement('i'),text=document.createElement('span');
             swatch.className='cluster-hue';swatch.style.background=p.color;
-            text.textContent=model.groups[p.groupId].name+' · '+(p.leaderCode===null?'직업 코드 없음':SleepOccupations.style(p.leaderCode).label+' '+(100*p.leaderCount/p.total).toFixed(1)+'%');row.append(swatch,text);legend.append(row);
+            text.textContent=displayAge(model.groups[p.groupId])+' · '+(p.leaderCode===null?'직업 코드 없음':SleepOccupations.style(p.leaderCode).label+' '+(100*p.leaderCount/p.total).toFixed(1)+'%');row.append(swatch,text);legend.append(row);
         }
         buildOccupationKey();
         // Cache immutable aggregate geometry; animation only updates reusable views.
@@ -163,11 +165,11 @@ const SleepNetwork = (() => {
         $('age-list').replaceChildren();
         for (const g of model.groups) {
             const b = document.createElement('button'); b.type = 'button'; b.dataset.age = g.id; b.disabled = !g.stats.people;
-            b.textContent = g.name + ' / ' + g.stats.people.toLocaleString(); b.style.setProperty('--age-color', ageLineColors[g.id]);
+            b.textContent = displayAge(g) + ' / ' + g.stats.people.toLocaleString(); b.style.setProperty('--age-color', ageLineColors[g.id]);
             b.setAttribute('aria-pressed', 'false'); b.onclick = () => select(g.id); $('age-list').append(b);
         }
         updateSamplingSummary(botanicals.length);
-        $('comparison-note').textContent = 'Each age cluster uses its largest recorded occupation as the terrain and branch hue. Shares count unique respondents within this region and age, including unrecorded occupation in the denominator. Unrecorded occupation is excluded from leader ranking and shown as a faint cluster tint. Other occupation disks retain subdued versions of their own hues; smaller shares are fainter. Up to three selected occupations receive outline accents and full emphasis. Disk area = respondents; relief = display overlap; paired-duration stem animation is unchanged.';
+        $('comparison-note').textContent = '연령대별로 가장 많은 직업의 색이 지형과 가지의 대표색입니다. 비중이 낮은 직업은 옅게 표시합니다. 직업 미기록 응답자는 비중 계산에 포함되며 대표 직업 순위에서는 제외됩니다.';
         $('comparison-note').hidden = false; $('compare-key').hidden = false;
         document.querySelectorAll('[data-sleep-mode]').forEach(b => {
             const k = b.dataset.sleepMode;
@@ -175,22 +177,6 @@ const SleepNetwork = (() => {
             b.setAttribute('aria-pressed', String(k === mode));
         });
         applySelection(false); updateTime(); return model;
-    }
-    function setView(surface,groupId=null){
-        const startYaw=yaw,startPitch=pitch;
-        surfaceView=!!surface;targetZoom=1;velocityYaw=velocityPitch=0;
-        let endYaw=yaw,endPitch=pitch;
-        if(surfaceView&&groupId!==null){
-            const p=botanicals.find(n=>n.groupId===groupId)?.ageAnchor;
-            if(p){endYaw=-Math.atan2(p.x,p.z);endPitch=Math.max(-1.25,Math.min(1.25,Math.atan2(p.y,Math.hypot(p.x,p.z))+.66));}
-        }
-        cameraFlight={start:performance.now(),from:surfaceBlend,to:surfaceView?1:0,yaw:startYaw,pitch:startPitch,dyaw:Math.atan2(Math.sin(endYaw-startYaw),Math.cos(endYaw-startYaw)),endPitch};
-        if(reduced.matches){surfaceBlend=cameraFlight.to;yaw=endYaw;pitch=endPitch;cameraFlight=null;}
-        const screen=$('detail-screen'),panel=$('detail-panel');
-        screen.classList.toggle('is-overview',!surfaceView);screen.classList.toggle('is-surface',surfaceView);
-        panel.hidden=surfaceView;panel.inert=surfaceView;
-        $('focus-surface').textContent=surfaceView?'전체 구 보기':'표면 확대';
-        if(typeof AtlasTransition!=='undefined')AtlasTransition.syncSurface?.();render();
     }
     function transitionTarget(indices) {
         const result = {x: 0, y: 0, z: 0}; let count = 0;
@@ -205,15 +191,15 @@ const SleepNetwork = (() => {
     function updateInfo(){
         if(!model)return;
         const stats=selectionStats?.stats||model.stats;
-        const title=[selection.selectedAgeGroup===null?null:model.groups[selection.selectedAgeGroup].name,
-            selection.selectedOccupations.length?selection.selectedOccupations.map(code=>SleepOccupations.style(code).label).join(' + '):null].filter(Boolean).join(' / ')||(window.sleepRegionSelection.id==='all'?'All respondents':'All selected-region data');
+        const title=[selection.selectedAgeGroup===null?null:displayAge(model.groups[selection.selectedAgeGroup]),
+            selection.selectedOccupations.length?selection.selectedOccupations.map(code=>SleepOccupations.style(code).label).join(' + '):null].filter(Boolean).join(' / ')||(window.sleepRegionSelection.id==='all'?'전체 응답자':'선택 구간 전체');
         if(shownInfo===title)return;shownInfo=title;
         $('age-title').textContent=title;
-        $('age-people').textContent=stats.people.toLocaleString();$('age-diaries').textContent=stats.diaries.toLocaleString()+' diary records';
+        $('age-people').textContent=stats.people.toLocaleString();$('age-diaries').textContent=stats.diaries.toLocaleString()+'건의 수면 기록';
         $('age-weekday').textContent=clock(stats.weekdayOnset);$('age-weekend').textContent=clock(stats.weekendOnset);$('age-difference').textContent=delta(stats.differenceMinutes);
-        const duration=value=>value===null?'—':Math.floor(Math.round(value*60)/60)+'h '+String(Math.round(value*60)%60).padStart(2,'0')+'m';
+        const duration=value=>value===null?'—':Math.floor(Math.round(value*60)/60)+'시간 '+(Math.round(value*60)%60)+'분';
         $('age-weekday-duration').textContent=duration(stats.weekdayDuration);$('age-weekend-duration').textContent=duration(stats.weekendDuration);
-        $('age-samples').textContent='Unique respondents: weekday '+stats.weekdayPeople+' / weekend '+stats.weekendPeople+' / both '+stats.pairedPeople;
+        $('age-samples').textContent='응답자 · 평일 '+stats.weekdayPeople.toLocaleString()+'명 / 주말 '+stats.weekendPeople.toLocaleString()+'명 / 양쪽 '+stats.pairedPeople.toLocaleString()+'명';
         $('occupation-list').replaceChildren();
         for(const [code,count] of stats.occupations){const item=document.createElement('li');item.textContent=SleepOccupations.style(code).label+' · '+count.toLocaleString();$('occupation-list').append(item);}
     }
@@ -241,7 +227,7 @@ const SleepNetwork = (() => {
         buildOccupationKey();buildOverview();
         document.querySelectorAll('[data-age]').forEach(button=>{
             const id=+button.dataset.age,people=model.groups[id].persons.filter(p=>p.indices.some(i=>matchesOccupation(SleepOccupations.codeOf(i)))).length;
-            button.textContent=model.groups[id].name+' / '+people.toLocaleString();button.disabled=!people;button.setAttribute('aria-pressed',String(id===selected));
+            button.textContent=displayAge(model.groups[id])+' / '+people.toLocaleString();button.disabled=!people;button.setAttribute('aria-pressed',String(id===selected));
         });
         updateInfo();updateTime();if(redraw)render();
     }
@@ -250,7 +236,7 @@ const SleepNetwork = (() => {
         for(const group of model.groups){
             const button=document.createElement('button');button.type='button';button.className='overview-age';
             button.style.setProperty('--age-color',ageLineColors[group.id]);button.style.setProperty('--share',100*group.stats.people/Math.max(1,model.stats.people)+'%');
-            button.textContent=group.name+'  '+group.stats.people.toLocaleString();button.setAttribute('aria-pressed',String(selected===group.id));button.disabled=!group.stats.people;button.onclick=()=>select(group.id);root.append(button);
+            button.textContent=displayAge(group)+'  '+group.stats.people.toLocaleString();button.setAttribute('aria-pressed',String(selected===group.id));button.disabled=!group.stats.people;button.onclick=()=>openAgeTerrain(group.id);root.append(button);
         }
     }
     function clearOccupationFocus(redraw=true){selection.selectedOccupation=null;selection.selectedOccupations=[];applySelection(redraw);}
@@ -261,18 +247,110 @@ const SleepNetwork = (() => {
         if(i>=0)codes.splice(i,1);else if(codes.length<3)codes.push(code);else return;
         selection.selectedOccupation=codes.length===1?codes[0]:null;applySelection();
     }
-    function selectOccupation(n){
-        if(selection.selectedOccupations.length>=3&&!selection.selectedOccupations.includes(n.code))return;
-        selection.selectedAgeGroup=n.groupId;toggleOccupation(n.code);
+    function openAgeTerrain(id, personal = null) {
+        const group = model.groups[id];
+        if (!group?.stats.people) return;
+        selection.selectedAgeGroup = id;
+        applySelection(false);
+        window.dispatchEvent(new CustomEvent('sleepageopen', {detail: {group, personal}}));
+    }
+    let personalTurn = null;
+    let personalPoint = null;
+    let personalResult = null;
+    const personalMarker = $('personal-globe-marker');
+    const personalCard = $('personal-result-card');
+    const signedMinutes = value => (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toLocaleString('ko-KR') + '분';
+    function durationText(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const remainder = minutes % 60;
+        return (hours ? hours + '시간' : '') + (remainder ? (hours ? ' ' : '') + remainder + '분' : '');
+    }
+    function comparisonText(shifts, ownShift) {
+        if (!shifts.length) return '';
+        const smaller = shifts.filter(shift => Math.abs(shift) < Math.abs(ownShift) - 1e-8).length;
+        return '나보다 시차가 작은 응답자 ' + Math.round(100 * smaller / shifts.length) + '%';
+    }
+    function setPersonalResult(location, group) {
+        const paired = [...SleepAgeTerrainData.pairedShifts(group, DATA)];
+        const shifts = paired.map(item => item.shift);
+        const mean = shifts.length ? Math.round(shifts.reduce((sum, shift) => sum + shift, 0) / shifts.length) : 0;
+        const shift = location.shift;
+        $('personal-result-title').textContent = '나의 사회적 시차 · ' + displayAge(group);
+        $('personal-result-value').textContent = signedMinutes(shift);
+        $('personal-result-direction').textContent = Math.abs(shift) === 720 ? '주말 수면 중간 시각이 평일과 12시간 차이 나요.' :
+            shift ? '주말 수면 중간 시각이 평일보다 ' + Math.abs(shift) + '분 ' + (shift > 0 ? '늦어요.' : '빨라요.') :
+                '평일과 주말의 수면 중간 시각이 같아요.';
+        $('personal-result-comparison').textContent = shifts.length
+            ? displayAge(group) + ' 평균 ' + signedMinutes(mean) + ' (' + shifts.length.toLocaleString() + '명) · ' + comparisonText(shifts, shift)
+            : '이 연령대에 비교할 수면 기록이 없어요.';
+        $('personal-result-duration').textContent = '수면 시간 · 평일 ' + durationText(location.weekdayDuration) + ' · 주말 ' + durationText(location.weekendDuration);
+        const scale = personalCard.querySelector('.personal-result-scale');
+        const limit = Math.max(240, Math.ceil(Math.abs(shift) / 60) * 60);
+        scale.style.setProperty('--position', (50 + shift / limit * 50) + '%');
+        scale.querySelector('span:first-of-type').textContent = signedMinutes(-limit);
+        scale.querySelector('span:last-of-type').textContent = signedMinutes(limit);
+        personalResult = location;
+    }
+    function dismissPersonalLocation() {
+        personalPoint = null;
+        personalTurn = null;
+        personalResult = null;
+        personalMarker.hidden = true;
+        personalCard.hidden = true;
+        targetZoom = 1;
+        if (reduced.matches) zoom = 1;
+        clearSceneSelection();
+    }
+    $('personal-terrain-link')?.addEventListener('click', () => {
+        if (personalResult) openAgeTerrain(personalResult.age, personalResult);
+    });
+    document.addEventListener('click', event => {
+        if (!personalPoint || AtlasTransition.stage !== 'detail' || $('age-terrain').open) return;
+        if (event.target.closest('#personal-result-card, canvas, button, a, summary, input, select')) return;
+        dismissPersonalLocation();
+    });
+    function focusPersonalLocation(location) {
+        const distance = (hours, minutes) => Math.abs(((hours * 60 - minutes + 2160) % 1440) - 720);
+        const paired = botanicals.filter(node => node.groupId === location.age && node.kind === 'paired');
+        const sameOccupation = paired.filter(node => node.code === location.occupation);
+        const matches = sameOccupation.length ? sameOccupation : paired;
+        const score = node => Math.hypot(distance(node.weekdayWake, location.weekdayWake), distance(node.weekendWake, location.weekendWake));
+        const nearest = matches.reduce((best, node) => !best || score(node) < score(best) ? node : best, null);
+        if (!nearest) return;
+        setPersonalResult(location, model.groups[location.age]);
+        const {normal, rootRadius} = nearest.land;
+        const radius = rootRadius + .12;
+        personalPoint = {x: normal.x * radius, y: normal.y * radius, z: normal.z * radius};
+        const {x,y,z} = personalPoint;
+        const targetYaw = -Math.atan2(x,z);
+        const targetPitch = Math.atan2(y, Math.hypot(x,z));
+        const shift = (location.shift > 0 ? '+' : location.shift < 0 ? '−' : '') + Math.abs(location.shift) + '분';
+        personalMarker.querySelector('span').textContent = '비슷한 기상 패턴 · 내 시차 ' + shift;
+        targetZoom = Math.min(maxZoom, 2.15);
+        pauseRotation(5000);
+        personalTurn = {
+            started: performance.now(), yaw, pitch,
+            yawDistance: wrapAngle(targetYaw - yaw), targetPitch
+        };
+        selection.selectedAgeGroup = location.age;
+        applySelection(false);
+        if (reduced.matches) {
+            yaw = targetYaw;
+            pitch = targetPitch;
+            zoom = targetZoom;
+            personalTurn = null;
+            render();
+        }
+        schedule();
     }
     function updateSamplingSummary(onScreen) {
         if(!occupationData)return;
-        const text=onScreen.toLocaleString()+' landscape aggregates / '+model.indices.length.toLocaleString()+' actual diaries / '+model.stats.people.toLocaleString()+' unique people; complete data, no terrain sampling';
+        const text='화면에 보이는 집계 '+onScreen.toLocaleString()+'개 · 수면 기록 '+model.indices.length.toLocaleString()+'건 · 응답자 '+model.stats.people.toLocaleString()+'명';
         if($('network-scope').textContent!==text)$('network-scope').textContent=text;
     }
     function buildOccupationKey(){
         $('occupation-key').replaceChildren();
-        $('occupation-comparison-status').textContent=selection.selectedOccupations.length?selection.selectedOccupations.length+'/3 occupations selected · click again to remove':'Select up to 3 occupations to compare';
+        $('occupation-comparison-status').textContent=selection.selectedOccupations.length?selection.selectedOccupations.length+'/3개 직업 선택 · 다시 눌러 해제':'최대 3개 직업을 비교할 수 있습니다.';
         for(const d of SleepOccupations.definitions){
             const persons=model.persons.filter(p=>(selected===null||model.groups[selected].persons.includes(p))&&p.indices.some(i=>SleepOccupations.codeOf(i)===d.code));
             // Present only original codes actually available in this region.
@@ -283,7 +361,7 @@ const SleepNetwork = (() => {
             icon.width=28;icon.height=28;icon.setAttribute('aria-hidden','true');const ctx=icon.getContext('2d'),path=new Path2D();occupationGlyph(path,14,14,8,'circle');
             ctx.fillStyle=ctx.strokeStyle=index<0?d.color:comparisonColors[index];ctx.lineWidth=2;ctx.fillStyle=index<0?d.color:comparisonColors[index];ctx.globalAlpha=index<0?.55:1;ctx.fill(path);
             text.textContent=d.label;count.textContent=persons.length.toLocaleString();count.className='filter-count';
-            button.title=d.label+(d.code?' [코드 '+d.code+']':' [원본 빈 값]')+' · unique respondents';button.onclick=()=>toggleOccupation(d.code);
+            button.title=d.label+(d.code?' [코드 '+d.code+']':' [원본 빈 값]')+' · 응답자 수';button.onclick=()=>toggleOccupation(d.code);
             button.append(icon,text,count);item.append(button);$('occupation-key').append(item);
         }
     }
@@ -295,8 +373,8 @@ const SleepNetwork = (() => {
         if (!model) return;
         const stats=selectionStats?.stats||model.stats;
         const proportion=kind=>occupationFocus?sample(occupationFocus.activity[kind]):model.stats[kind+'People']?model.groups.reduce((sum,g)=>sum+sample(graph.activity[g.id][kind])*g.stats[kind+'People'],0)/model.stats[kind+'People']:0;
-        const textActivity=['weekday','weekend'].map(k=>(k==='weekday'?'Weekday ':'Weekend ')+(stats[k+'People']?Math.round(proportion(k)*100)+'%':'—')).join(' / ');
-        const activityText = 'Principal sleep / ' + textActivity;
+        const textActivity=['weekday','weekend'].map(k=>(k==='weekday'?'평일 ':'주말 ')+(stats[k+'People']?Math.round(proportion(k)*100)+'%':'—')).join(' / ');
+        const activityText = '이 시각에 주 수면 중 · ' + textActivity;
         if ($('sleep-activity').textContent !== activityText) $('sleep-activity').textContent = activityText;
     }
     function emphasis(group, kind) {
@@ -423,7 +501,16 @@ const SleepNetwork = (() => {
         const started=performance.now();viewport=$('detail-visual').getBoundingClientRect();
         context.save();
         if(AtlasTransition.stage==='detail'){context.globalAlpha=1;context.fillStyle=C.palette.background;context.fillRect(viewport.left,viewport.top,viewport.width,viewport.height);}
-        const views=SleepLandscape.draw(context,botanicals,{closeup:surfaceBlend,viewport,yaw,pitch,zoom,opacity,matches:matchesMarker,filtered:!!occupationFocus,groups:model.groups,hover:hover??selected,mode,time,seconds:animationSeconds,reduced:reduced.matches,ageColors:ageLineColors,emphasis:occupationEmphasis});
+        const views=SleepLandscape.draw(context,botanicals,{closeup:false,viewport,camera:introCamera,yaw,pitch,zoom,opacity,matches:matchesMarker,filtered:!!occupationFocus,groups:model.groups,hover:hover??selected,mode,time,seconds:animationSeconds,reduced:reduced.matches,ageColors:ageLineColors,emphasis:occupationEmphasis,personalPoint:personalTurn ? null : personalPoint});
+        if (personalMarker) {
+            const marker = views.personalMarker;
+            personalMarker.hidden = !marker;
+            if (marker) {
+                personalMarker.style.left = marker.x + 'px';
+                personalMarker.style.top = marker.y + 'px';
+            }
+        }
+        if (personalCard) personalCard.hidden = !personalResult || !!personalTurn;
         projected=views;labels=views.labels;context.restore();
         $('comparison-phase').textContent=views.phaseLabel;
         updateSamplingSummary(views.length);
@@ -498,7 +585,7 @@ const SleepNetwork = (() => {
     }
     function down(e) {
         if(pointer||(e.button!==undefined&&e.button!==0))return;
-        const now=performance.now();cameraFlight=null;velocityYaw=0;velocityPitch=0;autoRate=0;
+        const now=performance.now();velocityYaw=0;velocityPitch=0;autoRate=0;
         pointer={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,distance:0,time:now,vx:0,vy:0,moved:false};
         hoverPoint=null;tooltip.hidden=true;canvas.setPointerCapture(e.pointerId);
     }
@@ -509,11 +596,21 @@ const SleepNetwork = (() => {
         if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
         if(d<5){
             velocityYaw=0;velocityPitch=0;
-            const found=nearest(e.clientX,e.clientY);
-            if(found&&!surfaceView){selection.selectedAgeGroup=found.node.groupId;applySelection(false);setView(true,found.node.groupId);}
-            else if(found){selectOccupation(found.node);hoverPoint={x:e.clientX,y:e.clientY};refreshHover();}
-            else if(occupationFocus)clearSceneSelection();
-            else {const label=labels.find(p=>Math.hypot(p.x-e.clientX,p.y-e.clientY)<24);if(label&&!surfaceView){selection.selectedAgeGroup=label.id;applySelection(false);setView(true,label.id);}else if(label)select(label.id);else if(!surfaceView){const near=projected.reduce((a,p)=>!a||Math.hypot(p.x-e.clientX,p.y-e.clientY)<Math.hypot(a.x-e.clientX,a.y-e.clientY)?p:a,null);if(near&&Math.hypot(near.x-e.clientX,near.y-e.clientY)<70){selection.selectedAgeGroup=near.node.groupId;applySelection(false);setView(true,near.node.groupId);}else clearSceneSelection();}else clearSceneSelection();}
+            const label = labels.find(item => Math.hypot(item.x - e.clientX, item.y - e.clientY) < 24);
+            const marker = nearest(e.clientX, e.clientY);
+            if (personalPoint && !label && !marker) { dismissPersonalLocation(); return; }
+            let groupId = label?.id ?? marker?.node.groupId;
+            if (groupId === undefined && !occupationFocus) {
+                let distance = 70;
+                for (const view of projected) {
+                    const candidate = Math.hypot(view.x - e.clientX, view.y - e.clientY);
+                    if (candidate >= distance) continue;
+                    distance = candidate;
+                    groupId = view.node.groupId;
+                }
+            }
+            if (groupId === undefined) clearSceneSelection();
+            else openAgeTerrain(groupId);
         } else if(!reduced.matches){
             // Pausing before release naturally suppresses an unintended throw.
             const hold=Math.exp(-7*Math.max(0,(now-held.time)/1000-.08));
@@ -547,44 +644,45 @@ const SleepNetwork = (() => {
         zoom+=(targetZoom-zoom)*(reduced.matches?1:1-Math.exp(-12*dt));
         if(Math.abs(targetZoom-zoom)<.0001)zoom=targetZoom;
         time = (time + dt * 144 / daySeconds) % 144; animationSeconds += dt;
-        if(cameraFlight){
-            const q=Math.min(1,(now-cameraFlight.start)/1250),ease=q*q*q*(q*(q*6-15)+10);
-            surfaceBlend=cameraFlight.from+(cameraFlight.to-cameraFlight.from)*ease;
-            yaw=cameraFlight.yaw+cameraFlight.dyaw*ease;pitch=cameraFlight.pitch+(cameraFlight.endPitch-cameraFlight.pitch)*ease;
-            if(q===1)cameraFlight=null;
-        }else surfaceBlend=surfaceView?1:0;
-        if(!pointer&&!cameraFlight&&!reduced.matches){
+        if (personalTurn) {
+            const {started, yaw: fromYaw, pitch: fromPitch, yawDistance, targetPitch} = personalTurn;
+            const progress = Math.min(1, Math.max(0, (now - started) / 1050));
+            const eased = progress * progress * (3 - 2 * progress);
+            yaw = wrapAngle(fromYaw + yawDistance * eased);
+            pitch = fromPitch + (targetPitch - fromPitch) * eased;
+            if (progress === 1) personalTurn = null;
+        } else if(!pointer&&!reduced.matches){
             // Exact integration of exponential damping is independent of FPS.
             const decay=Math.exp(-inertiaDamping*dt),travel=(1-decay)/inertiaDamping;
             yaw+=velocityYaw*travel;pitch+=velocityPitch*travel;
             velocityYaw*=decay;velocityPitch*=decay;
             if(Math.abs(velocityYaw)<.0001)velocityYaw=0;if(Math.abs(velocityPitch)<.0001)velocityPitch=0;
             const t=Math.max(0,Math.min(1,(now-rotationResumeAt)/900));
-            autoRate=surfaceView?0:.045*t*t*(3-2*t);
+            autoRate=personalPoint ? 0 : .045*t*t*(3-2*t);
             yaw=wrapAngle(yaw+dt*autoRate);pitch=Math.max(-1.25,Math.min(1.25,pitch));
         } else {autoRate=0;if(reduced.matches){velocityYaw=0;velocityPitch=0;}}
 
         updateTime(); render(); schedule();
     }
     function start() {playing = true; previous = null; schedule();}
-    function stop() {playing = false; previous = null; pointer = null;velocityYaw=0;velocityPitch=0;autoRate=0; hoverPoint = null; tooltip.hidden = true; if (frame) cancelAnimationFrame(frame); frame = 0;}
+    function stop() {playing = false; previous = null; pointer = null;personalTurn=null;velocityYaw=0;velocityPitch=0;autoRate=0; hoverPoint = null; tooltip.hidden = true; if (frame) cancelAnimationFrame(frame); frame = 0;}
     document.querySelectorAll('[data-sleep-mode]').forEach(b => b.onclick = () => {
         if (b.disabled) return; mode = b.dataset.sleepMode;
         document.querySelectorAll('[data-sleep-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render();
     });
     addEventListener('sleepdetailready', start);
     addEventListener('sleepatlasreturn', () => {stop();selection.selectedAgeGroup=null;selection.selectedOccupation=null;selection.selectedOccupations=[];occupationFocus=null;window.sleepAgeSelection=null;window.sleepOccupationSelection=null;});
-    $('focus-surface').addEventListener('click',()=>setView(!surfaceView));
     $('occupation-clear').addEventListener('click',clearSceneSelection);
     $('map').addEventListener('pointercancel',cancelPointer);
     $('map').addEventListener('lostpointercapture',()=>{if(pointer)cancelPointer();});
     addEventListener('blur',cancelPointer);
     document.addEventListener('visibilitychange', () => {previous = null; if (document.hidden) {cancelPointer();if (frame) cancelAnimationFrame(frame); frame = 0;} else schedule();});
-    return {prepare, setView, transitionTarget, draw, down, move, up, leave, wheel, stop,
+    return {prepare, transitionTarget, draw, down, move, up, leave, wheel, stop, focusPersonalLocation,
+        setIntroCamera(camera) { introCamera = camera; },
         get model() {return model;}, get nodes() {return nodes;}, get projected() {return projected;},
         get mode() {return mode;}, get time() {return time;}, get selectedId() {return selected;}, get network() {return graph;},
         get visualOccupationSymbols() {return occupationData?.sampledSymbols||[];}, get sampling() {return occupationData?.sampling;}, get ageNetworkColors() {return ageLineColors;},
         get selection() {return {...selection,selectedOccupations:[...selection.selectedOccupations]};}, get occupationFilter() {return occupationFocus;}, get occupationSymbols() {return occupationData?.symbols||[];},
         get botanicals() {return botanicals;}, get rendering() {return metrics;}, get config() {return C;},
-        get animation() {return {playing, scheduled: !!frame, yaw, pitch,velocityYaw,velocityPitch,autoRate,pointerActive:!!pointer,surfaceView,surfaceBlend,cameraFlight:!!cameraFlight,inertiaDamping,zoom, targetZoom, maxZoom, daySeconds, rotationSeconds,comparisonSeconds:C.motion.comparisonSeconds,elapsedSeconds:animationSeconds};}};
+        get animation() {return {playing, scheduled: !!frame, yaw, pitch,velocityYaw,velocityPitch,autoRate,pointerActive:!!pointer,inertiaDamping,zoom, targetZoom, maxZoom, daySeconds, rotationSeconds,comparisonSeconds:C.motion.comparisonSeconds,elapsedSeconds:animationSeconds};}};
 })();

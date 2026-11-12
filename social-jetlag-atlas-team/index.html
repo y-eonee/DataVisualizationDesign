@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sleep Atlas — Social Jetlag</title>
-  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="theme.css?v=4"><script src="theme.js"></script><script src="ko.js?v=3"></script>
+  <title>Sleep Atlas ? Social Jetlag</title>
+  <link rel="stylesheet" href="styles.css?v=personal-terrain-marker">
+  <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
 </head>
 <body data-screen="detail" data-entry="globe">
   <div id="atlas-screen" class="atlas-screen" hidden inert>
@@ -58,40 +59,169 @@
   </div>
   <section id="detail-screen" class="detail-screen" aria-labelledby="detail-title" aria-hidden="false">
     <header class="detail-header">
-      <button id="back-to-atlas" class="detail-back" type="button">sleep atlas / 전체 구</button>
-      <span class="detail-brand">Drag to rotate · Scroll to zoom</span><button id="focus-surface" class="detail-back" type="button">표면 확대</button>
+      <a id="back-to-atlas" class="detail-back" href="index.html"><span aria-hidden="true">←</span> Back</a>
     </header>
     <div class="detail-layout">
       <div id="globe-loading" role="status">수면 지형을 불러오는 중…</div>
       <div id="detail-visual" class="detail-visual" aria-label="Sleep globe: six age clusters with radial layered contour disks. Drag to orbit, scroll to zoom.">      <div class="network-clock"><output id="sleep-time" aria-label="Simulated time">00:00</output><span>24h / 60s &#183; comparison / 15s</span><span id="comparison-phase">Weekday emphasis</span></div></div>
-      <aside id="detail-panel" hidden inert class="detail-info data-explorer" aria-label="Sleep data explorer">
-        <header class="explorer-region">        <p id="detail-number" class="detail-eyebrow"></p>
-        <h2 id="detail-title"></h2>
-        <div class="detail-records"><b id="detail-count"></b><span>sleep records</span></div>
-        <details class="region-baseline"><summary>Region baseline</summary>        <p id="detail-percent"></p>
-        <dl class="detail-stats"><div><dt>MEAN ONSET</dt><dd id="detail-onset"></dd></div><div><dt>MEAN DURATION</dt><dd id="detail-duration"></dd></div></dl>
-        <p id="detail-days"></p>
-</details></header>
-        <section class="explorer-section"><div class="explorer-section-heading"><h3>GLOBAL OVERVIEW</h3><button id="occupation-clear" type="button">Reset filters</button></div><p class="explorer-hint">Unique respondents · selected region</p><div id="age-overview"></div></section>
-        <section class="explorer-section"><h3 class="explorer-heading">SELECTED DATA SUMMARY</h3>        <section class="age-summary" aria-labelledby="age-title">
-          <h3 id="age-title">All age groups</h3>
-          <div class="age-person-count"><b id="age-people"></b><span>unique people</span></div><p id="age-diaries"></p>
-          <dl class="age-means"><div><dt>WEEKDAY ONSET</dt><dd id="age-weekday"></dd></div><div><dt>WEEKEND ONSET</dt><dd id="age-weekend"></dd></div><div><dt>WEEKEND &#8722; WEEKDAY</dt><dd id="age-difference"></dd></div><div><dt>WEEKDAY DURATION</dt><dd id="age-weekday-duration"></dd></div><div><dt>WEEKEND DURATION</dt><dd id="age-weekend-duration"></dd></div></dl>
-          <p id="age-samples"></p><details><summary>Occupation distribution / original codes</summary><ul id="occupation-list"></ul></details>
-        </section>
-</section>
-        <section class="explorer-section"><h3 class="explorer-heading">OCCUPATION FILTERS</h3><p class="explorer-hint">Unique respondents · within selected age</p><p id="occupation-comparison-status" class="explorer-hint" role="status" aria-live="polite">Select up to 3 occupations to compare</p><ul id="occupation-key"></ul></section>
-        <section class="explorer-section"><h3 class="explorer-heading">AGE-GROUP FILTERS</h3><p class="explorer-hint">Unique respondents · within selected occupation</p><div id="age-list" class="age-list" aria-label="Filter age group"></div></section>
-        <section class="explorer-section"><h3 class="explorer-heading">COLOR / COMPARISON LEGEND</h3><div id="cluster-occupation-legend" class="cluster-occupation-legend"></div><p class="explorer-hint">연령대별 최다 직업의 색이 지형과 가지의 중심색입니다. 적은 직군은 옅게 표시합니다. 비중은 해당 연령대 전체 응답자 기준이며, 직업 코드 없음은 순위에서 제외하고 흐린 군집색으로 표시합니다. 직업 필터는 최대 3개까지 강조할 수 있습니다.</p><h3 class="explorer-heading">TIME / NETWORK LEGEND</h3>    <section class="sleep-timeline-panel" aria-label="Sleep activity over 24 hours">
-      <div class="timeline-top"><div class="sleep-modes" aria-label="Day-type emphasis; both datasets remain visible"><button data-sleep-mode="weekday" aria-pressed="false">Weekday</button><button data-sleep-mode="weekend" aria-pressed="false">Weekend</button><button data-sleep-mode="compare" aria-pressed="true">Compare</button></div><span id="compare-key">Clusters = age · Disks / sprouts = aggregate size · Color = occupation share within age cluster</span><span id="sleep-activity"></span></div>
+      <aside id="detail-panel" hidden inert tabindex="0" class="detail-info data-explorer" aria-label="수면 데이터 탐색">
+        <header class="explorer-region" data-panel-reveal>
+          <p id="detail-number" class="detail-eyebrow"></p>
+          <h2 id="detail-title"></h2>
+          <div class="detail-records"><b id="detail-count"></b><span>건의 수면 기록</span></div>
+          <p class="explorer-hint">구를 돌려 연령대별 수면 지형을 살펴보세요. 아래에서 평일과 주말의 수면 패턴을 비교할 수 있습니다.</p>
+          <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
+        </header>
 
-      <p id="comparison-note" class="comparison-note"></p>
-      <p id="network-scope"></p>
-    </section><p class="detail-preview-note">Unweighted, person-balanced means from selected-region diaries. Onset difference is not individual social jetlag. Occupation labels use the official MDIS 2024 response code table; blank means no recorded occupation code, not unemployment. Flat circles represent 2-hour aggregates of unique respondents; circle area is proportional to respondent count. Cluster terrain and branch hue follow the largest recorded occupation by unique respondents. Other occupation colors are subdued according to their share. Unrecorded occupation is excluded from leader ranking and shown as a faint cluster tint. Exact counts and paired duration differences remain available on hover. Overlapping larger disks share raised contour terrain on the sphere (display overlap, not measured geography or sleep height); smaller aggregates sprout from nearby larger disks within their age group. Sprout stems animate between paired person-balanced weekday and weekend sleep durations. Larger duration differences cause larger length changes; unpaired stems remain fixed. Supports and central branches are visual organizing structures, not respondent relationships. Sphere positions are categorical age clusters ordered by sleep bins. Matched weekday/weekend principal wake times are derived from verified sleep runs; unmatched respondents remain in onset/duration aggregates, without inferred wake pairs. Wake differences are not formal social jetlag.</p></section>
+        <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
+          <div data-panel-reveal>
+            <p class="explorer-kicker" lang="en">Weekday / Weekend</p>
+            <h3 class="explorer-heading" id="summary-heading">평일과 주말</h3>
+          </div>
+          <div class="age-summary" data-panel-reveal>
+            <h4 id="age-title">전체 응답자</h4>
+            <div class="age-person-count"><b id="age-people"></b><span>명</span></div>
+            <p id="age-diaries"></p>
+            <dl class="age-means">
+              <div><dt>평일 평균 취침</dt><dd id="age-weekday"></dd></div>
+              <div><dt>주말 평균 취침</dt><dd id="age-weekend"></dd></div>
+              <div><dt>평일 평균 수면</dt><dd id="age-weekday-duration"></dd></div>
+              <div><dt>주말 평균 수면</dt><dd id="age-weekend-duration"></dd></div>
+              <div><dt>취침 시각 차이 · 주말 − 평일</dt><dd id="age-difference"></dd></div>
+            </dl>
+            <p id="age-samples"></p>
+            <details><summary>선택한 응답자의 직업 분포</summary><ul id="occupation-list"></ul></details>
+          </div>
+        </section>
+
+        <section class="explorer-section" aria-labelledby="filter-heading">
+          <div data-panel-reveal>
+            <p class="explorer-kicker" lang="en">Explore</p>
+            <h3 class="explorer-heading" id="filter-heading">어떤 수면을 볼까요?</h3>
+            <p class="explorer-hint">연령대를 선택하면 수면 시차 지형을 볼 수 있습니다. 직업을 고르면 구와 수면 요약이 바뀝니다.</p>
+          </div>
+          <div class="explorer-controls" data-panel-reveal>
+            <div class="explorer-section-heading"><h4>연령대</h4><button id="occupation-clear" type="button">선택 초기화</button></div>
+            <div id="age-overview"></div>
+            <details><summary>직업 선택</summary>
+              <p id="occupation-comparison-status" class="explorer-hint" role="status" aria-live="polite">최대 3개 직업을 비교할 수 있습니다.</p>
+              <ul id="occupation-key"></ul>
+              <details><summary>선택한 직업의 연령 분포</summary><div id="age-list" class="age-list" aria-label="직업 내 연령대 선택"></div></details>
+            </details>
+            <h4>요일 강조</h4>
+            <div class="sleep-modes" aria-label="요일 강조">
+              <button data-sleep-mode="weekday" aria-pressed="false">평일</button>
+              <button data-sleep-mode="weekend" aria-pressed="false">주말</button>
+              <button data-sleep-mode="compare" aria-pressed="true">비교</button>
+            </div>
+            <p id="sleep-activity"></p>
+          </div>
+        </section>
+
+        <section class="explorer-section" aria-labelledby="guide-heading">
+          <div data-panel-reveal>
+            <h3 class="explorer-heading" id="guide-heading">구를 읽는 법</h3>
+            <p id="compare-key" class="explorer-hint">군집은 연령대를, 원의 면적은 응답자 규모를 나타냅니다. 지형의 높이는 원이 얼마나 겹쳤는지를 보여줍니다.</p>
+          </div>
+          <div data-panel-reveal>
+            <details><summary>군집별 대표 직업과 색상</summary>
+              <div id="cluster-occupation-legend" class="cluster-occupation-legend"></div>
+              <p id="comparison-note" class="comparison-note"></p>
+            </details>
+            <details><summary>집계 기준과 수면 시간</summary>
+              <p id="network-scope"></p>
+              <p>평균은 응답자마다 같은 비중을 두고 계산했습니다. 여기에 표시한 취침 시각 차이는 개인별 수면 중간 시각으로 계산하는 사회적 시차와 구분됩니다.</p>
+              <p>작은 원의 줄기는 평일·주말 수면 기록이 모두 있는 응답자의 수면 시간 차이를 보여줍니다. 한쪽 기록만 있는 경우 줄기 길이는 고정됩니다. 직업 분류는 통계청 생활시간조사의 원본 코드를 따릅니다.</p>
+            </details>
+            <details class="region-baseline"><summary>전체 수면 기록 기준</summary>
+              <p id="detail-percent"></p>
+              <dl class="detail-stats"><div><dt>평균 취침 시각</dt><dd id="detail-onset"></dd></div><div><dt>평균 수면 시간</dt><dd id="detail-duration"></dd></div></dl>
+              <p id="detail-days"></p>
+            </details>
+          </div>
+        </section>
+        <section class="explorer-section" id="personal-shift" aria-labelledby="personal-heading">
+          <div data-panel-reveal>
+            <h3 class="explorer-heading" id="personal-heading">나는 어디에 위치할까?</h3>
+            <p class="explorer-hint">평일과 주말의 취침·기상 시각으로 나의 사회적 시차를 계산해 보세요.</p>
+            <a class="explorer-personal-link" href="sleep_calculator.html">알아보러 가기 <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
       </aside>
     </div>
 
   </section>
+  <div id="personal-globe-marker" role="status" hidden><strong>나는 여기에 위치해 있어요</strong><span></span></div>
+  <aside id="personal-result-card" aria-labelledby="personal-result-title" hidden>
+    <h2 id="personal-result-title"></h2>
+    <p id="personal-result-value"></p>
+    <p id="personal-result-direction"></p>
+    <div class="personal-result-scale" aria-hidden="true">
+      <div><i></i></div><span></span><span>0</span><span></span>
+    </div>
+    <p id="personal-result-comparison"></p>
+    <p id="personal-result-duration"></p>
+    <div class="personal-result-actions">
+      <a href="sleep_calculator.html">다시 입력하기</a>
+      <button id="personal-terrain-link" type="button">직종별 데이터 보기 ↗</button>
+    </div>
+  </aside>
+  <dialog id="age-terrain" class="age-terrain" aria-labelledby="age-terrain-title">
+    <div class="terrain-page">
+      <header class="terrain-header">
+        <button id="terrain-back" class="detail-back" type="button" autofocus><span aria-hidden="true">←</span> 전체 구로</button>
+        <div>
+          <p class="terrain-kicker" lang="en">Social Jetlag</p>
+          <h2 id="age-terrain-title"></h2>
+          <p class="terrain-subtitle">평일과 주말의 수면 시차</p>
+        </div>
+        <dl class="terrain-stats">
+          <div><dt>비교한 응답자</dt><dd id="terrain-count"></dd></div>
+          <div><dt>평균 시차 크기</dt><dd id="terrain-mean"></dd></div>
+        </dl>
+      </header>
+      <figure class="terrain-figure">
+        <div class="terrain-view-controls" role="group" aria-label="지형 시점">
+          <button type="button" data-terrain-view="overview" aria-pressed="true">입체</button>
+          <button type="button" data-terrain-view="left" aria-pressed="false">왼쪽</button>
+          <button type="button" data-terrain-view="right" aria-pressed="false">오른쪽</button>
+          <button type="button" data-terrain-view="top" aria-pressed="false">탑뷰</button>
+          <button id="terrain-occupations" type="button">직업별 시차 ↗</button>
+          <span id="terrain-orbit-hint">드래그로 시점 전환 · 블록을 눌러 직업별 비교</span>
+          <span id="terrain-view-note" class="terrain-view-note" role="status"></span>
+        </div>
+        <div id="terrain-plot" class="terrain-plot">
+          <canvas id="terrain-canvas" role="img" tabindex="0" aria-describedby="terrain-orbit-hint" aria-label="평일 수면 중간 시각과 주말 시차별 3D 블록 지형. 방향키로 시점 조절"></canvas>
+          <output id="terrain-hover" class="terrain-hover" hidden></output>
+          <p id="terrain-empty" hidden>평일과 주말을 모두 기록한 응답자가 없습니다.</p>
+        </div>
+        <figcaption><span id="terrain-personal-position" hidden></span>평일 수면 중간 시각 × 주말−평일 시차 · 블록 한 개 = 응답자 한 명</figcaption>
+      </figure>
+      <details class="terrain-method">
+        <summary>시차 계산 기준과 집계</summary>
+        <p>취침 시각에 수면 시간의 절반을 더해 수면 중간 시각을 구합니다. 응답자별로 평일과 주말의 중간 시각을 각각 평균한 뒤, 24시간 원에서 가장 짧은 방향의 차이를 계산합니다.</p>
+        <p>평일 수면 중간 시각과 주말 시차를 각각 10분 단위로 집계했습니다. 자정 전과 오전 9시 이후, 그리고 −4시간 미만과 +4시간 이상의 시차는 각 축의 양끝에 모았습니다. 각 구간에 응답자 한 명당 블록 한 개를 쌓았습니다.</p>
+        <p id="terrain-bin-summary"></p>
+      </details>
+    </div>
+  </dialog>
+  <dialog id="occupation-shifts" aria-labelledby="occupation-shifts-title">
+    <main class="occupation-shift-page">
+      <button id="occupation-shifts-back" class="detail-back" type="button" autofocus>← 연령대 지형으로</button>
+      <header>
+        <h2 id="occupation-shifts-title"></h2>
+        <p id="occupation-shifts-summary"></p>
+      </header>
+      <table class="occupation-shift-table" aria-describedby="occupation-shifts-method">
+        <thead><tr><th scope="col">직업군</th><th scope="col">
+          <div class="occupation-shift-directions"><span>앞당겨짐</span><span>늦어짐</span></div>
+          <div id="occupation-shifts-axis" class="occupation-shift-axis"></div>
+        </th></tr></thead>
+        <tbody id="occupation-shifts-rows"></tbody>
+      </table>
+      <p id="occupation-shifts-method">시차는 주말 수면 중간 시각에서 평일 수면 중간 시각을 뺀 값입니다. 각 막대는 해당 방향으로 바뀐 응답자의 평균입니다. 0분인 응답자는 직업군 인원수에 포함됩니다.</p>
+    </main>
+  </dialog>
   <div id="transition-layer" class="transition-layer" aria-hidden="true" hidden></div>
   <div id="sleep-clock-tooltip" class="sleep-clock-tooltip" role="tooltip" hidden></div>
   <div id="region-tooltip" class="region-tooltip" role="tooltip" hidden></div>
@@ -108,10 +238,45 @@
   <script src="sleep-botany.js"></script>
   <script src="vendor/earcut.min.js"></script>
   <script src="sleep-terrain-gpu.js"></script>
-  <script src="sleep-landscape.js?v=6"></script>
-  <script src="sleep-network.js"></script>
+  <script src="sleep-landscape.js?v=personal-globe"></script>
+  <script src="sleep-network.js?v=personal-terrain-marker"></script>
   <script src="atlas-transition.js"></script>
   <script src="app.js"></script>
-  <script src="flow-link.js?v=7"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a51a66cb8c46aa40',t:'MTc5MzE5NTM0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <script src="sleep-age-terrain.js?v=personal-terrain-marker"></script>
+  <script src="sleep-occupation-shifts.js"></script>
+  <script src="sleep-globe-intro.js?v=personal-globe"></script>
+  <script>
+    const explorerPanel = document.getElementById('detail-panel');
+    if (new URLSearchParams(location.search).has('personal')) {
+      try {
+        const personal = JSON.parse(sessionStorage.getItem('sleep-atlas-personal'));
+        sessionStorage.removeItem('sleep-atlas-personal');
+        history.replaceState(null, '', location.pathname);
+        if (personal && SleepNetworkData.definitions.some(group => group.id === personal.age)
+            && SleepOccupations.definitions.some(item => item.code === personal.occupation)
+            && [personal.weekdayWake, personal.weekendWake].every(wake => Number.isFinite(wake) && wake >= 0 && wake < 1440)
+            && Number.isFinite(personal.weekday) && personal.weekday >= 0 && personal.weekday < 1440
+            && [personal.weekdayDuration, personal.weekendDuration].every(duration => Number.isFinite(duration) && duration > 0 && duration < 1440)
+            && Number.isFinite(personal.shift) && personal.shift >= -720 && personal.shift < 720) {
+          const showPersonal = () => SleepNetwork.focusPersonalLocation(personal);
+          if (SleepNetwork.model) showPersonal();
+          else {
+            window.addEventListener('sleepdetailready', showPersonal, {once: true});
+            AtlasTransition.openGlobe();
+          }
+        }
+      } catch {
+        history.replaceState(null, '', location.pathname);
+      }
+    }
+    if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const explorerObserver = new IntersectionObserver(entries => {
+        for (const entry of entries) {
+          entry.target.classList.toggle('is-visible', entry.isIntersecting);
+        }
+      }, { root: explorerPanel, threshold: 0.05 });
+      for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
+    }
+  </script>
+</body>
 </html>

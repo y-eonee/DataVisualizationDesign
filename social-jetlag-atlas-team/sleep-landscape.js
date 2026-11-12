@@ -31,8 +31,6 @@ const SleepLandscape = (() => {
         const weekend=.40+Math.min(4,n.weekendDuration-low)*.38;
         return weekday+(weekend-weekday)*phase;
     }
-    // Added: weekday->weekend stem height for large aggregates, same relative rule as sprouts.
-    function stemHeight(sd,phase){const low=Math.min(sd.wd,sd.we);return(.40+Math.min(4,sd.wd-low)*.38)*(1-phase)+(.40+Math.min(4,sd.we-low)*.38)*phase;}
     function simplifyRing(ring,tolerance=.0008){
         const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return (p.x-a.x-dx*t)**2+(p.y-a.y-dy*t)**2;};
         const open=points=>{const keep=new Uint8Array(points.length);keep[0]=keep[points.length-1]=1;const stack=[[0,points.length-1]];while(stack.length){const [a,b]=stack.pop();let far=-1,best=tolerance*tolerance;for(let i=a+1;i<b;i++){const d=distance(points[i],points[a],points[b]);if(d>best){best=d;far=i;}}if(far>=0){keep[far]=1;stack.push([a,far],[far,b]);}}return points.filter((_,i)=>keep[i]);};
@@ -126,19 +124,6 @@ const SleepLandscape = (() => {
         nodes.occupationProfiles=occupationProfiles(nodes);
         for(const n of nodes)n.land.occupationProfile=nodes.occupationProfiles[n.groupId];
         nodes.relief=buildRelief(nodes);
-        // Added: one stem per hill, on its highest member. Weekday/weekend durations are count-weighted means over every member
-        // (paired members contribute both sides; weekday-only / weekend-only members contribute their own side).
-        for(const hill of nodes.relief){
-            let wd=0,wn=0,we=0,en=0;
-            for(const m of hill.members){
-                if(m.kind==='paired'&&m.weekdayDuration!=null){wd+=m.count*m.weekdayDuration;wn+=m.count;we+=m.count*m.weekendDuration;en+=m.count;}
-                else if(m.kind==='weekday'){wd+=m.count*m.duration;wn+=m.count;}
-                else if(m.kind==='weekend'){we+=m.count*m.duration;en+=m.count;}
-            }
-            if(!wn||!en)continue;
-            hill.members.reduce((x,y)=>y.land.overlap>x.land.overlap?y:x).land.stemDur={wd:wd/wn,we:we/en};
-        }
-        for(const n of nodes)if(!n.land.sprout&&!n.land.fused&&n.kind==='paired'&&n.weekdayDuration!=null)n.land.stemDur={wd:n.weekdayDuration,we:n.weekendDuration};
         // Anchor each sprout on the nearest larger same-age disk as a visual support.
         // This display relation does not join or duplicate respondents.
         for(const n of nodes){
@@ -154,13 +139,13 @@ const SleepLandscape = (() => {
             n.land.rootRadius=(1+parent.land.terrainHeight)/dot(n.land.normal,p);n.land.parentKey=parent.key;
         }
     }
-    function draw(ctx,nodes,{closeup=true,viewport,yaw,pitch,zoom,opacity,matches,filtered,groups,hover,mode='compare',time=0,seconds=0,reduced=false,ageColors=Array(6).fill('#A29AAD'),emphasis=()=>null}){
+    function draw(ctx,nodes,{closeup=true,viewport,camera,yaw,pitch,zoom,opacity,matches,filtered,groups,hover,mode='compare',time=0,seconds=0,reduced=false,ageColors=Array(6).fill('#A29AAD'),emphasis=()=>null,personalPoint=null}){
         const phase=mode==='weekday'?0:mode==='weekend'?1:reduced?.5:.5-.5*Math.cos(tau*seconds/15);
         const heights=new Map(nodes.map(n=>[n,heightAt(n,phase)]));
         // The globe center sits below the viewport: only a curved upper surface is seen.
         const blend=Number(closeup),wide=Math.min(viewport.width,viewport.height)*.295;
-        const scale=(wide+(Math.max(viewport.width*.58,viewport.height*1.10)-wide)*blend)*zoom;
-        const cx=viewport.left+viewport.width/2,cy=viewport.top+viewport.height*(.5+.72*Number(closeup));
+        const scale=camera?.scale ?? (wide+(Math.max(viewport.width*.58,viewport.height*1.10)-wide)*blend)*zoom;
+        const cx=camera?.x ?? (viewport.left+viewport.width/2),cy=camera?.y ?? (viewport.top+viewport.height*(.5+.72*Number(closeup)));
         const c=Math.cos(yaw),s=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
         const rotate=p=>{const x=p.x*c+p.z*s,z=p.z*c-p.x*s;return {x,y:p.y*cp-z*sp,z:p.y*sp+z*cp};};
         const project=(p,out={})=>{const x=p.x*c+p.z*s,z0=p.z*c-p.x*s,y=p.y*cp-z0*sp,z=p.y*sp+z0*cp,f=1/(1-.08*z);out.x=cx+x*scale*f;out.y=cy+y*scale*f;out.z=z;return out;};
@@ -232,7 +217,6 @@ const SleepLandscape = (() => {
           ctx.globalAlpha=1;ctx.drawImage(surface,viewport.left,viewport.top,viewport.width,viewport.height);calls++;
          }else paintRelief(ctx);
         }
-        const lateStems=[];
         for(const {n,base} of ordered){
             const muted=filtered&&!matches(n),style=n.land.visualStyle||appearance(n),accent=filtered&&matches(n)?emphasis(n):null,alpha=opacity*(muted?.045:filtered?1:style.alpha)*(mode==='compare'||n.kind==='paired'||mode===n.kind?1:.35),r=n.radius*1.32,h=heights.get(n);
             const normal=n.land.normal,ref=Math.abs(normal.y)<.9?{x:0,y:1,z:0}:{x:1,y:0,z:0};
@@ -262,21 +246,11 @@ const SleepLandscape = (() => {
                 ctx.globalAlpha=alpha*(!n.land.sprout&&n.land.terrainHeight>0?.48:1);ctx.fillStyle=muted?'#55515B':color;if(!style.hollow){disk(y,rr,true);calls++;}
                 ctx.globalAlpha=alpha*(accent?1:!n.land.sprout&&n.land.terrainHeight>0?.35:.75);ctx.strokeStyle=accent||(style.hollow?style.color:'#35313C');ctx.lineWidth=accent?1.7:style.hollow?1:.55;disk(y,rr,false);calls++;
             }
-            if(n.land.stemDur){
-                // Large aggregates sit under terrain with near-zero alpha, so the stem uses its own alpha and is drawn last.
-                const hs=.5+stemHeight(n.land.stemDur,phase)*1.5,mr=r*.82*.95,sa=opacity*(muted?.045:.55+.4*blend);
-                lateStems.push(()=>{
-                    ctx.globalAlpha=sa;ctx.strokeStyle='#F2F6FF';ctx.lineWidth=.8+.9*blend;line(base,project(centerAt(hs)));calls++;
-                    ctx.globalAlpha=sa;ctx.fillStyle=muted?'#55515B':style.color;if(!style.hollow){disk(hs,mr,true);calls++;}
-                    ctx.globalAlpha=sa;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=1.4;disk(hs,mr,false);calls++;
-                });
-            }
             const world=centerAt(h),top=project(world),rr=r*.82;
             const axis=t=>{const p=project({x:world.x+t.x*rr,y:world.y+t.y*rr,z:world.z+t.z*rr});return {x:p.x-top.x,y:p.y-top.y};};
             const ellipseU=axis(u),ellipseV=axis(v),radius=Math.hypot(ellipseU.x,ellipseU.y,ellipseV.x,ellipseV.y);
             views.push({node:n,x:top.x,y:top.y,z:base.z,radius,ellipseU,ellipseV,muted,alpha,height:h,colorKind:style.kind,hollow:style.hollow,accent});
         }
-        for(const f of lateStems)f();
         const dataLabels=[];
         if(closeup){
             const candidates=[];
@@ -297,11 +271,11 @@ const SleepLandscape = (() => {
             const occupied=[],limit=viewport.width<650?10:26;
             for(const c of candidates.sort((a,b)=>b.total-a.total)){
                 const width=ctx.measureText?ctx.measureText(c.text).width:c.text.length*7;
-                const x=c.p.x+5,y=c.p.y-16,box={left:x-3,right:x+width+3,top:y-14,bottom:y+3};
+                const x=c.p.x+5,y=c.p.y-16,box={left:x-3,right:x+13,top:y-width,bottom:y+3};
                 if(dataLabels.length>=limit||box.left<viewport.left+10||box.right>viewport.right-10||box.top<viewport.top+18||box.bottom>viewport.bottom-14)continue;
                 if(occupied.some(b=>box.left<b.right+8&&box.right>b.left-8&&box.top<b.bottom+8&&box.bottom>b.top-8))continue;
-                occupied.push(box);ctx.globalAlpha=opacity*.85;ctx.strokeStyle='#F4F0F8';ctx.lineWidth=.55;line(c.p,{x:c.p.x,y:y-5});
-                ctx.save();ctx.translate(x,y-7);ctx.globalAlpha=opacity;ctx.fillStyle='#FFF9FF';ctx.font='11px Arial';ctx.textAlign='left';ctx.fillText(c.text,0,0);ctx.restore();
+                occupied.push(box);ctx.globalAlpha=opacity*.85;ctx.strokeStyle='#F4F0F8';ctx.lineWidth=.55;line(c.p,{x:c.p.x,y:y-width-5});
+                ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);ctx.globalAlpha=opacity;ctx.fillStyle='#FFF9FF';ctx.font='11px Arial';ctx.textAlign='left';ctx.fillText(c.text,0,0);ctx.restore();
                 dataLabels.push({text:c.text,x,y,count:c.count,total:c.total,groupId:c.groupId,code:c.code,hillKey:c.hillKey});
             }
         }
@@ -310,10 +284,25 @@ const SleepLandscape = (() => {
             const p=project(times(n.ageAnchor,1.55)),g=groups[id];
             labels.push({id,x:p.x,y:p.y,text:viewport.width<650?g.name:g.name+' / '+g.stats.people.toLocaleString()});
         }
-        for(const p of labels){ctx.globalAlpha=opacity;ctx.font='12px Arial';ctx.textAlign='center';ctx.fillStyle='#050408';ctx.fillRect(p.x-58,p.y-12,116,17);ctx.fillStyle='#DED7E8';ctx.fillText(p.text,p.x,p.y);}
+        for(const p of labels){ctx.globalAlpha=opacity;ctx.font='12px Arial';ctx.textAlign='center';ctx.fillStyle='#000';ctx.fillRect(p.x-58,p.y-12,116,17);ctx.fillStyle='#DED7E8';ctx.fillText(p.text,p.x,p.y);}
         if(!closeup){ctx.globalAlpha=opacity*.85;ctx.fillStyle='#C7BFD2';ctx.font='11px Arial';ctx.textAlign='left';
         ctx.fillText('SLEEP GLOBE / SIX AGE TERRITORIES',viewport.left+18,viewport.top+26);
         ctx.fillStyle='#8E8799';ctx.fillText(viewport.width<650?'Cluster hue: leading occupation · faint: smaller groups':'Cluster hue: largest recorded occupation · fainter: lower respondent share · area: people',viewport.left+18,viewport.bottom-18);
+        }
+        if (personalPoint) {
+            const marker = project(personalPoint);
+            if (marker.z > 0 && marker.x > viewport.left && marker.x < viewport.right
+                && marker.y > viewport.top + 72 && marker.y < viewport.bottom) {
+                ctx.globalAlpha = opacity;
+                ctx.fillStyle = '#a7f2d9';
+                ctx.strokeStyle = '#080e0d';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 6, 0, tau);
+                ctx.fill();
+                ctx.stroke();
+                views.personalMarker = marker;
+            }
         }
         ctx.restore();views.labels=labels;views.dataLabels=dataLabels;views.drawCalls=calls;views.terrainCacheHit=terrainCacheHit;views.terrainRenderer=gpu?'webgl':'canvas';views.culled=nodes.length-views.length;views.neuronBranches=nodes.tree.edges.length;views.reliefHills=nodes.relief.length;views.sprouts=nodes.filter(n=>n.land.sprout).length;views.phase=phase;views.phaseLabel=mode==='compare'?(reduced?'Paired duration / midpoint':'Weekday ↔ Weekend / '+Math.round(phase*100)+'% weekend'):(mode==='weekday'?'Weekday duration':'Weekend duration');return views;
     }

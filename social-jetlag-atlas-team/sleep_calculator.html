@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>나의 사회적 시차 — Sleep Atlas</title>
+  <style>
+    :root { color-scheme: dark; --mint: #bce8d8; --line: #363636; --muted: #bfbfbf; --gutter: clamp(1.25rem, 7vw, 8.25rem); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #000; color: #fff; font-family: Geist, Inter, Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif; word-break: keep-all; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--mint); outline-offset: 5px; }
+    main { position: relative; isolation: isolate; overflow: clip; min-height: 100svh; max-width: 120rem; margin: auto; padding: 1rem var(--gutter) clamp(1.5rem, 4.5vh, 3rem); display: flex; flex-direction: column; }
+    .back,.previous { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; border: 0; background: none; padding: 0; color: var(--muted); text-decoration: none; font: inherit; font-size: .85rem; cursor: pointer; }
+    .back:hover,.previous:hover { color: #fff; }
+    form { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-block: clamp(1.5rem, 5vh, 4rem); }
+    .form-step { max-width: 82rem; }
+    .form-step:not([hidden]) { animation: rise .42s cubic-bezier(.2,.7,.3,1) both; }
+    .form-step h1 { margin: 0; font-size: clamp(2rem, 5.8vw, 5.75rem); line-height: 1.1; letter-spacing: -.05em; font-weight: 800; }
+    .form-step p { margin: clamp(.65rem, 1.6vh, 1.2rem) 0 clamp(1rem, 3.8vh, 2.4rem); color: var(--muted); font-size: clamp(.9rem, 1.45vw, 1.35rem); line-height: 1.5; }
+    .step-count { display: block; margin-bottom: clamp(.65rem, 2vh, 1.4rem); color: var(--mint); font-weight: 650; font-size: clamp(.82rem, 1.15vw, 1.1rem); }
+    .choices { display: flex; flex-wrap: wrap; gap: clamp(.45rem, 1vw, .95rem); }
+    .choice { display: inline-flex; align-items: center; gap: .6em; min-height: 44px; padding: clamp(.45rem, 1vw, .9rem) clamp(.7rem, 1.9vw, 1.8rem); border: 1px solid var(--line); border-radius: 100px; background: #ffffff09; color: #fff; font: inherit; font-weight: 650; font-size: clamp(.83rem, 1.25vw, 1.3rem); line-height: 1.25; text-align: left; cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+    .choice:hover,.choice[aria-pressed="true"] { background: var(--mint); color: #000; border-color: var(--mint); }
+    .occupation-choice::before { content: ""; width: .55em; height: .55em; flex: none; border-radius: 50%; background: var(--mint); }
+    .occupation-choice:hover::before,.occupation-choice[aria-pressed="true"]::before { background: currentColor; }
+    .progress { display: flex; gap: .9rem; width: min(100%, 25.5rem); margin-top: auto; }
+    .progress span { height: 3px; flex: 1; border-radius: 2px; background: #2c2c2c; }
+    .progress .reached { background: var(--mint); }
+    .orbit { position: absolute; z-index: -1; right: -18rem; top: 24%; width: min(42vw, 36rem); aspect-ratio: 1; pointer-events: none; opacity: .42; }
+    .orbit i { position: absolute; inset: var(--inset); border: 1px dashed #bce8d849; border-radius: 50%; }
+    .result { padding-block: clamp(1.25rem, 3vh, 2.25rem); border-top: 1px solid var(--line); }
+    .schedule,.result-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1rem, 5vw, 5rem); }
+    fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+    legend { margin-bottom: .85rem; padding: 0; font-size: clamp(1.1rem, 2.6vw, 1.55rem); font-weight: 650; }
+    .inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    label { display: grid; gap: .45rem; color: var(--muted); font-size: .82rem; }
+    select { width: 100%; min-width: 0; min-height: 44px; background: #111; color: #fff; border: 1px solid #555; border-radius: 4px; padding: .5rem .55rem; font: inherit; font-size: 1rem; }
+    .time-picker { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+    .time-picker > span { grid-column: 1 / -1; color: var(--muted); font-size: .82rem; }
+    .locate { display: inline-flex; align-items: center; min-height: 44px; margin-top: 1rem; padding: .65rem 1.25rem; border: 1px solid #fff; border-radius: 100px; background: #fff; color: #000; font-weight: 650; text-decoration: none; }
+    .locate:hover { background: var(--mint); border-color: var(--mint); }
+    .result:not([hidden]) { animation: rise .45s ease both; }
+    @keyframes rise { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+    @media (prefers-reduced-motion: no-preference) {
+      @view-transition { navigation: auto; }
+      ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .44s; }
+    }
+    .result h2 { margin: 0; font-size: clamp(1.3rem, 3vw, 2rem); letter-spacing: -.04em; }
+    .result-number { margin: .5rem 0; color: var(--mint); font-size: clamp(2rem, 6vw, 4.5rem); font-weight: 700; letter-spacing: -.06em; }
+    .result p { line-height: 1.65; }
+    .result-times { margin-block: 1.5rem; padding-block: 1rem; border-block: 1px solid var(--line); }
+    .result-times dt { color: var(--muted); font-size: .82rem; }
+    .result-times dd { margin: .3rem 0 0; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+    .bands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; list-style: none; padding: 0; }
+    .bands li { padding: .65rem .2rem; border-top: 2px solid #444; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+    .bands li[aria-current] { border-color: var(--mint); color: var(--mint); font-weight: 650; }
+    @media (max-width: 620px) {
+      .inputs { grid-template-columns: 1fr; }
+      select { padding-inline: .35rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { .form-step:not([hidden]),.result:not([hidden]) { animation: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="sleep_atlas_data_landscape_matte.html#personal-shift">← 전체 구로</a>
+    <div class="orbit" aria-hidden="true"><i style="--inset:0%"></i><i style="--inset:12%"></i><i style="--inset:24%"></i></div>
+    <form id="sleep-times">
+      <section class="form-step" id="age-step" aria-labelledby="age-title">
+        <span class="step-count" aria-label="1단계, 전체 3단계">01 / 03</span>
+        <h1 id="age-title" tabindex="-1">몇 살 이신가요?</h1>
+        <p>연령대를 골라 주세요.</p>
+        <div class="choices" id="age-choices"></div>
+      </section>
+      <section class="form-step" id="occupation-step" aria-labelledby="occupation-title" hidden>
+        <span class="step-count" aria-label="2단계, 전체 3단계">02 / 03</span>
+        <h1 id="occupation-title" tabindex="-1">어떤 일을 하세요?</h1>
+        <p>가장 가까운 직업을 골라 주세요.</p>
+        <div class="choices" id="occupation-choices"></div>
+        <button class="previous" type="button" data-previous="0">← 이전</button>
+      </section>
+      <section class="form-step" id="time-step" aria-labelledby="time-title" hidden>
+      <span class="step-count" aria-label="3단계, 전체 3단계">03 / 03</span>
+      <h1 id="time-title" tabindex="-1">몇 시에 주무세요?</h1>
+      <p>목록을 열고 스크롤해 시와 분을 골라 주세요. 24시간 기준입니다.</p>
+      <div class="schedule">
+        <fieldset>
+          <legend>평일</legend>
+          <div class="inputs">
+            <div class="time-picker" data-time="weekdayBed" data-label="평일 취침"><span>취침 시각</span></div>
+            <div class="time-picker" data-time="weekdayWake" data-label="평일 기상"><span>기상 시각</span></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>주말</legend>
+          <div class="inputs">
+            <div class="time-picker" data-time="weekendBed" data-label="주말 취침"><span>취침 시각</span></div>
+            <div class="time-picker" data-time="weekendWake" data-label="주말 기상"><span>기상 시각</span></div>
+          </div>
+        </fieldset>
+      </div>
+      <p id="time-error" role="status" hidden>취침 시각과 기상 시각을 다르게 골라 주세요.</p>
+      <button class="previous" type="button" data-previous="1">← 이전</button>
+      </section>
+    </form>
+    <section class="result" id="result" aria-labelledby="result-heading" hidden>
+      <h2 id="result-heading" tabindex="-1">나의 사회적 시차</h2>
+      <p class="result-number" id="shift-number" role="status"></p>
+      <p id="shift-direction"></p>
+      <dl class="result-times">
+        <div><dt>평일 수면 중간 시각</dt><dd id="weekday-midpoint"></dd></div>
+        <div><dt>주말 수면 중간 시각</dt><dd id="weekend-midpoint"></dd></div>
+      </dl>
+      <ul class="bands" aria-label="프로젝트의 시차 구간">
+        <li>거의 같음<br>30분 미만</li>
+        <li>보통<br>30분 이상 60분 미만</li>
+        <li>큼<br>60분 이상</li>
+      </ul>
+      <a class="locate" id="locate" href="sleep_atlas_data_landscape_matte.html?personal=1">내 위치 보러가기 ↗</a>
+    </section>
+    <div class="progress" aria-hidden="true"><span class="reached"></span><span></span><span></span></div>
+  </main>
+  <script src="sleep-network-data.js"></script>
+  <script src="sleep-occupations.js"></script>
+  <script>
+    const form = document.getElementById('sleep-times');
+    const result = document.getElementById('result');
+    const steps = [...form.querySelectorAll('.form-step')];
+    const progress = [...document.querySelectorAll('.progress span')];
+    const timeError = document.getElementById('time-error');
+    const locate = document.getElementById('locate');
+    const bands = [...result.querySelectorAll('li')];
+    const day = 24 * 60;
+    const wrap = minutes => (minutes % day + day) % day;
+    const pad = value => String(value).padStart(2, '0');
+    let personalLocation = null;
+    let age = null;
+    let occupation = null;
+    let activeStep = 0;
+    function showStep(index) {
+      activeStep = index;
+      steps.forEach((step, position) => { step.hidden = position !== index; });
+      progress.forEach((segment, position) => segment.classList.toggle('reached', position <= index));
+      updateResult();
+      window.scrollTo(0, 0);
+      steps[index].querySelector('h1').focus({preventScroll: true});
+    }
+    function addChoice(container, label, choose) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = container === jobs ? 'choice occupation-choice' : 'choice';
+      button.textContent = label;
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => {
+        for (const choice of container.children) choice.setAttribute('aria-pressed', String(choice === button));
+        choose();
+      });
+      container.append(button);
+    }
+    const ages = document.getElementById('age-choices');
+    const jobs = document.getElementById('occupation-choices');
+    for (const group of SleepNetworkData.definitions) {
+      addChoice(ages, group.id === 5 ? '60대 이상' : group.min + '대', () => {
+        age = group.id;
+        showStep(1);
+      });
+    }
+    const jobsByCode = SleepOccupations.definitions;
+    for (const job of [jobsByCode.at(-1), ...jobsByCode.slice(0, -1)]) {
+      addChoice(jobs, job.code ? job.label : '직업 미기재·기타', () => {
+        occupation = job.code;
+        showStep(2);
+      });
+    }
+    for (const button of form.querySelectorAll('[data-previous]')) {
+      button.addEventListener('click', () => showStep(Number(button.dataset.previous)));
+    }
+    for (const picker of form.querySelectorAll('.time-picker')) {
+      for (const [unit, count, label] of [['Hour', 24, '시'], ['Minute', 60, '분']]) {
+        const select = document.createElement('select');
+        select.name = picker.dataset.time + unit;
+        select.setAttribute('aria-label', picker.dataset.label + ' ' + label);
+        select.add(new Option(label, ''));
+        for (let value = 0; value < count; value++) select.add(new Option(pad(value) + label, value));
+        picker.append(select);
+      }
+    }
+    function readTime(name) {
+      const hour = form.elements.namedItem(name + 'Hour').value;
+      const minute = form.elements.namedItem(name + 'Minute').value;
+      return hour === '' || minute === '' ? null : Number(hour) * 60 + Number(minute);
+    }
+    function midpoint(bed, wake) {
+      return wrap(bed + wrap(wake - bed) / 2);
+    }
+    function clock(value) {
+      const wholeMinutes = Math.floor(value);
+      const hour = String(Math.floor(wholeMinutes / 60)).padStart(2, '0');
+      const minute = String(wholeMinutes % 60).padStart(2, '0');
+      return hour + ':' + minute + (value % 1 ? ':30' : '');
+    }
+    function updateResult() {
+      const [weekdayBed, weekdayWake, weekendBed, weekendWake] =
+        ['weekdayBed', 'weekdayWake', 'weekendBed', 'weekendWake'].map(readTime);
+      const complete = activeStep === 2 && age !== null && occupation !== null
+        && [weekdayBed, weekdayWake, weekendBed, weekendWake].every(value => value !== null);
+      const sameTime = complete && (weekdayBed === weekdayWake || weekendBed === weekendWake);
+      timeError.hidden = !sameTime;
+      if (!complete || sameTime) {
+        personalLocation = null;
+        result.hidden = true;
+        return;
+      }
+      const weekday = midpoint(weekdayBed, weekdayWake);
+      const weekend = midpoint(weekendBed, weekendWake);
+      const shift = wrap(weekend - weekday + day / 2) - day / 2;
+      const magnitude = Math.abs(shift);
+      const hours = Math.floor(magnitude / 60);
+      const remainder = magnitude % 60;
+      document.getElementById('shift-number').textContent = hours
+        ? hours + '시간' + (remainder ? ' ' + remainder + '분' : '')
+        : magnitude + '분';
+      document.getElementById('shift-direction').textContent =
+        magnitude === 720 ? '평일과 주말의 수면 중간 시각이 12시간 차이 납니다.' :
+        shift === 0 ? '평일과 주말의 수면 중간 시각이 같아요.' :
+        '주말 수면 중간 시각이 평일보다 ' + (shift > 0 ? '늦어요.' : '빨라요.');
+      document.getElementById('weekday-midpoint').textContent = clock(weekday);
+      document.getElementById('weekend-midpoint').textContent = clock(weekend);
+      const band = magnitude < 30 ? 0 : magnitude < 60 ? 1 : 2;
+      bands.forEach((item, index) => {
+        if (index === band) item.setAttribute('aria-current', 'true');
+        else item.removeAttribute('aria-current');
+      });
+      personalLocation = {age, occupation, weekday, weekdayWake, weekendWake, shift,
+        weekdayDuration: wrap(weekdayWake - weekdayBed), weekendDuration: wrap(weekendWake - weekendBed)};
+      result.hidden = false;
+    }
+    form.addEventListener('submit', event => event.preventDefault());
+    form.addEventListener('change', updateResult);
+    window.addEventListener('pageshow', updateResult);
+    locate.addEventListener('click', () => {
+      if (personalLocation) sessionStorage.setItem('sleep-atlas-personal', JSON.stringify(personalLocation));
+    });
+  </script>
+</body>
+</html>

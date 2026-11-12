@@ -111,13 +111,13 @@ window.AtlasTransition = (() => {
     function populate() {
         const selection = window.sleepRegionSelection,
             stats = selection.statistics;
-        document.getElementById('detail-number').textContent = 'REGION ' + selection.region.number + ' / AGE & SLEEP NETWORK';
-        document.getElementById('detail-title').textContent = selection.region.name;
+        document.getElementById('detail-number').textContent = selection.id === 'all' ? 'Sleep Atlas' : '수면 구간 ' + selection.region.number;
+        document.getElementById('detail-title').textContent = selection.id === 'all' ? '수면 데이터' : selection.region.name;
         document.getElementById('detail-count').textContent = stats.count.toLocaleString();
-        document.getElementById('detail-percent').textContent = stats.percentOfValid.toFixed(2) + '% of all valid records';
-        document.getElementById('detail-onset').textContent = SleepRegions.clock(stats.onsetMean) + (18 + stats.onsetMean >= 24 ? ' (+1d)' : '');
+        document.getElementById('detail-percent').textContent = '전체 유효 기록의 ' + stats.percentOfValid.toFixed(2) + '%';
+        document.getElementById('detail-onset').textContent = SleepRegions.clock(stats.onsetMean) + (18 + stats.onsetMean >= 24 ? ' (다음 날)' : '');
         const minutes = Math.round(stats.durationMean * 60);
-        document.getElementById('detail-duration').textContent = Math.floor(minutes / 60) + 'h ' + String(minutes % 60).padStart(2, '0') + 'm';
+        document.getElementById('detail-duration').textContent = Math.floor(minutes / 60) + '시간 ' + (minutes % 60) + '분';
         document.getElementById('detail-days').textContent = [1, 2, 3].map(day => names[day] + ' ' + stats.categoryCounts[day].toLocaleString()).join(' / ');
     }
 
@@ -318,16 +318,19 @@ window.AtlasTransition = (() => {
         for(const row of records)categoryCounts[row[2]]++;
         window.sleepRegionSelection={id:'all',region:{id:'all',number:'ALL',name:'All Sleep Records'},recordIndices:indices,visibleRecordIndices:indices,records,visibleRecords:records,statistics:{count:indices.length,percentOfValid:100,onsetMean:records.reduce((s,r)=>s+r[0],0)/records.length,durationMean:records.reduce((s,r)=>s+r[1],0)/records.length,categoryCounts}};
         state={direct:true,id:'all',stage:'detail',progress:1,morph:1,targets:new Map()};
-        panel.hidden=false;panel.inert=false;panel.setAttribute('aria-hidden','false');panel.style.pointerEvents='auto';panel.style.setProperty('--detail-reveal',1);panel.classList.add('is-settled');
+        panel.hidden=false;panel.inert=false;panel.setAttribute('aria-hidden','false');panel.style.pointerEvents='auto';panel.style.setProperty('--detail-reveal',1);panel.classList.add('is-settled','is-overview');
+        const detailInfo = document.getElementById('detail-panel');
+        detailInfo.hidden = false;
+        detailInfo.inert = false;
         atlasScreen.hidden=true;atlasScreen.inert=true;atlasScreen.setAttribute('aria-hidden','true');
         document.body.dataset.screen='detail';document.body.classList.add('atlas-detail-active');
         detailVisual.appendChild(canvas);canvas.setAttribute('aria-label','Full sleep globe. Drag to rotate, scroll to zoom.');
-        RegionMap.suspend();populate();document.getElementById('detail-number').textContent='SLEEP ATLAS / FULL DATASET';SleepNetwork.prepare(indices);syncSurface();
+        RegionMap.suspend();populate();SleepNetwork.prepare(indices);syncSurface();
         document.getElementById('globe-loading').hidden=true;
-        SleepNetwork.setView(false);window.dispatchEvent(new CustomEvent('sleepdetailready',{detail:window.sleepRegionSelection}));
+        window.dispatchEvent(new CustomEvent('sleepdetailready',{detail:window.sleepRegionSelection}));
     }
     function back() {
-        if(state?.direct){SleepNetwork.setView(false);return;}
+        if (state?.direct) return;
         if (state && state.stage !== 'exiting') { SleepNetwork.stop(); run(0); }
     }
 
@@ -348,7 +351,7 @@ window.AtlasTransition = (() => {
         syncSurface();
         RegionMap.suspend();
     }
-    backButton.addEventListener('click', back);
+    if (backButton.tagName !== 'A') backButton.addEventListener('click', back);
     document.querySelectorAll('a[href="#main"]').forEach(link => link.addEventListener('click', event => {
         if (state) {
             event.preventDefault();
