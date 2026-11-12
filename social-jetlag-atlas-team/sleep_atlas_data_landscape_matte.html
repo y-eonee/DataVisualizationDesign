@@ -75,18 +75,6 @@
           <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
         </header>
 
-        <section id="conclusion" class="explorer-section explorer-conclusion" aria-labelledby="conclusion-heading" hidden>
-          <div data-panel-reveal>
-            <p class="explorer-kicker" lang="en">Conclusion</p>
-            <h3 class="explorer-heading" id="conclusion-heading">마무리하며</h3>
-          </div>
-          <blockquote data-panel-reveal>
-            <p><strong>시차는 나만 겪는 게 아닙니다.</strong><br>구를 다시 돌려보세요. 연령대와 직업에 따라 줄기가 서로 다르게 흔들립니다. 같은 24시간이지만, 누군가의 시간표는 몸의 리듬과 더 많이 어긋나 있습니다.</p>
-            <p><strong>이 지도가 말해 주지 않는 것.</strong><br>이 값은 집단 평균이고, 당신의 수치도 일상의 한 단면일 뿐입니다. 건강 상태를 판단하는 도구가 아닙니다. 수면 문제가 오래간다면 전문가와 상담하세요.</p>
-            <p><strong>처음의 질문으로 돌아가며.</strong><br>주말에 몰아 자는 건 게으름일까요, 평일에 빌린 잠을 갚는 걸까요? 지도를 보면 그 답은 개인의 의지보다 <strong>누가 어떤 시간표 속에 있는가</strong>에 더 가까워 보입니다.<br>평일의 시간표를 바꿀 수 있을까요, 아니면 주말의 기대를 바꿔야 할까요?</p>
-          </blockquote>
-        </section>
-
         <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
           <div data-panel-reveal>
             <p class="explorer-kicker" lang="en">Weekday / Weekend</p>
@@ -164,6 +152,18 @@
       </aside>
     </div>
 
+  </section>
+  <section id="conclusion" class="conclusion-overlay" aria-labelledby="conclusion-heading" aria-hidden="true" hidden>
+    <button class="conclusion-close" type="button">← 구 보기</button>
+    <div class="conclusion-body">
+      <p class="conclusion-kicker" lang="en">Conclusion</p>
+      <h2 id="conclusion-heading">마무리하며</h2>
+      <blockquote>
+        <p><strong>시차는 나만 겪는 게 아닙니다.</strong><br>구를 다시 돌려보세요. 연령대와 직업에 따라 줄기가 서로 다르게 흔들립니다. 같은 24시간이지만, 누군가의 시간표는 몸의 리듬과 더 많이 어긋나 있습니다.</p>
+        <p><strong>이 지도가 말해 주지 않는 것.</strong><br>이 값은 집단 평균이고, 당신의 수치도 일상의 한 단면일 뿐입니다. 건강 상태를 판단하는 도구가 아닙니다. 수면 문제가 오래간다면 전문가와 상담하세요.</p>
+        <p><strong>처음의 질문으로 돌아가며.</strong><br>주말에 몰아 자는 건 게으름일까요, 평일에 빌린 잠을 갚는 걸까요? 지도를 보면 그 답은 개인의 의지보다 <strong>누가 어떤 시간표 속에 있는가</strong>에 더 가까워 보입니다.<br>평일의 시간표를 바꿀 수 있을까요, 아니면 주말의 기대를 바꿔야 할까요?</p>
+      </blockquote>
+    </div>
   </section>
   <div id="personal-globe-marker" role="status" hidden><strong>나는 여기에 위치해 있어요</strong><span></span></div>
   <aside id="personal-result-card" aria-labelledby="personal-result-title" hidden>
@@ -293,21 +293,15 @@
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
     }
 
-    // 지형 탑뷰를 본 뒤 다시 구로 돌아오면, 구 첫 화면에서 아래로 스크롤할 때 마무리 결론이 나타난다.
+    // 지형 탑뷰를 본 뒤 구로 돌아와서, 구를 일정 크기 이하로 줄인 상태에서 아래로 스크롤하면 마무리 결론이 올라온다.
     {
       const conclusion = document.getElementById('conclusion');
-      const scrollLink = explorerPanel.querySelector('.explorer-scroll');
       const terrain = document.getElementById('age-terrain');
       const topButton = document.querySelector('[data-terrain-view="top"]');
       const KEY = 'sleep-atlas-top-viewed';
-      let viewedTop = false;
-      let explored = false;
+      const SMALL_ZOOM = .75;            // 구가 이 배율 이하로 작아졌을 때
+      let viewedTop = false, explored = false, open = false, acc = 0, resetTimer = 0;
       try { explored = sessionStorage.getItem(KEY) === '1'; } catch {}
-      const reveal = () => {
-        if (!explored || !conclusion.hidden) return;
-        conclusion.hidden = false;
-        if (scrollLink) scrollLink.setAttribute('href', '#conclusion');
-      };
       if (topButton) {
         const markTop = () => { if (topButton.getAttribute('aria-pressed') === 'true') viewedTop = true; };
         new MutationObserver(markTop).observe(topButton, {attributes: true, attributeFilter: ['aria-pressed']});
@@ -317,10 +311,36 @@
         if (!viewedTop) return;
         explored = true;
         try { sessionStorage.setItem(KEY, '1'); } catch {}
-        if (explorerPanel.scrollTop < 40) reveal();
       });
-      explorerPanel.addEventListener('scroll', () => { if (explorerPanel.scrollTop < 40) reveal(); }, { passive: true });
-      reveal();
+      const show = () => {
+        if (open) return;
+        open = true;
+        conclusion.hidden = false;
+        conclusion.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(() => requestAnimationFrame(() => conclusion.classList.add('on')));
+        conclusion.querySelector('.conclusion-close').focus({preventScroll: true});
+      };
+      const hide = () => {
+        if (!open) return;
+        open = false;
+        conclusion.classList.remove('on');
+        conclusion.setAttribute('aria-hidden', 'true');
+        acc = 0;
+        setTimeout(() => { if (!open) conclusion.hidden = true; }, 1000);
+      };
+      conclusion.querySelector('.conclusion-close').addEventListener('click', hide);
+      addEventListener('keydown', event => { if (event.key === 'Escape' && open) hide(); });
+      conclusion.addEventListener('wheel', event => { if (open && event.deltaY < -40 && conclusion.scrollTop <= 0) hide(); }, {passive: true});
+      addEventListener('wheel', event => {
+        if (!explored || open || document.body.classList.contains('intro-on') || terrain.open) return;
+        if (!event.target.closest || !event.target.closest('#detail-visual')) return;
+        if (typeof SleepNetwork === 'undefined' || !SleepNetwork.animation || SleepNetwork.animation.targetZoom > SMALL_ZOOM) { acc = 0; return; }
+        if (event.deltaY <= 0) { acc = 0; return; }
+        event.stopImmediatePropagation(); event.preventDefault();
+        acc += event.deltaY * (event.deltaMode === 1 ? 16 : 1);
+        clearTimeout(resetTimer); resetTimer = setTimeout(() => { acc = 0; }, 350);
+        if (acc > 220) { acc = 0; show(); }
+      }, {capture: true, passive: false});
     }
   </script>
 </body>
