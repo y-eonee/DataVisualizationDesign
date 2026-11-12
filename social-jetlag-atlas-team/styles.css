@@ -1466,3 +1466,9 @@ a.detail-back:focus-visible {
 @media(prefers-reduced-motion:reduce) {
     #occupation-shifts[open] { animation: none; }
 }
+
+.explorer-conclusion[hidden] { display: none; }
+.data-explorer .explorer-conclusion blockquote { margin: 0; padding: 4px 0 4px 18px; border-left: 3px solid #555; }
+.data-explorer .explorer-conclusion p { margin: 0 0 26px; font-size: 14px; line-height: 1.85; color: var(--muted); word-break: keep-all; }
+.data-explorer .explorer-conclusion p:last-child { margin-bottom: 0; }
+.data-explorer .explorer-conclusion strong { color: #fff; font-weight: 650; }

@@ -73,6 +73,18 @@
           <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
         </header>
 
+        <section id="conclusion" class="explorer-section explorer-conclusion" aria-labelledby="conclusion-heading" hidden>
+          <div data-panel-reveal>
+            <p class="explorer-kicker" lang="en">Conclusion</p>
+            <h3 class="explorer-heading" id="conclusion-heading">마무리하며</h3>
+          </div>
+          <blockquote data-panel-reveal>
+            <p><strong>시차는 나만 겪는 게 아닙니다.</strong><br>구를 다시 돌려보세요. 연령대와 직업에 따라 줄기가 서로 다르게 흔들립니다. 같은 24시간이지만, 누군가의 시간표는 몸의 리듬과 더 많이 어긋나 있습니다.</p>
+            <p><strong>이 지도가 말해 주지 않는 것.</strong><br>이 값은 집단 평균이고, 당신의 수치도 일상의 한 단면일 뿐입니다. 건강 상태를 판단하는 도구가 아닙니다. 수면 문제가 오래간다면 전문가와 상담하세요.</p>
+            <p><strong>처음의 질문으로 돌아가며.</strong><br>주말에 몰아 자는 건 게으름일까요, 평일에 빌린 잠을 갚는 걸까요? 지도를 보면 그 답은 개인의 의지보다 <strong>누가 어떤 시간표 속에 있는가</strong>에 더 가까워 보입니다.<br>평일의 시간표를 바꿀 수 있을까요, 아니면 주말의 기대를 바꿔야 할까요?</p>
+          </blockquote>
+        </section>
+
         <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
           <div data-panel-reveal>
             <p class="explorer-kicker" lang="en">Weekday / Weekend</p>
@@ -276,6 +288,30 @@
         }
       }, { root: explorerPanel, threshold: 0.05 });
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
+    }
+
+    // 전체 탐색을 마친 뒤 구 첫 화면으로 돌아오면, 아래로 스크롤할 때 마무리 결론이 나타난다.
+    {
+      const conclusion = document.getElementById('conclusion');
+      const scrollLink = explorerPanel.querySelector('.explorer-scroll');
+      const lastSection = document.getElementById('personal-shift');
+      const KEY = 'sleep-atlas-explored';
+      let explored = false;
+      try { explored = sessionStorage.getItem(KEY) === '1'; } catch {}
+      const reveal = () => {
+        if (!explored || !conclusion.hidden) return;
+        conclusion.hidden = false;
+        if (scrollLink) scrollLink.setAttribute('href', '#conclusion');
+      };
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(entries => {
+          if (!entries.some(entry => entry.isIntersecting) || explored) return;
+          explored = true;
+          try { sessionStorage.setItem(KEY, '1'); } catch {}
+        }, { root: explorerPanel, threshold: 0.6 }).observe(lastSection);
+      }
+      explorerPanel.addEventListener('scroll', () => { if (explorerPanel.scrollTop < 40) reveal(); }, { passive: true });
+      reveal();
     }
   </script>
 </body>
