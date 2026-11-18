@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Sleep Atlas ? Social Jetlag</title>
-  <link rel="stylesheet" href="styles.css?v=personal-terrain-marker">
+  <link rel="stylesheet" href="styles.css?v=fixes2">
   <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
-
 </head>
 <body data-screen="detail" data-entry="globe">
   <div id="atlas-screen" class="atlas-screen" hidden inert>
@@ -76,10 +75,18 @@
 
         <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
           <div data-panel-reveal>
-            <p class="explorer-kicker" lang="en">Weekday / Weekend</p>
-            <h3 class="explorer-heading" id="summary-heading">평일과 주말</h3>
+            <h3 class="sleep-summary-heading" id="summary-heading">평일과 주말,<br>수면의 중간 시각은 얼마나 다를까요?</h3>
           </div>
           <div class="age-summary" data-panel-reveal>
+            <div id="summary-age-filter" class="summary-age-filter" role="group" aria-label="연령대 필터"></div>
+            <p id="summary-cohort" class="summary-cohort" role="status"></p>
+            <div id="summary-distribution" class="summary-distribution" role="group" aria-label="시차 구간별 응답자 분포"></div>
+            <div class="summary-bands" role="group" aria-label="시차 구간 선택"><button type="button" data-summary-band="0" aria-pressed="true">거의 같음<small>30분 미만</small></button><button type="button" data-summary-band="1" aria-pressed="false">보통<small>30분–60분 미만</small></button><button type="button" data-summary-band="2" aria-pressed="false">큼<small>60분 이상</small></button></div>
+            <div class="summary-graphic" role="img" aria-label="평일과 주말의 평균 수면 구간과 중간 시각 비교">
+              <canvas id="summary-clock"></canvas>
+            </div>
+            <p id="summary-caption" class="summary-caption"></p>
+            <details class="summary-original" hidden><summary>시차 구간 전체의 수면 기록과 직업 분포</summary>
             <h4 id="age-title">전체 응답자</h4>
             <div class="age-person-count"><b id="age-people"></b><span>명</span></div>
             <p id="age-diaries"></p>
@@ -91,16 +98,12 @@
               <div><dt>취침 시각 차이 · 주말 − 평일</dt><dd id="age-difference"></dd></div>
             </dl>
             <p id="age-samples"></p>
-            <details><summary>선택한 응답자의 직업 분포</summary><ul id="occupation-list"></ul></details>
+            <ul id="occupation-list"></ul>
+            </details>
           </div>
         </section>
 
-        <section class="explorer-section" aria-labelledby="filter-heading">
-          <div data-panel-reveal>
-            <p class="explorer-kicker" lang="en">Explore</p>
-            <h3 class="explorer-heading" id="filter-heading">어떤 수면을 볼까요?</h3>
-            <p class="explorer-hint">연령대를 선택하면 수면 시차 지형을 볼 수 있습니다. 직업을 고르면 구와 수면 요약이 바뀝니다.</p>
-          </div>
+        <section class="explorer-section" aria-label="연령대와 직업 선택" hidden>
           <div class="explorer-controls" data-panel-reveal>
             <div class="explorer-section-heading"><h4>연령대</h4><button id="occupation-clear" type="button">선택 초기화</button></div>
             <div id="age-overview"></div>
@@ -143,27 +146,29 @@
         </section>
         <section class="explorer-section" id="personal-shift" aria-labelledby="personal-heading">
           <div data-panel-reveal>
-            <h3 class="explorer-heading" id="personal-heading">나는 어디에 위치할까?</h3>
-            <p class="explorer-hint">평일과 주말의 취침·기상 시각으로 나의 사회적 시차를 계산해 보세요.</p>
-            <a class="explorer-personal-link" href="sleep_calculator.html">알아보러 가기 <span aria-hidden="true">↗</span></a>
+            <h3 class="explorer-heading" id="personal-heading">마무리하며</h3>
+            <button id="conclusion-open" class="conclusion-scroll" type="button">마무리하며 읽기 →</button>
           </div>
         </section>
       </aside>
     </div>
 
   </section>
-  <section id="conclusion" class="conclusion-overlay" aria-labelledby="conclusion-heading" aria-hidden="true" hidden>
-    <button class="conclusion-close" type="button">← 구 보기</button>
-    <div class="conclusion-body">
+  <dialog id="conclusion-screen" aria-labelledby="conclusion-title">
+    <main class="conclusion-page">
+      <button id="conclusion-back" type="button">← 구 탐색으로</button>
       <p class="conclusion-kicker" lang="en">Conclusion</p>
-      <h2 id="conclusion-heading">마무리하며</h2>
-      <blockquote>
-        <p><strong>시차는 나만 겪는 게 아닙니다.</strong><br>구를 다시 돌려보세요. 연령대와 직업에 따라 줄기가 서로 다르게 흔들립니다. 같은 24시간이지만, 누군가의 시간표는 몸의 리듬과 더 많이 어긋나 있습니다.</p>
-        <p><strong>이 지도가 말해 주지 않는 것.</strong><br>이 값은 집단 평균이고, 당신의 수치도 일상의 한 단면일 뿐입니다. 건강 상태를 판단하는 도구가 아닙니다. 수면 문제가 오래간다면 전문가와 상담하세요.</p>
-        <p><strong>처음의 질문으로 돌아가며.</strong><br>주말에 몰아 자는 건 게으름일까요, 평일에 빌린 잠을 갚는 걸까요? 지도를 보면 그 답은 개인의 의지보다 <strong>누가 어떤 시간표 속에 있는가</strong>에 더 가까워 보입니다.<br>평일의 시간표를 바꿀 수 있을까요, 아니면 주말의 기대를 바꿔야 할까요?</p>
-      </blockquote>
-    </div>
-  </section>
+      <h1 id="conclusion-title">마무리하며</h1>
+      <div class="conclusion-copy">
+        <section><h2>시차는 나만 겪는 게 아닙니다.</h2>
+          <p>구를 다시 돌려보세요. 연령대와 직업에 따라 줄기가 서로 다르게 흔들립니다. 같은 24시간이지만, 누군가의 시간표는 몸의 리듬과 더 많이 어긋나 있습니다.</p></section>
+        <section><h2>이 지도가 말해 주지 않는 것.</h2>
+          <p>이 값은 집단 평균이고, 당신의 수면도 일상의 한 단면일 뿐입니다. 건강 상태를 판단하는 도구는 아닙니다. 수면 문제가 오래간다면 전문가와 상담하세요.</p></section>
+        <section><h2>처음의 질문으로 돌아가며.</h2>
+          <p>주말에 몰아 자는 건 게으름일까요. 평일에 빌린 잠을 갚는 걸까요? 지도를 보면 그 답은 개인의 의지보다 누가 어떤 시간표 속에 있는가에 더 가까워 보입니다.<br>평일의 시간표를 바꿀 수 있을까요, 아니면 주말의 기대를 바꿔야 할까요?</p></section>
+      </div>
+    </main>
+  </dialog>
   <div id="personal-globe-marker" role="status" hidden><strong>나는 여기에 위치해 있어요</strong><span></span></div>
   <aside id="personal-result-card" aria-labelledby="personal-result-title" hidden>
     <h2 id="personal-result-title"></h2>
@@ -247,17 +252,19 @@
   <script src="sleep-demographics.js"></script>
   <script src="sleep-network-data.js"></script>
   <script src="sleep-network-links.js"></script>
-  <script src="sleep-occupations.js"></script>
+  <script src="sleep-occupations.js?v=bright-pink"></script>
   <script src="sleep-botany.js"></script>
   <script src="vendor/earcut.min.js"></script>
   <script src="sleep-terrain-gpu.js"></script>
-  <script src="sleep-landscape.js?v=personal-globe"></script>
-  <script src="sleep-network.js?v=personal-terrain-marker"></script>
+  <script src="sleep-landscape.js?v=bright-pink"></script>
+  <script src="sleep-summary-chart.js?v=fixes2"></script>
+  <script src="sleep-network.js?v=fixes1"></script>
   <script src="atlas-transition.js"></script>
   <script src="app.js"></script>
   <script src="sleep-age-terrain.js?v=personal-terrain-marker"></script>
   <script src="sleep-occupation-shifts.js"></script>
-  <script src="sleep-globe-intro.js?v=personal-globe"></script>
+  <script src="sleep-globe-intro.js?v=stationary-globe"></script>
+  <script src="sleep-conclusion.js"></script>
   <script>
     const explorerPanel = document.getElementById('detail-panel');
     if (new URLSearchParams(location.search).has('personal')) {
@@ -290,56 +297,6 @@
       }, { root: explorerPanel, threshold: 0.05 });
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
     }
-
-    // 지형 탑뷰를 본 뒤 구로 돌아와서, 구를 일정 크기 이하로 줄인 상태에서 아래로 스크롤하면 마무리 결론이 올라온다.
-    {
-      const conclusion = document.getElementById('conclusion');
-      const terrain = document.getElementById('age-terrain');
-      const topButton = document.querySelector('[data-terrain-view="top"]');
-      const KEY = 'sleep-atlas-top-viewed';
-      const SMALL_ZOOM = .75;            // 구가 이 배율 이하로 작아졌을 때
-      let viewedTop = false, explored = false, open = false, acc = 0, resetTimer = 0;
-      try { explored = sessionStorage.getItem(KEY) === '1'; } catch {}
-      if (topButton) {
-        const markTop = () => { if (topButton.getAttribute('aria-pressed') === 'true') viewedTop = true; };
-        new MutationObserver(markTop).observe(topButton, {attributes: true, attributeFilter: ['aria-pressed']});
-        markTop();
-      }
-      terrain.addEventListener('close', () => {
-        if (!viewedTop) return;
-        explored = true;
-        try { sessionStorage.setItem(KEY, '1'); } catch {}
-      });
-      const show = () => {
-        if (open) return;
-        open = true;
-        conclusion.hidden = false;
-        conclusion.setAttribute('aria-hidden', 'false');
-        requestAnimationFrame(() => requestAnimationFrame(() => conclusion.classList.add('on')));
-        conclusion.querySelector('.conclusion-close').focus({preventScroll: true});
-      };
-      const hide = () => {
-        if (!open) return;
-        open = false;
-        conclusion.classList.remove('on');
-        conclusion.setAttribute('aria-hidden', 'true');
-        acc = 0;
-        setTimeout(() => { if (!open) conclusion.hidden = true; }, 1000);
-      };
-      conclusion.querySelector('.conclusion-close').addEventListener('click', hide);
-      addEventListener('keydown', event => { if (event.key === 'Escape' && open) hide(); });
-      conclusion.addEventListener('wheel', event => { if (open && event.deltaY < -40 && conclusion.scrollTop <= 0) hide(); }, {passive: true});
-      addEventListener('wheel', event => {
-        if (!explored || open || document.body.classList.contains('intro-on') || terrain.open) return;
-        if (!event.target.closest || !event.target.closest('#detail-visual')) return;
-        if (typeof SleepNetwork === 'undefined' || !SleepNetwork.animation || SleepNetwork.animation.targetZoom > SMALL_ZOOM) { acc = 0; return; }
-        if (event.deltaY <= 0) { acc = 0; return; }
-        event.stopImmediatePropagation(); event.preventDefault();
-        acc += event.deltaY * (event.deltaMode === 1 ? 16 : 1);
-        clearTimeout(resetTimer); resetTimer = setTimeout(() => { acc = 0; }, 350);
-        if (acc > 220) { acc = 0; show(); }
-      }, {capture: true, passive: false});
-    }
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c4ed806c00d8f2',t:'MTc5NDk4MzQzOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c4ed806c00d8f2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

@@ -194,6 +194,7 @@ const SleepNetwork = (() => {
         const title=[selection.selectedAgeGroup===null?null:displayAge(model.groups[selection.selectedAgeGroup]),
             selection.selectedOccupations.length?selection.selectedOccupations.map(code=>SleepOccupations.style(code).label).join(' + '):null].filter(Boolean).join(' / ')||(window.sleepRegionSelection.id==='all'?'전체 응답자':'선택 구간 전체');
         if(shownInfo===title)return;shownInfo=title;
+        SleepSummaryChart.update(selectionStats || model,title);
         $('age-title').textContent=title;
         $('age-people').textContent=stats.people.toLocaleString();$('age-diaries').textContent=stats.diaries.toLocaleString()+'건의 수면 기록';
         $('age-weekday').textContent=clock(stats.weekdayOnset);$('age-weekend').textContent=clock(stats.weekendOnset);$('age-difference').textContent=delta(stats.differenceMinutes);
@@ -224,7 +225,7 @@ const SleepNetwork = (() => {
         }
         window.sleepOccupationSelection=!selection.selectedOccupations.length?null:{regionId:window.sleepRegionSelection.id,ageGroupId:selected,occupationCode:selection.selectedOccupation,occupationCodes:[...selection.selectedOccupations],recordIndices:[...indices],records:indices.map(i=>DATA[i]),personIds:selectionStats.persons.map(p=>p.id),statistics:selectionStats.stats};
         window.sleepAgeSelection=selected===null?null:{regionId:window.sleepRegionSelection.id,ageGroup:model.groups[selected].name,recordIndices:[...indices],records:indices.map(i=>DATA[i]),personIds:selectionStats.persons.map(p=>p.id),statistics:selectionStats.stats};
-        buildOccupationKey();buildOverview();
+        buildOccupationKey();buildOverview();buildSummaryAgeFilter();
         document.querySelectorAll('[data-age]').forEach(button=>{
             const id=+button.dataset.age,people=model.groups[id].persons.filter(p=>p.indices.some(i=>matchesOccupation(SleepOccupations.codeOf(i)))).length;
             button.textContent=displayAge(model.groups[id])+' / '+people.toLocaleString();button.disabled=!people;button.setAttribute('aria-pressed',String(id===selected));
@@ -238,6 +239,13 @@ const SleepNetwork = (() => {
             button.style.setProperty('--age-color',ageLineColors[group.id]);button.style.setProperty('--share',100*group.stats.people/Math.max(1,model.stats.people)+'%');
             button.textContent=displayAge(group)+'  '+group.stats.people.toLocaleString();button.setAttribute('aria-pressed',String(selected===group.id));button.disabled=!group.stats.people;button.onclick=()=>openAgeTerrain(group.id);root.append(button);
         }
+    }
+    function buildSummaryAgeFilter(){
+        const root=$('summary-age-filter');if(!root)return;root.replaceChildren();
+        const add=(label,id)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',String(selected===id));
+            if(id!==null&&!model.groups[id].stats.people)b.disabled=true;
+            b.onclick=()=>{selection.selectedAgeGroup=id;applySelection();};root.append(b);};
+        add('전체',null);for(const g of model.groups)add(displayAge(g),g.id);
     }
     function clearOccupationFocus(redraw=true){selection.selectedOccupation=null;selection.selectedOccupations=[];applySelection(redraw);}
     function select(id,redraw=true){selection.selectedAgeGroup=selection.selectedAgeGroup===id?null:id;applySelection(redraw);}

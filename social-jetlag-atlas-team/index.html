@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#000000">
   <title>Social Jetlag — Sleep Atlas</title>
   <style>
-    :root{color-scheme:dark;--ink:#fff;--line:#363636;--muted:#bfbfbf;--gutter:clamp(1.25rem,6vw,7rem);--orbit-size:clamp(300px,94svh,1000px)}
+    :root{color-scheme:dark;--ink:#fff;--line:#363636;--muted:#bfbfbf;--gutter:clamp(1.25rem,6vw,7rem);--orbit-size:clamp(122px,24vw,360px)}
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{margin:0;background:#000;color:var(--ink);font-family:Geist,Inter,"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
@@ -15,50 +15,156 @@
     a:focus-visible{outline:2px solid #fff;outline-offset:6px}
     main{position:relative;z-index:1}
     .intro-orbit{
-      position:fixed;left:72%;top:50%;z-index:0;
-      width:var(--orbit-size);aspect-ratio:1;pointer-events:none;
+      position:fixed;left:76%;top:49%;z-index:0;
+      width:min(21vw,37svh);aspect-ratio:1;pointer-events:none;
       transform:translate(-50%,-50%);
-      opacity:.68
+      opacity:.85
     }
-    .intro-orbit canvas{
-      position:absolute;left:-60%;top:-60%;width:220%;height:220%;display:block
+    .intro-orbit svg{
+      display:block;width:100%;height:100%;overflow:visible
+    }
+    .orbit-ring{
+      opacity:0;transition:opacity .42s ease;
+      transform-box:view-box;transform-origin:50% 50%;
+      animation:orbit-spin var(--orbit-period,32s) linear infinite
+    }
+    .orbit-ring:nth-child(even){animation-direction:reverse}
+    .orbit-ring.is-visible,.intro-leaving .orbit-ring{opacity:1}
+    .orbit-track,.orbit-extra{fill:none;stroke:currentColor;stroke-width:1.15;vector-effect:non-scaling-stroke}
+    .orbit-track{fill:none;stroke-opacity:.42}
+    .globe-reveal{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000;z-index:9;visibility:hidden;clip-path:circle(0 at 50% 50%)}
+    .intro-leaving .intro-fixed-brand,.intro-leaving .intro-fixed-scroll{opacity:0;pointer-events:none}
+    .intro-leaving .intro-orbit{z-index:10}
+    .globe-entered .intro-orbit{display:none}
+    .orbit-dot{fill:currentColor}
+    .orbit-extra{
+      color:#fff;transform-box:view-box;transform-origin:50% 50%;
+      animation:orbit-burst .46s cubic-bezier(.13,.72,.27,1) both;
+      animation-delay:var(--ring-delay)
     }
     .orbit-exit{height:32svh}
     .orbit-exit[hidden]{display:none}
-    .orbit-scroll-hint{font-size:.77rem;color:var(--muted);margin:1.15rem 0 0}
+    .orbit-scroll-hint{font-size:.77rem;color:var(--muted);margin:1rem 0 0}
     .intro-leaving main{opacity:0;transition:opacity .24s ease;pointer-events:none}
-    .hero,.outro{padding-inline:var(--gutter)}
-    .hero{--shift:0px;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding-block:clamp(1.5rem,4vh,3rem);overflow:hidden}
+    @keyframes orbit-burst{
+      0%{transform:scale(var(--ring-start));opacity:0}
+      24%{opacity:.78}
+      100%{transform:scale(1);opacity:.18}
+    }
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
+    .hero,.chapter,.outro{padding-inline:var(--gutter)}
+    .hero-sequence{height:230svh}
+    .hero{--shift:0px;position:sticky;top:0;height:100svh;display:grid;grid-template-rows:auto auto 1fr;padding-inline:5.83%;padding-block:7.1svh;overflow:hidden}
+    .hero-copy{grid-column:1;grid-row:2;will-change:transform,opacity}
+    .hero-question{opacity:0;transform:translateY(80px);pointer-events:none}
+    .hero-question h2{margin:0;font-size:clamp(2rem,4.8vw,4.3rem);font-weight:600;letter-spacing:-.065em;line-height:1.18}
+    .hero-question p{margin:3.8svh 0 0;font-size:clamp(.85rem,1.28vw,1.15rem);line-height:1.95;letter-spacing:-.04em}
+    .hero-question p span{display:block}
+    .hero .hero-footer{grid-column:1;grid-row:3}
+    body,body *{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif!important}
+    .step-intro{scroll-behavior:auto}
+    .step-intro .hero-sequence{height:500svh}
+    .step-intro .hero{position:fixed;inset:0}
+    .step-intro .hero.is-hidden{visibility:hidden;pointer-events:none}
+    .step-intro .chapter,.step-intro .outro{display:none;position:fixed;inset:0;min-height:0;height:100svh;overflow-y:auto;border:0;padding-top:16svh;padding-bottom:9svh}
+    .step-intro .chapter.is-step-active{display:grid;animation:step-pop .36s cubic-bezier(.18,.82,.25,1) both}
+    .step-intro .outro.is-step-active{display:flex;align-items:center;justify-content:flex-start;padding:5svh 5.83%;text-align:left;animation:step-pop .36s cubic-bezier(.18,.82,.25,1) both}
+    .step-intro .hero-copy.is-pop{animation:step-pop .36s cubic-bezier(.18,.82,.25,1) both}
+    .step-intro .is-step-active .reveal{opacity:1;transform:none;animation:none}
+    .step-intro .orbit-exit{display:none}
+    .step-intro .hero .brand{visibility:hidden}
+    .step-intro .hero .scroll-link,.step-intro .definition-brand,.step-intro .definition-scroll{display:none}
+    .intro-fixed-brand{position:fixed;z-index:8;top:7.1svh;left:5.83%;font-size:12px;font-weight:400;color:#d0d0d0;pointer-events:none}
+    .intro-fixed-scroll{position:fixed;z-index:8;right:5.83%;bottom:6.1svh;min-height:44px;padding:10px 0;background:none;border:0;color:#bfbfbf;font-size:12px;cursor:pointer}
+    @keyframes step-pop{from{opacity:0;translate:0 45px}to{opacity:1;translate:0 0}}
+    .step-intro .journal-page.is-step-active{display:block;padding:16svh 5.83% 9svh}
+    .step-intro .journal-page.is-step-active{align-content:start;padding-top:calc(14.2svh + 16.2px)}
+    .journal-page .definition-brand{position:absolute;top:7.1svh;left:5.83%;font-size:12px;color:#d0d0d0}
+    .chapter.journal-page h2{margin:0 0 4.8svh;font-size:clamp(1.5rem,3.07vw,2.76rem);font-weight:600;letter-spacing:-.055em;line-height:1.23}
+    .journal-page .chapter-body{max-width:760px}
+    .chapter.journal-page p{color:#fff;font-size:clamp(.8rem,1.28vw,1.15rem);line-height:1.6;letter-spacing:-.045em;margin:0 0 3.5svh}
+    .chapter.journal-page .definition-note{margin-top:5.5svh;font-size:clamp(.72rem,.98vw,.875rem);color:#b3b3b3}
+    .journal-page .definition-scroll{position:absolute;right:5.83%;bottom:6.1svh;background:none;border:0;padding:10px 0;color:#bfbfbf;font-size:12px;cursor:pointer}
+    @media(prefers-reduced-motion:reduce){.intro-orbit{transition:none}.step-intro .chapter.is-step-active,.step-intro .outro.is-step-active,.step-intro .hero-copy.is-pop{animation:none}}
     .brand,.scroll-link{font:500 .74rem/1.35 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase}
-    .brand{display:flex;align-items:center;gap:.7rem}
-    .brand::before{content:"";width:.5rem;height:.5rem;border:1px solid currentColor;border-radius:50%}
-    .hero-title{align-self:center;margin:.25em 0 .25em;font-family:Geist,Inter,Arial,sans-serif;font-size:clamp(3.65rem,17vw,17rem);font-weight:800;letter-spacing:-.07em;line-height:.77}
-    .title-mask{display:block;overflow:hidden;padding:.065em .12em .275em 0;margin-bottom:-.22em}
-    .title-mask:nth-child(2){padding-left:clamp(.2em,13vw,1em)}
+    .brand{font-size:12px;letter-spacing:0;font-weight:400;color:#d0d0d0}
+    .hero-copy{margin-top:7.1svh}
+    .hero-title{margin:0;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:clamp(2rem,5.1vw,4.6rem);font-weight:400;letter-spacing:-.065em;line-height:1.23}
+    .title-mask{display:block;overflow:hidden;padding:.08em .15em .15em 0;margin-bottom:-.15em}
+    .title-mask:nth-child(2){padding-left:0}
+    .hero-subtitle{margin:3.2svh 0 0;font-size:clamp(.95rem,2.05vw,1.85rem);line-height:1.5;letter-spacing:-.06em;font-weight:400}
     .title-word{display:block;width:max-content;transform:translateX(var(--shift))}
     .title-mask:nth-child(2) .title-word{transform:translateX(calc(-1 * var(--shift)))}
-    .title-letter{display:inline-block}
+    .title-letter{display:inline-block;white-space:pre}
     .motion .title-letter{opacity:0}
     .motion .hero-title.is-visible .title-letter{animation:title-in .9s cubic-bezier(.2,.8,.2,1) calc(var(--letter) * 85ms) both}
     @keyframes title-in{from{translate:0 .65em;opacity:0}to{translate:0 0;opacity:1}}
-    .hero-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:1.25rem;gap:1rem}
-    .hero-footer p{margin:0;font-size:.84rem;color:var(--muted)}
+    .hero-footer{position:relative;align-self:end;padding-bottom:10svh}
+    .hero-footer p{margin:0;font-size:clamp(.8rem,1.28vw,1.15rem);letter-spacing:-.045em;color:var(--muted)}
+    .hero-footer .scroll-link{position:absolute;right:0;bottom:-1svh;font-size:12px;letter-spacing:0;font-weight:400;color:#bfbfbf}
     .scroll-link{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;min-height:2.75rem;white-space:nowrap}
     .scroll-link span,.cta span{display:inline-block;transition:transform .25s ease}
     .scroll-link:hover span{transform:translateY(.25rem)}
+    .chapter{
+      display:grid;grid-template-columns:clamp(9rem,12vw,15rem) minmax(0,1fr);
+      gap:clamp(1.5rem,3.5vw,4rem);padding-block:clamp(5rem,13vh,11rem);
+      padding-right:calc(18% + var(--orbit-size) / 2 + clamp(12px,2.5vw,40px));
+      min-height:82svh;align-content:center;border-top:1px solid var(--line)
+    }
+    .chapter h2{font-size:clamp(.95rem,1.47vw,1.25rem);letter-spacing:-.035em;margin:.5rem 0 0;font-weight:600}
+    .chapter-body{max-width:50rem}
+    .chapter p{margin:0 0 1.5em;font-size:clamp(.95rem,1.52vw,1.2rem);line-height:1.85;color:var(--muted);letter-spacing:-.025em}
+    .chapter p:last-child{margin-bottom:0}
+    .chapter .sentence{display:block}
+    .chapter .sentence + .sentence{margin-top:.45em}
+    .chapter .lead{font-size:clamp(1.5rem,3.3vw,3.3rem);line-height:1.28;letter-spacing:-.065em;font-weight:650;color:var(--ink);margin-bottom:.8em}
+    .chapter strong{color:var(--ink)}
+    .shift-study{container-type:inline-size}
+    .shift-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:1.75rem 0 .9rem}
+    .shift-options button{
+      border:0;border-bottom:1px solid var(--line);padding:.6rem .2rem;background:transparent;
+      color:var(--muted);font:inherit;text-align:left;cursor:pointer
+    }
+    .shift-options button[aria-pressed=true]{border-color:#a3ead1;color:#d3f5e9;background:#a3ead111}
+    .shift-options button:focus-visible{outline:1px solid #fff;outline-offset:2px}
+    .shift-options strong,.shift-options span{display:block;font-size:clamp(.64rem,2.5cqw,.95rem);line-height:1.5}
+    .shift-options span{font-size:clamp(.58rem,2.2cqw,.76rem)}
+    .shift-demo{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;align-items:center}
+    .shift-clock{width:100%;max-width:250px;justify-self:center}
+    .shift-clock text{fill:#aaa;font:11px monospace;text-anchor:middle}
+    .shift-clock .track{fill:none;stroke:#ffffff21;stroke-width:8}
+    .shift-clock .sleep-arc{fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round;stroke-dasharray:480 960}
+    .shift-clock .midpoint{fill:currentColor;stroke:#000;stroke-width:2}
+    .shift-clock .clock-day{transform-box:view-box;transform-origin:center;transform:rotate(var(--clock-angle));transition:transform .65s cubic-bezier(.22,.68,.28,1)}
+    .shift-weekday{color:#a3ead1}
+    .shift-weekend{color:#fff}
+    .shift-reading{min-width:0}
+    .chapter .shift-label,.chapter .shift-note{font-size:.75rem;line-height:1.55;margin:.65rem 0;color:var(--muted)}
+    .shift-result{display:block;color:#d3f5e9;font-size:clamp(1.7rem,8cqw,3.5rem);line-height:1;font-weight:700;letter-spacing:-.04em}
+    .shift-times{display:grid;gap:.48rem;margin:.85rem 0}
+    .shift-times div{display:flex;flex-wrap:wrap;gap:.2rem .55rem;align-items:baseline}
+    .shift-times dt,.shift-times dd{margin:0;font-size:.76rem;line-height:1.4}
+    .shift-times dd{font-variant-numeric:tabular-nums}
+    @container (min-width:430px){
+      .shift-demo{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:1rem}
+    }
     .outro{min-height:64svh;display:grid;place-items:center;text-align:center;border-top:1px solid var(--line);padding-block:5rem}
-    .outro h2{font-size:clamp(1.65rem,4.3vw,4.25rem);line-height:1.15;letter-spacing:.025em;text-wrap:balance;max-width:17em;margin:0 auto 1.8rem}
-    .cta{display:inline-flex;align-items:center;gap:2rem;border:1px solid #fff;border-radius:99px;padding:1rem 1.5rem;text-decoration:none;transition:background .25s,color .25s}
-    .cta:hover{background:#fff;color:#000}
+    .outro h2{font-size:clamp(1.8rem,4.45vw,4rem);font-weight:750;line-height:1.3;letter-spacing:-.06em;max-width:24em;margin:0 0 clamp(2rem,5.7vh,3.2rem)}
+    .cta{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #fff;border-radius:99px;padding:1rem 1.7rem;background:#fff;color:#000;font-size:14px;font-weight:650;text-decoration:none;transition:background .25s,color .25s}
+    .cta:hover{background:#bce8d8;border-color:#bce8d8;color:#000}
     .cta:hover span{transform:translateY(.25rem)}
     .motion .reveal{opacity:0;transform:translateY(2.7rem)}
     .motion .reveal.is-visible{opacity:1;transform:none;transition:opacity 1.15s ease,transform 1.45s cubic-bezier(.22,.68,.28,1)}
     .motion .chapter-body .reveal.is-visible{transition-delay:var(--sentence-delay,0ms)}
     .motion .reveal:focus-within{opacity:1;transform:none;transition:none}
+    @media(max-width:900px){
+      .chapter{grid-template-columns:1fr;gap:1.65rem;min-height:auto}
+      .chapter h2{margin:0}
+    }
     @media(max-width:650px){
-      :root{--orbit-size:clamp(260px,86vw,520px)}
-      .hero-title{font-size:clamp(3rem,17vw,7rem)}
-      .title-mask:nth-child(2){padding-left:.35em}
+      :root{--orbit-size:clamp(112px,36vw,180px)}
+      .hero-title{font-size:clamp(1.4rem,5.1vw,2.3rem)}
+      .title-mask:nth-child(2){padding-left:0}
       .hero-footer{gap:.5rem}
       .hero-footer p{font-size:.76rem}
     }
@@ -71,24 +177,86 @@
 </head>
 <body>
   <div class="intro-orbit" aria-hidden="true">
-    <canvas id="planet"></canvas>
+    <svg viewBox="0 0 320 320" focusable="false">
+      <g class="orbit-ring is-visible" style="color:#ee79b8;--orbit-period:17s">
+        <circle class="orbit-track" cx="160" cy="160" r="28"/><circle class="orbit-dot" cx="183.11" cy="175.81" r="3.2"/><circle class="orbit-dot" cx="133.62" cy="169.38" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#edcf70;--orbit-period:26s">
+        <circle class="orbit-track" cx="160" cy="160" r="44"/><circle class="orbit-dot" cx="149.58" cy="202.75" r="3.2"/><circle class="orbit-dot" cx="123.90" cy="134.85" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#4ed6ad;--orbit-period:21s">
+        <circle class="orbit-track" cx="160" cy="160" r="66"/><circle class="orbit-dot" cx="94.49" cy="168.01" r="3.2"/><circle class="orbit-dot" cx="159.18" cy="94.01" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#4fb5de;--orbit-period:39s">
+        <circle class="orbit-track" cx="160" cy="160" r="79"/><circle class="orbit-dot" cx="123.35" cy="90.01" r="3.2"/><circle class="orbit-dot" cx="223.69" cy="113.25" r="2.3"/>
+      </g>
+      <g class="orbit-ring is-visible" style="color:#ac8ee3;--orbit-period:32s">
+        <circle class="orbit-track" cx="160" cy="160" r="103"/><circle class="orbit-dot" cx="228.50" cy="83.08" r="3.2"/><circle class="orbit-dot" cx="257.87" cy="192.09" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#ed79b7;--orbit-period:45s">
+        <circle class="orbit-track" cx="160" cy="160" r="115"/><circle class="orbit-dot" cx="267.35" cy="201.24" r="3.2"/><circle class="orbit-dot" cx="194.42" cy="269.73" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#55b6df;--orbit-period:37s">
+        <circle class="orbit-track" cx="160" cy="160" r="132"/><circle class="orbit-dot" cx="159.21" cy="292.00" r="3.2"/><circle class="orbit-dot" cx="80.53" cy="265.40" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#ad91e5;--orbit-period:52s">
+        <circle class="orbit-track" cx="160" cy="160" r="140"/><circle class="orbit-dot" cx="28.72" cy="208.63" r="3.2"/><circle class="orbit-dot" cx="20.04" cy="156.47" r="2.3"/>
+      </g>
+      <g class="orbit-ring" style="color:#e9cb6b;--orbit-period:46s">
+        <circle class="orbit-track" cx="160" cy="160" r="151"/><circle class="orbit-dot" cx="60.94" cy="46.04" r="3.2"/><circle class="orbit-dot" cx="75.29" cy="35.00" r="2.3"/>
+      </g>
+    </svg>
   </div>
+  <span class="intro-fixed-brand">SLEEP ATLAS</span>
+  <button class="intro-fixed-scroll" type="button" aria-label="다음 화면으로 스크롤">SCROLL ↓</button>
   <main>
+    <div class="hero-sequence">
     <header class="hero">
       <div class="brand">Sleep Atlas</div>
-      <h1 class="hero-title" lang="en" aria-label="Social Jetlag">
-        <span class="title-mask" aria-hidden="true"><span class="title-word">Social</span></span>
-        <span class="title-mask" aria-hidden="true"><span class="title-word">Jetlag</span></span>
+      <div class="hero-copy hero-cover">
+      <h1 class="hero-title" aria-label="주말에 몰아자는 것도 게으름일까?">
+        <span class="title-mask" aria-hidden="true"><span class="title-word">주말에 몰아자는 것도</span></span>
+        <span class="title-mask" aria-hidden="true"><span class="title-word">게으름일까?</span></span>
       </h1>
+      <p class="hero-subtitle">사회적 시차로 알아보는 현대인의 수면 패턴</p>
+      </div>
+      <div class="hero-copy hero-question" aria-hidden="true" inert>
+        <h2>우리는 왜 월요일에<br>피곤할까?</h2>
+        <p><span>금요일 밤엔 잠이 안 오고, 월요일 아침엔 눈이 안 떠지고. 대체 왜 이러는 걸까?</span><span>주말엔 분명 푹 잤는데, 월요일 아침만 되면 몸이 천근만근.</span><span>나만 이런 건가?</span></p>
+      </div>
       <div class="hero-footer">
         <p>평일과 주말 사이, 몸이 겪는 시차</p>
-        <a class="scroll-link" href="#outro-title" aria-label="스크롤해서 시각화로 이동">Scroll <span aria-hidden="true">↓</span></a>
+        <a class="scroll-link" href="#definition" aria-label="스크롤해서 사회적 시차 읽기">Scroll <span aria-hidden="true">↓</span></a>
       </div>
     </header>
+    </div>
+
+    <section class="chapter journal-page" id="definition" aria-labelledby="definition-title">
+      <span class="definition-brand">SLEEP ATLAS</span>
+      <h2 id="definition-title">비행기를 타지 않아도<br>우리 몸은 매주 시차를 겪습니다</h2>
+      <div class="chapter-body">
+        <p>월요일 아침 알람에 맞춰 일어나고, 금요일 밤에는 늦게 자고, 주말에는 늦잠을 잡니다<br>이것을 <strong>사회적 시차(Social Jetlag)</strong>라고 부릅니다.</p>
+        <p>사회적 시차란 몸이 원하는 수면 리듬과 학교·직장이 정한 시간표가 어긋나면서 생기는 시차입니다.<br>시간생물학자 틸 뢰네베르크 연구팀이 2006년에 처음으로 이 개념을 제안했으며<br>쉬는 날과 일하는 날의 수면 중간 시각의 차이를 측정합니다.</p>
+        <p class="definition-note">수면 중간 시각: 취침 시각과 기상 시각의 가운데 지점</p>
+      </div>
+      <button class="definition-scroll" type="button">SCROLL ↓</button>
+    </section>
+
+
+    <section class="chapter journal-page" aria-labelledby="background-title">
+      <span class="definition-brand">SLEEP ATLAS</span>
+      <h2 id="background-title">구를 돌리며<br>우리의 수면 패턴을 탐색해 보세요</h2>
+      <div class="chapter-body">
+        <p>구 위의 군집은 연령대를, 원의 넓이는 응답자 규모를 나타냅니다.<br>마우스나 손가락으로 구를 드래그해 돌리고, 스크롤로 확대해 보세요.</p>
+        <p>관심 있는 연령대의 군집을 누르면 평일과 주말의 수면 시차 지형이 열립니다.<br>지형을 좌우·위로 드래그하면 측면과 탑뷰로 바뀝니다.<br>블록을 누르면 그 연령대의 직업별 수면 시차를 비교할 수 있습니다.</p>
+        <p class="definition-note">내 수면도 궁금하다면, 구 옆 설명의 ‘나는 어디에 위치할까?’에서 직접 입력해 보세요.</p>
+      </div>
+      <button class="definition-scroll" type="button">SCROLL ↓</button>
+    </section>
 
     <section class="outro" aria-labelledby="outro-title">
       <div class="reveal">
-        <h2 id="outro-title">평일과 주말의 사회적 시차를 살펴보세요.</h2>
+        <h2 id="outro-title">평일과 주말의<br>사회적 시차를 살펴보세요.</h2>
         <a class="cta" href="sleep_atlas_data_landscape_matte.html">시각화 보러가기 <span aria-hidden="true">↓</span></a>
         <p class="orbit-scroll-hint" hidden>더 내리면 시각화로 이어집니다 ↓</p>
       </div>
@@ -112,7 +280,7 @@
 
       const title = document.querySelector('.hero-title');
       const reveals = Array.from(document.querySelectorAll('.reveal'));
-      const sentences = new Set();
+      const sentences = new Set(document.querySelectorAll('.chapter-body .reveal'));
       let frame = 0;
       let nextSentenceStart = 0;
 
@@ -150,6 +318,117 @@
     }
 
     const hero = document.querySelector('.hero');
+
+    const heroCover = document.querySelector('.hero-cover');
+    const heroQuestion = document.querySelector('.hero-question');
+    const heroFooterText = hero.querySelector('.hero-footer p');
+    const pages = [...document.querySelectorAll('.chapter'), document.querySelector('.outro')];
+    let currentStep = -1;
+    let lockedUntil = 0;
+    let wheelAt = 0;
+    let touchStart = null;
+    document.documentElement.classList.add('step-intro');
+    let transitioning = false;
+    async function updateStep() {
+      const next = Math.max(0, Math.min(4, Math.round(scrollY / innerHeight)));
+      if (next === currentStep || transitioning) return;
+      const oldStep = currentStep;
+      const outgoing = oldStep < 2 ? (oldStep === 0 ? heroCover : heroQuestion) : pages[oldStep - 2];
+      const incoming = next < 2 ? (next === 0 ? heroCover : heroQuestion) : pages[next - 2];
+
+      transitioning = true;
+      if (oldStep >= 0 && !reducedMotion.matches && outgoing.animate) {
+        outgoing.style.animation = 'none';
+        const exitMotion = outgoing.animate(
+          [{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-12px)'}],
+          {duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
+        await exitMotion.finished.catch(() => {});
+        exitMotion.cancel();
+      }
+      currentStep = next;
+      window.dispatchEvent(new CustomEvent('introstep',{detail:next}));
+      hero.classList.toggle('is-hidden', next > 1);
+      heroCover.style.opacity = next === 0 ? 1 : 0;
+      heroCover.style.transform = 'none';
+      heroCover.inert = next !== 0;
+      heroCover.setAttribute('aria-hidden', String(next !== 0));
+      heroQuestion.style.opacity = next === 1 ? 1 : 0;
+      heroQuestion.style.transform = 'none';
+      heroQuestion.inert = next !== 1;
+      heroQuestion.setAttribute('aria-hidden', String(next !== 1));
+      heroCover.classList.toggle('is-pop', next === 0);
+      heroQuestion.classList.toggle('is-pop', next === 1);
+      heroFooterText.style.opacity = next === 0 ? 1 : 0;
+      pages.forEach((page, index) => {
+        page.classList.toggle('is-step-active', next === index + 2);
+        page.inert = next !== index + 2;
+      });
+      incoming.style.animation = 'none';
+
+      if (oldStep >= 0 && !reducedMotion.matches) {
+        const enterMotion = incoming.animate(
+          [{opacity:0,transform:'translateY(32px)'},{opacity:1,transform:'translateY(0)'}],
+          {duration:620,easing:'cubic-bezier(.22,.68,.28,1)',fill:'backwards'});
+        await enterMotion.finished.catch(() => {});
+      }
+      transitioning = false;
+    }
+    function advanceStep(direction) {
+      if (transitioning || performance.now() < lockedUntil) return;
+      const next = Math.max(0, Math.min(4, currentStep + direction));
+      if (next === currentStep) {
+        if (direction > 0 && currentStep === 4) document.querySelector('.cta').click();
+        return;
+      }
+      lockedUntil = performance.now() + 950;
+      window.scrollTo({top: next * innerHeight, behavior:'instant'});
+      updateStep();
+    }
+    addEventListener('wheel', event => {
+      if (document.body.classList.contains('intro-leaving')) return;
+      if (event.ctrlKey || Math.abs(event.deltaY) < 2) return;
+      const now = performance.now();
+      const continuing = now - wheelAt < 160;
+      wheelAt = now;
+      const active = pages[currentStep - 2];
+      if (active && active.scrollHeight > active.clientHeight + 2) {
+        const canScroll = event.deltaY > 0
+          ? active.scrollTop + active.clientHeight < active.scrollHeight - 2
+          : active.scrollTop > 2;
+        if (canScroll) return;
+      }
+      event.preventDefault();
+      if (!continuing) advanceStep(event.deltaY > 0 ? 1 : -1);
+    }, {passive:false});
+    addEventListener('touchstart', event => { touchStart = event.touches[0].clientY; }, {passive:true});
+    addEventListener('touchmove', event => {
+      const active = pages[currentStep - 2];
+      if (!active || active.scrollHeight <= active.clientHeight + 2) event.preventDefault();
+    }, {passive:false});
+    addEventListener('touchend', event => {
+      if (touchStart === null) return;
+      const distance = touchStart - event.changedTouches[0].clientY;
+      touchStart = null;
+      if (Math.abs(distance) > 35) advanceStep(distance > 0 ? 1 : -1);
+    }, {passive:true});
+    addEventListener('keydown', event => {
+      if (document.body.classList.contains('intro-leaving')) return;
+      if (event.target.closest('button,input,select,textarea,a')) return;
+      if (['ArrowDown','PageDown',' ','ArrowUp','PageUp'].includes(event.key)) {
+        event.preventDefault();
+        advanceStep(['ArrowUp','PageUp'].includes(event.key) ? -1 : 1);
+      }
+    });
+    addEventListener('scroll', updateStep, {passive:true});
+    addEventListener('resize', () => window.scrollTo({top:Math.max(0,currentStep) * innerHeight,behavior:'instant'}));
+    addEventListener('pageshow', updateStep);
+    hero.querySelector('.scroll-link').addEventListener('click', event => {
+      event.preventDefault();
+      advanceStep(1);
+    });
+    updateStep();
+    document.querySelectorAll('.definition-scroll').forEach(button => button.addEventListener('click', () => advanceStep(1)));
+    document.querySelector('.intro-fixed-scroll').addEventListener('click', () => advanceStep(1));
     if (matchMedia('(pointer: fine)').matches) {
       hero.addEventListener('pointermove', event => {
         if (reducedMotion.matches) return;
@@ -160,130 +439,259 @@
     }
 
     (() => {
-      // 컬러 등고선 행성 (온보딩 모션): 계속 도는 행성이 스크롤하면 고리가 늘어나고, 맨 아래에서 열리며 구로 이어진다.
       const orbit = document.querySelector('.intro-orbit');
-      const cv = document.getElementById('planet');
-      const cx = cv.getContext('2d');
+      const orbitGraphic = orbit.querySelector('svg');
+      const svgNamespace = 'http://www.w3.org/2000/svg';
+      orbitGraphic.setAttribute('viewBox','0 0 320 320');
+      const palette = ['#ee79b8','#edcf70','#4ed6ad','#4fb5de','#ac8ee3','#ed79b7'];
+      for (let index = 0; index < 9; index++) {
+        const ring = document.createElementNS(svgNamespace,'g');
+        ring.setAttribute('class','orbit-ring');
+        ring.style.color = palette[index % palette.length];
+        ring.style.setProperty('--orbit-period',(33 + index * 3) + 's');
+        const radius = 168 + index * 17;
+        const track = document.createElementNS(svgNamespace,'circle');
+        track.setAttribute('class','orbit-track');
+        track.setAttribute('r',radius);
+        ring.append(track);
+        for (let dotIndex = 0; dotIndex < 3; dotIndex++) {
+          const dot = document.createElementNS(svgNamespace,'circle');
+          const angle = index * .71 + dotIndex * 2.1;
+          dot.setAttribute('class','orbit-dot');
+          dot.setAttribute('cx',160 + radius * Math.cos(angle));
+          dot.setAttribute('cy',160 + radius * Math.sin(angle));
+          dot.setAttribute('r',dotIndex ? 1.8 : 2.8);
+          ring.append(dot);
+        }
+        orbitGraphic.append(ring);
+      }
+      const rings = [...orbitGraphic.querySelectorAll('.orbit-ring')];
+      const defs = document.createElementNS(svgNamespace,'defs');
+      defs.innerHTML = '<radialGradient id="orbit-tint"><stop offset="0" stop-color="#9c8ac5" stop-opacity=".10"/><stop offset=".52" stop-color="#596b9b" stop-opacity=".065"/><stop offset="1" stop-color="#4a3768" stop-opacity=".015"/></radialGradient><clipPath id="orbit-tint-clip"><circle cx="160" cy="160" r="103"/></clipPath>';
+      const tint = document.createElementNS(svgNamespace,'circle');
+      tint.setAttribute('cx','160');
+      tint.setAttribute('cy','160');
+      tint.setAttribute('r','330');
+      tint.setAttribute('fill','url(#orbit-tint)');
+      tint.setAttribute('clip-path','url(#orbit-tint-clip)');
+      orbitGraphic.prepend(tint);
+      orbitGraphic.prepend(defs);
+      const tintClip = defs.querySelector('clipPath circle');
+
+      const outlines = rings.map(ring => {
+        const circle = ring.querySelector('.orbit-track');
+        const radius = Number(circle.getAttribute('r'));
+        const path = document.createElementNS(svgNamespace,'path');
+        path.setAttribute('class','orbit-track');
+        const exact = `M${160 + radius} 160 a${radius} ${radius} 0 1 0 ${-2 * radius} 0 a${radius} ${radius} 0 1 0 ${2 * radius} 0`;
+        path.setAttribute('d',exact);
+        circle.replaceWith(path);
+        const dots = [...ring.querySelectorAll('.orbit-dot')].map(dot => ({
+          dot, angle:Math.atan2(Number(dot.getAttribute('cy'))-160,Number(dot.getAttribute('cx'))-160)
+        }));
+        return {path,radius,exact,dots};
+      });
       const exit = document.querySelector('.orbit-exit');
       const link = document.querySelector('.cta');
       const hint = document.querySelector('.orbit-scroll-hint');
-      const PAL = ['#F68CC0','#EDCD72','#78DCAD','#72BFED','#BB9BFF'];
-      const clamp = (x,a = 0,b = 1) => Math.min(b,Math.max(a,x));
-      const easeO = x => 1 - Math.pow(1 - clamp(x),4);
-      const easeIO = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2,3) / 2; };
-      const N = 18;
-      const rings = [];
-      for (let k = 0; k < N; k++) {
-        const dots = [];
-        for (let d = 0; d < 3 + (k % 5); d++) dots.push({a:Math.random() * 6.283,s:(Math.random() < .5 ? -1 : 1) * (.08 + Math.random() * .22),r:1.6 + Math.random() * 2.6});
-        rings.push({ph:k * 1.7,c:PAL[k % 5],dots,a1:.035 + .03 * Math.sin(k * 1.3),a2:.02 + .02 * Math.cos(k * .9)});
-      }
-      let W = 0,H = 0,dpr = 1,size = 0;
-      function resize() {
-        dpr = Math.min(2,devicePixelRatio || 1);
-        const box = cv.getBoundingClientRect();
-        W = box.width; H = box.height;
-        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-        size = orbit.getBoundingClientRect().width;
-      }
-      function blob(R,ring,t,steps,extra) {
-        cx.beginPath();
-        for (let i = 0; i <= steps; i++) {
-          const th = i / steps * 6.2832;
-          const r = R * (1 + ring.a1 * Math.sin(3 * th + ring.ph + t * .5) + ring.a2 * Math.sin(5 * th - ring.ph * 1.3 - t * .35) + (extra || 0));
-          const x = Math.cos(th) * r,y = Math.sin(th) * r * .94;
-          i ? cx.lineTo(x,y) : cx.moveTo(x,y);
-        }
-      }
-      let leaving = false,openT = 0,openStart = 0,ripple = 0,velocity = 0,lastY = window.scrollY,progress = 0,previousFrame = 0;
-      const t0 = performance.now();
-      function draw(now) {
-        const t = now / 1000,loadT = (now - t0) / 1000;
-        const er = leaving ? easeIO((now - openStart) / 900) : 0;
-        cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
-        cx.save(); cx.translate(W / 2,H / 2);
-        cx.lineJoin = 'round'; cx.globalCompositeOperation = 'lighter';
-        const base = size * .5;
-        const grow = reducedMotion.matches ? 1 : easeO(loadT / 2.6);
-        const fade = 1 - er;
-        for (let k = 0; k < N; k++) {
-          const f = k / (N - 1),a = clamp((grow - f * .85) * 5);
-          if (a <= 0 || fade <= 0) continue;
-          const Rk = base * (.1 + .9 * Math.pow(f,.85)) * (1 + er * 3.2);
-          const ring = rings[k];
-          cx.globalAlpha = a * fade * (.22 + .3 * (1 - f)) * 1.5;
-          cx.strokeStyle = ring.c; cx.lineWidth = 1.1 + (k % 4 === 0 ? .8 : 0);
-          cx.save(); cx.rotate(t * .03 * (k % 2 ? 1 : -1) + progress * 2.4 * (k % 2 ? 1 : -1));
-          blob(Rk,ring,t,160,ripple * .004); cx.stroke();
-          if (k % 6 === 2) { cx.globalAlpha *= .12; cx.fillStyle = ring.c; cx.fill(); }
-          cx.restore();
-          cx.globalAlpha = a * fade * .9;
-          for (const d of ring.dots) {
-            const th = d.a + t * d.s + progress * 3 * (k % 2 ? 1 : -1);
-            const r = Rk * (1 + ring.a1 * Math.sin(3 * th + ring.ph + t * .5) + ripple * .004);
-            cx.fillStyle = ring.c; cx.beginPath(); cx.arc(Math.cos(th) * r,Math.sin(th) * r * .94,d.r,0,6.2832); cx.fill();
-          }
-        }
-        cx.restore();
-      }
       let frame = 0;
-      function tick(now) {
-        frame = 0;
-        if (!reducedMotion.matches) {
-          const dt = previousFrame ? Math.min(.035,(now - previousFrame) / 1000) : 1 / 60;
-          previousFrame = now;
-          velocity = (velocity - 112 * ripple * dt) * Math.exp(-7.5 * dt);
-          ripple = Math.max(-19,Math.min(19,ripple + velocity * dt));
-          if (Math.abs(ripple) < .05 && Math.abs(velocity) < .15) ripple = velocity = 0;
-        }
-        draw(now);
-        if (!reducedMotion.matches || leaving) frame = requestAnimationFrame(tick);
+      let leaving = false;
+      let lastY = window.scrollY;
+      let expansion;
+      let ripple = 0;
+      let velocity = 0;
+      let previousFrame = 0;
+      function shapeOrbits(progress) {
+        const phase = 0;
+        outlines.forEach(({path,radius,dots},index) => {
+          const amount = radius * (.075 + .012 * (index % 3)) + ripple / 19 * Math.min(3.6,radius * .1);
+          function position(angle) {
+            const wave = .62 * Math.sin(3 * angle + phase + index * .73)
+              + .25 * Math.cos(2 * angle - index * .64)
+              + .13 * Math.sin(5 * angle + index * 1.3);
+            const distance = radius + amount * wave;
+            return [160 + distance * Math.cos(angle),160 + distance * Math.sin(angle)];
+          }
+          const points = Array.from({length:192},(_,i) => position(i * Math.PI / 96).map(value => value.toFixed(2)).join(' '));
+          path.setAttribute('d','M' + points.join('L') + 'Z');
+          for (const {dot,angle} of dots) {
+            const [x,y] = position(angle);
+            dot.setAttribute('cx',x.toFixed(2));
+            dot.setAttribute('cy',y.toFixed(2));
+          }
+        });
       }
-      const schedule = () => { if (!frame) frame = requestAnimationFrame(tick); };
 
       exit.hidden = false;
       hint.hidden = false;
 
-      function enterGlobe() {
+
+      let globeFrame = null;
+      let globeReady = null;
+      function prepareGlobe() {
+        if (globeFrame) return;
+        globeFrame = document.createElement('iframe');
+        globeFrame.className = 'globe-reveal';
+        globeFrame.title = '수면 데이터 구 탐색';
+        globeReady = new Promise(resolve => globeFrame.addEventListener('load',resolve,{once:true}));
+        globeFrame.src = link.href + '?orbit-reveal=1';
+        document.body.append(globeFrame);
+      }
+      window.addEventListener('introstep', event => {
+        if (event.detail >= 2) prepareGlobe();
+      });
+      async function enterGlobe() {
         if (leaving) return;
         leaving = true;
-        if (reducedMotion.matches) { location.assign(link.href); return; }
-        openStart = performance.now();
+        prepareGlobe();
+        if (reducedMotion.matches || !orbit.animate) {
+          location.assign(link.href);
+          return;
+        }
+
+        await globeReady;
         document.body.classList.add('intro-leaving');
-        setTimeout(() => location.assign(link.href),950);
+
+        const bounds = orbit.getBoundingClientRect();
+        const startX = bounds.left + bounds.width / 2;
+        const startY = bounds.top + bounds.height / 2;
+        const opening = Math.hypot(innerWidth, innerHeight) / 2 + 30;
+        const transitionLines = document.createElementNS(svgNamespace, 'svg');
+        transitionLines.setAttribute('viewBox', '0 0 ' + innerWidth + ' ' + innerHeight);
+        transitionLines.setAttribute('aria-hidden', 'true');
+        transitionLines.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:10;pointer-events:none;overflow:visible';
+
+        const lines = outlines.flatMap(({path,dots},index) => {
+          const ring = rings[index];
+          if (!ring.classList.contains('is-visible')) return [];
+          const color = getComputedStyle(ring).color;
+          const matrix = new DOMMatrix(getComputedStyle(ring).transform);
+          function capture(px,py) {
+            const point = new DOMPoint(px - 160,py - 160).matrixTransform(matrix);
+            return {angle:Math.atan2(point.y,point.x),radius:Math.hypot(point.x,point.y) * bounds.width / 320};
+          }
+          const length = path.getTotalLength();
+          const points = Array.from({length:192},(_,i) => {
+            const point = path.getPointAtLength(length * i / 192);
+            return capture(point.x,point.y);
+          });
+          const outline = document.createElementNS(svgNamespace,'path');
+          outline.setAttribute('fill','none');
+          outline.setAttribute('stroke',color);
+          outline.setAttribute('stroke-width','1.15');
+          transitionLines.append(outline);
+          const particles = dots.map(({dot}) => {
+            const circle = document.createElementNS(svgNamespace,'circle');
+            circle.setAttribute('fill',color);
+            circle.setAttribute('r',Number(dot.getAttribute('r')) * bounds.width / 320);
+            transitionLines.append(circle);
+            return {circle,...capture(Number(dot.getAttribute('cx')),Number(dot.getAttribute('cy')))};
+          });
+          return [{outline,points,particles,baseRadius:points.reduce((sum,point)=>sum+point.radius,0)/points.length}];
+        });
+        document.body.append(transitionLines);
+        orbit.style.opacity = '0';
+        globeFrame.style.visibility = 'visible';
+        const started = performance.now();
+        await new Promise(resolve => {
+          function openCenter(now) {
+            const progress = Math.min(1, (now - started) / 3600);
+            const eased = progress * progress * (3 - 2 * progress);
+            const travel = 1 - (1 - progress) ** 3;
+            const x = startX + (innerWidth / 2 - startX) * travel;
+            const y = startY + (innerHeight / 2 - startY) * travel;
+            const hole = opening * Math.pow(eased,1.45);
+
+            const fade = 1 - Math.max(0,(progress - .86) / .14);
+            lines.forEach(({outline,points,particles,baseRadius},index) => {
+              const coordinates = points.map(point => {
+                const radius = point.radius * (1 + hole / baseRadius);
+                return (x + Math.cos(point.angle) * radius).toFixed(2) + ' ' + (y + Math.sin(point.angle) * radius).toFixed(2);
+              });
+              outline.setAttribute('d','M' + coordinates.join('L') + 'Z');
+              outline.style.opacity = String((index === 0 ? .95 : .42 * .85) * fade);
+              outline.setAttribute('stroke-width',index === 0 ? '1.8' : '1.15');
+              particles.forEach(({circle,angle,radius}) => {
+                circle.setAttribute('cx',x + Math.cos(angle) * radius * (1 + hole / baseRadius));
+                circle.setAttribute('cy',y + Math.sin(angle) * radius * (1 + hole / baseRadius));
+                circle.style.opacity = String(.85 * fade);
+              });
+            });
+
+            const inner = lines[0];
+            const aperture = inner.points.map(point => {
+              const radius = hole * 1.16 * point.radius / inner.baseRadius;
+              return (x + Math.cos(point.angle) * radius).toFixed(2) + 'px ' + (y + Math.sin(point.angle) * radius).toFixed(2) + 'px';
+            });
+            globeFrame.style.clipPath = 'polygon(' + aperture.join(',') + ')';
+            if (progress < 1) requestAnimationFrame(openCenter);
+            else resolve();
+          }
+          requestAnimationFrame(openCenter);
+        });
+        transitionLines.remove();
+        document.body.classList.add('globe-entered');
+        document.querySelector('main').inert = true;
+        document.querySelector('main').hidden = true;
+        history.pushState({globe:true},'',link.href);
+        document.title = 'Sleep Atlas — Social Jetlag';
+        globeFrame.focus();
       }
-      function onScroll() {
+
+      function updateOrbit(now = performance.now()) {
+        frame = 0;
         const y = window.scrollY;
         const bottom = document.documentElement.scrollHeight - innerHeight;
-        progress = clamp(y / Math.max(1,bottom));
+        const progress = Math.max(0, Math.min(1, y / Math.max(1, bottom)));
         if (!reducedMotion.matches) {
-          const impulse = Math.max(-180,Math.min(180,(y - lastY) * 1.1));
-          velocity = Math.max(-230,Math.min(230,velocity - impulse));
+          const dt = previousFrame ? Math.min(.035,(now - previousFrame) / 1000) : 1 / 60;
+          previousFrame = now;
+          const impulse = Math.max(-180, Math.min(180, (y - lastY) * 1.1));
+          velocity = Math.max(-230, Math.min(230, velocity - impulse));
+          velocity = (velocity - 112 * ripple * dt) * Math.exp(-7.5 * dt);
+          ripple = Math.max(-19, Math.min(19, ripple + velocity * dt));
+          if (Math.abs(ripple) < .05 && Math.abs(velocity) < .15) ripple = velocity = 0;
+        } else {
+          ripple = velocity = 0;
+          previousFrame = 0;
         }
-        if (y > lastY && bottom > 0 && y >= bottom - 3) enterGlobe();
+        shapeOrbits(progress);
+        const initialCount = 5;
+        const visibleCount = initialCount + Math.floor(progress * (rings.length - initialCount + 1));
+        rings.forEach((ring,index) => ring.classList.toggle('is-visible', index < visibleCount));
+        tintClip.setAttribute('r',String(outlines[Math.min(visibleCount,outlines.length)-1].radius));
+        if (!document.documentElement.classList.contains('step-intro') && y > lastY && bottom > 0 && y >= bottom - 3) enterGlobe();
         lastY = y;
-        schedule();
+        if (ripple || velocity) scheduleOrbit();
       }
-      window.addEventListener('scroll',onScroll,{passive:true});
-      window.addEventListener('resize',() => { resize(); schedule(); });
-      window.addEventListener('pageshow',event => {
+
+      function scheduleOrbit() {
+        if (!frame && !leaving) frame = requestAnimationFrame(updateOrbit);
+      }
+
+      window.addEventListener('scroll', scheduleOrbit, {passive:true});
+      window.addEventListener('resize', scheduleOrbit);
+      window.addEventListener('pageshow', event => {
         if (!event.persisted) return;
-        leaving = false; openStart = 0; ripple = velocity = previousFrame = 0;
+        expansion?.cancel();
+        ripple = velocity = previousFrame = 0;
+        orbitGraphic.querySelectorAll('.orbit-extra').forEach(circle => circle.remove());
+        leaving = false;
         document.body.classList.remove('intro-leaving');
         const bottom = document.documentElement.scrollHeight - innerHeight;
-        if (window.scrollY >= bottom - 3) window.scrollTo({top:Math.max(0,bottom - exit.offsetHeight),behavior:'instant'});
+        if (window.scrollY >= bottom - 3) {
+          window.scrollTo({top:Math.max(0,bottom - exit.offsetHeight),behavior:'instant'});
+        }
         lastY = window.scrollY;
-        schedule();
+        scheduleOrbit();
       });
-      link.addEventListener('click',event => {
+      link.addEventListener('click', event => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         enterGlobe();
       });
-      resize();
-      onScroll();
-      schedule();
+      updateOrbit();
     })();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c4edb28a70c8ef',t:'MTc5NDk4MzQ0Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c4edb28a70c8ef',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

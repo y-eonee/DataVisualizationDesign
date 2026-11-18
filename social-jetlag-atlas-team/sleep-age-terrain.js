@@ -277,7 +277,7 @@ const SleepAgeTerrainData = (() => {
             ctx.fill();
             ctx.stroke();
             ctx.lineWidth = 1;
-            ctx.font = '650 12px sans-serif';
+            ctx.font = '650 12px Apple SD Gothic Neo, Malgun Gothic, sans-serif';
             ctx.textAlign = x < width - 62 ? 'left' : 'right';
             ctx.textBaseline = 'middle';
             const labelX = x < width - 62 ? x + 11 : x - 11;
@@ -286,7 +286,7 @@ const SleepAgeTerrainData = (() => {
             ctx.fillText('내 위치', labelX, y);
             ctx.lineWidth = 1;
         }
-        ctx.font = (width < 500 ? '10' : '12') + 'px sans-serif';
+        ctx.font = (width < 500 ? '10' : '12') + 'px Apple SD Gothic Neo, Malgun Gothic, sans-serif';
         ctx.fillStyle = '#efeff3';
         ctx.textBaseline = 'middle';
         const xAxisY = nearY ? ny : 0;

@@ -3,9 +3,9 @@
     const panel = document.getElementById('detail-panel');
     const screen = document.getElementById('detail-screen');
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-
+    const portal = new URLSearchParams(location.search).has('orbit-reveal');
     window.addEventListener('sleepdetailready', () => {
-        if (document.body.dataset.entry !== 'globe' || document.documentElement.classList.contains('personal-globe-entry') || reduced.matches || !panel.animate) return;
+        if (portal || document.body.dataset.entry !== 'globe' || document.documentElement.classList.contains('personal-globe-entry') || reduced.matches || !panel.animate) return;
 
         const globe = visual.getBoundingClientRect();
         const layout = visual.parentElement.getBoundingClientRect();

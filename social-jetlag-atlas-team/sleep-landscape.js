@@ -20,7 +20,7 @@ const SleepLandscape = (() => {
     const terrainRadius=level=>1+.016+.018*Math.floor(clamp(level,0,2.599999)/.2+1e-8);
     function reliefShade(level){return Math.max(.60,1.08-.18*level);}
     function reliefColor(tint,level,role='top'){
-        const t=clamp(level/2.5,0,1),white=.64*Math.pow(1-t,1.45),dark=1-.28*t,light=role==='wall'?.91:role==='bottom'?.70:1;
+        const t=clamp(level/2.5,0,1),white=.64*Math.pow(1-t,1.45),dark=1-.16*t,light=role==='wall'?.96:role==='bottom'?.80:1;
         return tint.map(v=>clamp((v*dark*(1-white)+250*white)*light,0,255));
     }
     function heightAt(n,phase){
