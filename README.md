@@ -1,2 +1,2 @@
 # DataVisualizationDesign
-https://y-eonee.github.io/DataVisualizationDesign/social-jetlag-atlas-team
+https://y-eonee.github.io/DataVisualizationDesign/main
