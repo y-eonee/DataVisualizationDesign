@@ -251,7 +251,8 @@ const SleepNetwork = (() => {
         const go=$('summary-terrain');if(go){go.hidden=selected===null;if(selected!==null){go.textContent=displayAge(model.groups[selected])+' 3D 지형 보기 →';go.onclick=()=>openAgeTerrain(selected);}}
     }
     function centerOnGroup(id){
-        if(id===null||id===undefined)return;
+        if(id===null||id===undefined){targetZoom=1;if(reduced.matches)zoom=1;schedule();return;}
+        targetZoom=Math.min(maxZoom,1.7);if(reduced.matches)zoom=targetZoom;
         const list=botanicals.filter(n=>n.groupId===id&&n.land?.normal);
         if(!list.length)return;
         let x=0,y=0,z=0;for(const n of list){x+=n.land.normal.x;y+=n.land.normal.y;z+=n.land.normal.z;}
