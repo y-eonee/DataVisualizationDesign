@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>주말에 몰아자는 것도 게으름일까? - 사회적시차</title>
-  <link rel="stylesheet" href="styles.css?v=fixes2">
+  <link rel="stylesheet" href="styles.css?v=no-focus">
   <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
 </head>
 <body data-screen="detail" data-entry="globe">
@@ -71,14 +71,16 @@
           <div class="detail-records"><b id="detail-count"></b><span>건의 수면 기록</span></div>
           <p class="explorer-hint">구를 돌려 연령대별 수면 지형을 살펴보세요. 아래에서 평일과 주말의 수면 패턴을 비교할 수 있습니다.</p>
           <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
+          <div id="hover-detail" class="hover-detail" aria-live="polite" hidden></div>
         </header>
 
         <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
           <div data-panel-reveal>
-            <h3 class="sleep-summary-heading" id="summary-heading">평일과 주말,<br>수면의 중간 시각은 얼마나 다를까요?</h3>
+            <h3 class="sleep-summary-heading" id="summary-heading"><span>평일과 주말,</span> <span>수면의 중간 시각은</span> <span>얼마나 다를까요?</span></h3>
           </div>
           <div class="age-summary" data-panel-reveal>
             <div id="summary-age-filter" class="summary-age-filter" role="group" aria-label="연령대 필터"></div>
+            <button id="summary-terrain" class="conclusion-scroll" type="button" hidden>3D 지형 보기 →</button>
             <p id="summary-cohort" class="summary-cohort" role="status"></p>
             <div id="summary-distribution" class="summary-distribution" role="group" aria-label="시차 구간별 응답자 분포"></div>
             <div class="summary-bands" role="group" aria-label="시차 구간 선택"><button type="button" data-summary-band="0" aria-pressed="true">거의 같음<small>30분 미만</small></button><button type="button" data-summary-band="1" aria-pressed="false">보통<small>30분–60분 미만</small></button><button type="button" data-summary-band="2" aria-pressed="false">큼<small>60분 이상</small></button></div>
@@ -205,7 +207,7 @@
           <button type="button" data-terrain-view="right" aria-pressed="false">오른쪽</button>
           <button type="button" data-terrain-view="top" aria-pressed="false">탑뷰</button>
           <button id="terrain-occupations" type="button">직업별 시차 ↗</button>
-          <span id="terrain-orbit-hint">드래그로 시점 전환 · 블록을 눌러 직업별 비교</span>
+          <span id="terrain-orbit-hint">드래그·휠·슬라이더로 자유롭게 돌려보기 · 블록을 눌러 직업별 비교</span>
           <span id="terrain-view-note" class="terrain-view-note" role="status"></span>
         </div>
         <div id="terrain-plot" class="terrain-plot">
@@ -257,11 +259,11 @@
   <script src="vendor/earcut.min.js"></script>
   <script src="sleep-terrain-gpu.js"></script>
   <script src="sleep-landscape.js?v=bright-pink"></script>
-  <script src="sleep-summary-chart.js?v=fixes2"></script>
-  <script src="sleep-network.js?v=fixes1"></script>
+  <script src="sleep-summary-chart.js?v=autoband"></script>
+  <script src="sleep-network.js?v=autoband"></script>
   <script src="atlas-transition.js"></script>
   <script src="app.js"></script>
-  <script src="sleep-age-terrain.js?v=personal-terrain-marker"></script>
+  <script src="sleep-age-terrain.js?v=orbit-dock"></script>
   <script src="sleep-occupation-shifts.js"></script>
   <script src="sleep-globe-intro.js?v=stationary-globe"></script>
   <script src="sleep-conclusion.js"></script>
@@ -292,10 +294,16 @@
     if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const explorerObserver = new IntersectionObserver(entries => {
         for (const entry of entries) {
-          entry.target.classList.toggle('is-visible', entry.isIntersecting);
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-visible');
+          explorerObserver.unobserve(entry.target);
         }
       }, { root: explorerPanel, threshold: 0.05 });
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
+      explorerPanel.querySelector('.explorer-scroll')?.addEventListener('click', event => {
+        event.preventDefault();
+        document.getElementById('explorer-summary').scrollIntoView({behavior: 'smooth', block: 'start'});
+      });
     }
   </script>
 </body>

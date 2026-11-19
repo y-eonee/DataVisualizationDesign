@@ -1454,3 +1454,33 @@ body,body *{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif!importa
 .summary-dist-track i { display:block; height:100%; border-radius:4px; background:#6f6f6f; transition:width .3s ease; }
 .summary-dist-row.active { color:#fff; }
 .summary-dist-row.active .summary-dist-track i { background:#afe8d5; }
+#summary-terrain[hidden]{display:none}
+#summary-terrain{margin:0 0 12px;background:transparent;font:inherit;font-size:12px;cursor:pointer}
+.detail-visual canvas{cursor:grab}
+.data-explorer { scroll-behavior:auto; overscroll-behavior:auto; scroll-padding-top:8px; }
+.sleep-summary-heading { word-break:keep-all; text-wrap:balance; }
+.sleep-summary-heading span { display:block; white-space:nowrap; }
+.terrain-dock { position:absolute; z-index:2; left:clamp(10px,1.4vw,22px); top:10px; display:flex; flex-direction:column; gap:12px; padding:12px; background:#000c; border:1px solid #333; border-radius:12px; backdrop-filter:blur(6px); }
+.terrain-dock-views { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.terrain-dock-views button { background:transparent; color:#fff; border:1px solid #555; border-radius:16px; font:inherit; font-size:12px; padding:6px 10px; cursor:pointer; }
+.terrain-dock-views button:hover { border-color:#fff; }
+.terrain-dock-views button[aria-pressed=true] { background:#fff; color:#000; border-color:#fff; }
+.terrain-dock label { display:grid; gap:4px; font-size:11px; color:#c6c6c6; }
+.terrain-dock input[type=range] { width:100%; accent-color:#fff; cursor:pointer; }
+.hover-detail { position:sticky; top:0; z-index:4; margin:0 0 8px; padding:12px 14px; background:#111; border:1px solid #444; border-radius:10px; font-size:12px; line-height:1.5; }
+.hover-detail[hidden] { display:none; }
+.hover-detail strong { display:block; margin-bottom:6px; font-size:13px; }
+.hover-detail dl { margin:0; display:grid; gap:3px; }
+.hover-detail dl div { display:flex; justify-content:space-between; gap:12px; }
+.hover-detail dt { color:#aaa; }
+.hover-detail dd { margin:0; color:#fff; font-variant-numeric:tabular-nums; text-align:right; }
+.data-explorer .explorer-region { position:relative; }
+.hover-detail { position:absolute; left:0; right:0; bottom:10px; top:auto; margin:0; }
+.hover-detail { position:static; width:100%; box-sizing:border-box; min-height:168px; margin:22px 0 0; }
+.hover-detail[hidden] { display:block; visibility:hidden; }
+.hover-detail dl { grid-template-columns:1fr 1fr; gap:3px 18px; }
+.hover-detail dl div { font-size:11px; }
+#detail-panel, #detail-panel:focus, #detail-panel:focus-visible,
+.data-explorer *:focus, .data-explorer *:focus-visible,
+.data-explorer button:focus-visible, .data-explorer summary:focus-visible,
+.data-explorer a:focus-visible, .data-explorer canvas:focus-visible { outline: none !important; box-shadow: none; -webkit-tap-highlight-color: transparent; }

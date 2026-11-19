@@ -166,7 +166,7 @@ const SleepNetwork = (() => {
         for (const g of model.groups) {
             const b = document.createElement('button'); b.type = 'button'; b.dataset.age = g.id; b.disabled = !g.stats.people;
             b.textContent = displayAge(g) + ' / ' + g.stats.people.toLocaleString(); b.style.setProperty('--age-color', ageLineColors[g.id]);
-            b.setAttribute('aria-pressed', 'false'); b.onclick = () => select(g.id); $('age-list').append(b);
+            b.setAttribute('aria-pressed', 'false'); b.onclick = () => {select(g.id); centerOnGroup(selection.selectedAgeGroup);}; $('age-list').append(b);
         }
         updateSamplingSummary(botanicals.length);
         $('comparison-note').textContent = '연령대별로 가장 많은 직업의 색이 지형과 가지의 대표색입니다. 비중이 낮은 직업은 옅게 표시합니다. 직업 미기록 응답자는 비중 계산에 포함되며 대표 직업 순위에서는 제외됩니다.';
@@ -190,11 +190,13 @@ const SleepNetwork = (() => {
     }
     function updateInfo(){
         if(!model)return;
-        const stats=selectionStats?.stats||model.stats;
-        const title=[selection.selectedAgeGroup===null?null:displayAge(model.groups[selection.selectedAgeGroup]),
+        const preview=hover!==null&&selection.selectedAgeGroup===null&&!selection.selectedOccupations.length?model.groups[hover]:null;
+        const stats=preview?preview.stats:selectionStats?.stats||model.stats;
+        const title=preview?displayAge(preview):[selection.selectedAgeGroup===null?null:displayAge(model.groups[selection.selectedAgeGroup]),
             selection.selectedOccupations.length?selection.selectedOccupations.map(code=>SleepOccupations.style(code).label).join(' + '):null].filter(Boolean).join(' / ')||(window.sleepRegionSelection.id==='all'?'전체 응답자':'선택 구간 전체');
-        if(shownInfo===title)return;shownInfo=title;
-        SleepSummaryChart.update(selectionStats || model,title);
+        const key=(preview?'hover:':'')+title;
+        if(shownInfo===key)return;shownInfo=key;
+        SleepSummaryChart.update(preview||selectionStats || model,title);
         $('age-title').textContent=title;
         $('age-people').textContent=stats.people.toLocaleString();$('age-diaries').textContent=stats.diaries.toLocaleString()+'건의 수면 기록';
         $('age-weekday').textContent=clock(stats.weekdayOnset);$('age-weekend').textContent=clock(stats.weekendOnset);$('age-difference').textContent=delta(stats.differenceMinutes);
@@ -244,9 +246,22 @@ const SleepNetwork = (() => {
         const root=$('summary-age-filter');if(!root)return;root.replaceChildren();
         const add=(label,id)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',String(selected===id));
             if(id!==null&&!model.groups[id].stats.people)b.disabled=true;
-            b.onclick=()=>{selection.selectedAgeGroup=id;applySelection();};root.append(b);};
+            b.onclick=()=>chooseAge(id);root.append(b);};
         add('전체',null);for(const g of model.groups)add(displayAge(g),g.id);
+        const go=$('summary-terrain');if(go){go.hidden=selected===null;if(selected!==null){go.textContent=displayAge(model.groups[selected])+' 3D 지형 보기 →';go.onclick=()=>openAgeTerrain(selected);}}
     }
+    function centerOnGroup(id){
+        if(id===null||id===undefined)return;
+        const list=botanicals.filter(n=>n.groupId===id&&n.land?.normal);
+        if(!list.length)return;
+        let x=0,y=0,z=0;for(const n of list){x+=n.land.normal.x;y+=n.land.normal.y;z+=n.land.normal.z;}
+        const targetYaw=-Math.atan2(x,z),targetPitch=Math.max(-1.25,Math.min(1.25,Math.atan2(y,Math.hypot(x,z))));
+        velocityYaw=0;velocityPitch=0;pauseRotation(7000);
+        if(reduced.matches){yaw=targetYaw;pitch=targetPitch;render();return;}
+        personalTurn={started:performance.now(),yaw,pitch,yawDistance:wrapAngle(targetYaw-yaw),targetPitch};
+        schedule();
+    }
+    function chooseAge(id){selection.selectedAgeGroup=id;applySelection();centerOnGroup(id);}
     function clearOccupationFocus(redraw=true){selection.selectedOccupation=null;selection.selectedOccupations=[];applySelection(redraw);}
     function select(id,redraw=true){selection.selectedAgeGroup=selection.selectedAgeGroup===id?null:id;applySelection(redraw);}
     function clearSceneSelection(){selection.selectedAgeGroup=null;selection.selectedOccupation=null;selection.selectedOccupations=[];applySelection();}
@@ -540,37 +555,28 @@ const SleepNetwork = (() => {
     }
     function refreshHover() {
         const found = nearest(hoverPoint.x, hoverPoint.y), id = found?.node.groupId ?? null;
-        if (hover !== id) {hover = id; updateInfo(); updateTime();}
+        if (hover !== id) {hover = id; $('map').style.cursor = id===null ? '' : 'pointer'; updateInfo(); updateTime();}
         hoverNode = found?.node ?? null;
-        if (!hoverNode) {tooltip.hidden = true; return;}
-        const n = hoverNode, group = model.groups[n.groupId];
-        const contentKey = n.key;
-        if (tooltip.dataset.bin !== contentKey) {
-            tooltip.dataset.bin = contentKey; tooltip.replaceChildren();
-            const title = document.createElement('strong'); title.textContent = group.name + ' / ' + n.style.label + ' / ' + (n.kind==='paired'?'Paired weekday / weekend':n.kind === 'weekday' ? 'Weekday (unpaired)' : 'Weekend (unpaired)'); tooltip.append(title);
-            for (const text of [
-                n.n.toLocaleString()+' actual diary records / '+n.count+' unique respondents',
-                ...(n.kind==='paired'?[
-                    '2-hour weekday wake × weekend wake bins',
-                    'Weekday wake '+SleepBotany.clock(n.weekdayWake)+' / weekend wake '+SleepBotany.clock(n.weekendWake),
-                    'Mean paired wake difference '+(n.difference*60).toFixed(1)+' min',
-                    'Weekday sleep duration '+(n.weekdayDuration*60).toFixed(1)+' min / weekend '+(n.weekendDuration*60).toFixed(1)+' min',
-                    'Paired duration difference '+(n.durationDifference*60).toFixed(1)+' min'
-                ]:['Unpaired: 2-hour onset × duration bins; no wake difference inferred']),
-                'Occupation: '+SleepLandscape.appearance(n).label+' / age-cluster share '+(SleepLandscape.appearance(n).share*100).toFixed(1)+'%',
-                'Six age clusters; merged contour relief = display overlap, not an additional sleep measurement',
-                (n.land.sprout?'Stem length animates paired sleep duration; unpaired stems stay fixed':'Surface disk: larger aggregate attached to the sphere; exact paired wake and duration differences shown above'),
-                'Mean onset '+clock(n.onset)+' / mean duration '+(n.duration*60).toFixed(0)+' min',
-                'Age group: '+group.stats.people.toLocaleString()+' unique people / '+group.stats.diaries.toLocaleString()+' diaries',
-                'Sidebar uses all selected-region diaries; paired wakes are not formal social jetlag'
-            ]) {
-                const p = document.createElement('div'); p.textContent = text; tooltip.append(p);
-            }
-        }
-        tooltip.hidden = false;
-        const bounds = tooltip.getBoundingClientRect();
-        tooltip.style.left = Math.max(8, Math.min(innerWidth - bounds.width - 8, hoverPoint.x + 16)) + 'px';
-        tooltip.style.top = Math.max(8, Math.min(innerHeight - bounds.height - 8, hoverPoint.y + 16)) + 'px';
+        if (!hoverNode) {tooltip.hidden = true; showHoverDetail(null); return;}
+        tooltip.hidden = true;
+        showHoverDetail(hoverNode);
+    }
+    function showHoverDetail(n){
+        const box=$('hover-detail');if(!box)return;
+        if(!n){box.hidden=true;box.dataset.key='';return;}
+        if(box.dataset.key===n.key){box.hidden=false;return;}
+        box.dataset.key=n.key;
+        const group=model.groups[n.groupId],min=v=>Math.round(v*60)+'분',sg=v=>(v>=0?'+':'−')+Math.abs(Math.round(v*60))+'분';
+        const kind=n.kind==='paired'?'평일·주말 모두 기록':n.kind==='weekday'?'평일만 기록':'주말만 기록';
+        const rows=[['연령대',displayAge(group)],['직업',n.style.label],['구분',kind],
+            ['수면 기록',n.n.toLocaleString()+'건 · 응답자 '+n.count.toLocaleString()+'명'],
+            ['평균 취침 시각',clock(n.onset)],['평균 수면 시간',min(n.duration)]];
+        if(n.kind==='paired')rows.push(['평일 기상',SleepBotany.clock(n.weekdayWake)],['주말 기상',SleepBotany.clock(n.weekendWake)],['기상 시각 차이',sg(n.difference)],['평일 수면 시간',min(n.weekdayDuration)],['주말 수면 시간',min(n.weekendDuration)],['수면 시간 차이',sg(n.durationDifference)]);
+        box.replaceChildren();
+        const h=document.createElement('strong');h.textContent='선택한 데이터';box.append(h);
+        const dl=document.createElement('dl');
+        for(const [k,v] of rows){const d=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;d.append(dt,dd);dl.append(d);}
+        box.append(dl);box.hidden=false;
     }
     const wrapAngle=value=>Math.atan2(Math.sin(value),Math.cos(value));
     function pauseRotation(delay=300) {rotationResumeAt=performance.now()+delay;}
@@ -595,7 +601,7 @@ const SleepNetwork = (() => {
         if(pointer||(e.button!==undefined&&e.button!==0))return;
         const now=performance.now();velocityYaw=0;velocityPitch=0;autoRate=0;
         pointer={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,distance:0,time:now,vx:0,vy:0,moved:false};
-        hoverPoint=null;tooltip.hidden=true;canvas.setPointerCapture(e.pointerId);
+        hoverPoint=null;tooltip.hidden=true;showHoverDetail(null);canvas.setPointerCapture(e.pointerId);
     }
     function up(e) {
         if(!pointer||(e.pointerId!==undefined&&pointer.id!==e.pointerId))return;
@@ -618,7 +624,8 @@ const SleepNetwork = (() => {
                 }
             }
             if (groupId === undefined) clearSceneSelection();
-            else openAgeTerrain(groupId);
+            else if (selection.selectedAgeGroup === groupId) openAgeTerrain(groupId);
+            else chooseAge(groupId);
         } else if(!reduced.matches){
             // Pausing before release naturally suppresses an unintended throw.
             const hold=Math.exp(-7*Math.max(0,(now-held.time)/1000-.08));
@@ -634,7 +641,7 @@ const SleepNetwork = (() => {
     function leave() {
         // Leaving the element during capture must not cancel a continuing drag.
         if(pointer)return;
-        hoverPoint=null;hoverNode=null;hover=null;tooltip.hidden=true;updateInfo();
+        hoverPoint=null;hoverNode=null;hover=null;tooltip.hidden=true;showHoverDetail(null);updateInfo();
         if(playing)schedule();else render();
     }
     function wheel(e) {
@@ -666,7 +673,7 @@ const SleepNetwork = (() => {
             velocityYaw*=decay;velocityPitch*=decay;
             if(Math.abs(velocityYaw)<.0001)velocityYaw=0;if(Math.abs(velocityPitch)<.0001)velocityPitch=0;
             const t=Math.max(0,Math.min(1,(now-rotationResumeAt)/900));
-            autoRate=personalPoint ? 0 : .045*t*t*(3-2*t);
+            autoRate=personalPoint||hover!==null ? 0 : .045*t*t*(3-2*t);
             yaw=wrapAngle(yaw+dt*autoRate);pitch=Math.max(-1.25,Math.min(1.25,pitch));
         } else {autoRate=0;if(reduced.matches){velocityYaw=0;velocityPitch=0;}}
 

@@ -102,6 +102,41 @@ const SleepAgeTerrainData = (() => {
     let bars = [];
     let turn = null;
 
+    const dock = document.createElement('div');
+    dock.className = 'terrain-dock';
+    const dockButtons = document.createElement('div');
+    dockButtons.className = 'terrain-dock-views';
+    dockButtons.setAttribute('role', 'group');
+    dockButtons.setAttribute('aria-label', '지형 시점');
+    dockButtons.append(...viewButtons);
+    const slider = (label, min, max) => {
+        const wrap = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'range'; input.min = min; input.max = max; input.step = .01;
+        wrap.append(label, input);
+        return [wrap, input];
+    };
+    const [yawWrap, yawSlider] = slider('회전', -3.14, 3.14);
+    const [tiltWrap, tiltSlider] = slider('기울기', 0, 1.5708);
+    dock.append(dockButtons, yawWrap, tiltWrap);
+    plot.append(dock);
+    const normalizeYaw = value => Math.atan2(Math.sin(value), Math.cos(value));
+    function manual(nextYaw, nextElevation) {
+        turn = null;
+        yaw = normalizeYaw(nextYaw);
+        elevation = Math.max(0, Math.min(Math.PI / 2, nextElevation));
+        activeView = null;
+        for (const button of viewButtons) button.setAttribute('aria-pressed', 'false');
+        viewNote.textContent = '';
+        scheduleDraw();
+    }
+    yawSlider.addEventListener('input', () => manual(Number(yawSlider.value), elevation));
+    tiltSlider.addEventListener('input', () => manual(yaw, Number(tiltSlider.value)));
+    chart.addEventListener('wheel', event => {
+        event.preventDefault();
+        manual(yaw + event.deltaY * .003, elevation);
+    }, {passive: false});
+
     occupationButton.addEventListener('click', openOccupations);
     function openOccupations() {
         if (terrain?.count) SleepOccupationShifts.open(ageGroup);
@@ -145,6 +180,7 @@ const SleepAgeTerrainData = (() => {
                 elevation = turn.elevation + (turn.targetElevation - turn.elevation) * eased;
                 if (progress === 1 || motion.matches) finishTurn();
             }
+            yawSlider.value = normalizeYaw(yaw); tiltSlider.value = elevation;
             draw();
             if (turn) scheduleDraw();
         });
@@ -334,7 +370,7 @@ const SleepAgeTerrainData = (() => {
 
     chart.addEventListener('pointerdown', event => {
         if (!terrain?.count || drag || (event.pointerType === 'mouse' && event.button !== 0)) return;
-        drag = {id:event.pointerId, x:event.clientX, y:event.clientY};
+        drag = {id:event.pointerId, x:event.clientX, y:event.clientY, lx:event.clientX, ly:event.clientY, moved:false};
         tooltip.hidden = true;
         chart.setPointerCapture(event.pointerId);
         chart.classList.add('is-dragging');
@@ -348,9 +384,6 @@ const SleepAgeTerrainData = (() => {
         if (event.type !== 'pointerup') return;
         const distance = Math.max(Math.abs(dx), Math.abs(dy));
         if (distance < 8 && hitAt(event)) openOccupations();
-        if (distance < 24) return;
-        if (Math.abs(dx) >= Math.abs(dy)) stepView(dx < 0 ? 'left' : 'right');
-        else stepView(dy < 0 ? 'top' : lastSide);
     }
     for (const event of ['pointerup','pointercancel','lostpointercapture']) chart.addEventListener(event, endDrag);
     chart.addEventListener('keydown', event => {
@@ -361,7 +394,13 @@ const SleepAgeTerrainData = (() => {
         stepView(view);
     });
     chart.addEventListener('pointermove', event => {
-        if (drag) return;
+        if (drag) {
+            if (drag.id !== event.pointerId) return;
+            if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 4) drag.moved = true;
+            if (drag.moved) manual(yaw + (event.clientX - drag.lx) * .008, elevation + (event.clientY - drag.ly) * .006);
+            drag.lx = event.clientX; drag.ly = event.clientY;
+            return;
+        }
         const bounds = chart.getBoundingClientRect();
         const x = event.clientX - bounds.left, y = event.clientY - bounds.top;
         const hit = hitAt(event);

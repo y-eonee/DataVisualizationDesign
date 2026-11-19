@@ -6,6 +6,7 @@ const SleepSummaryChart = (() => {
     let selectedBand = 0;
     let currentModel = null;
     let currentTitle = '';
+    let lastTitle = null;
     const bandButtons = [...document.querySelectorAll('[data-summary-band]')];
     const bandNames = ['거의 같음', '보통', '큼'];
     for (const button of bandButtons) {
@@ -37,9 +38,13 @@ const SleepSummaryChart = (() => {
         const bandOf = pair => { const m = Math.abs(difference(pair.weekday.midpoint, pair.weekend.midpoint)); return m < 30 ? 0 : m < 60 ? 1 : 2; };
         const counts = [0, 0, 0];
         allPairs.forEach(pair => counts[bandOf(pair)]++);
+        if (title !== lastTitle) {
+            lastTitle = title;
+            if (allPairs.length) selectedBand = counts.indexOf(Math.max(...counts));
+        }
         const dist = document.getElementById('summary-distribution');
         dist.replaceChildren();
-        counts.forEach((count, index) => {
+        counts.map((count, index) => ({count, index})).sort((a, b) => b.count - a.count || a.index - b.index).forEach(({count, index}) => {
             const percent = allPairs.length ? count / allPairs.length * 100 : 0;
             const row = document.createElement('div');
             row.className = 'summary-dist-row' + (selectedBand === index ? ' active' : '');
