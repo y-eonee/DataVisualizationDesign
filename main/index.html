@@ -326,10 +326,12 @@
     let currentStep = -1;
     let lockedUntil = 0;
     let wheelAt = 0;
+    let wheelPeak = 0;
     let touchStart = null;
     document.documentElement.classList.add('step-intro');
     let transitioning = false;
     async function updateStep() {
+      if (!innerHeight) return;
       const next = Math.max(0, Math.min(4, Math.round(scrollY / innerHeight)));
       if (next === currentStep || transitioning) return;
       const oldStep = currentStep;
@@ -341,8 +343,8 @@
         outgoing.style.animation = 'none';
         const exitMotion = outgoing.animate(
           [{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-12px)'}],
-          {duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
-        await exitMotion.finished.catch(() => {});
+          {duration:170,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
+        await Promise.race([exitMotion.finished.catch(() => {}), new Promise(r => setTimeout(r, 260))]);
         exitMotion.cancel();
       }
       currentStep = next;
@@ -368,8 +370,8 @@
       if (oldStep >= 0 && !reducedMotion.matches) {
         const enterMotion = incoming.animate(
           [{opacity:0,transform:'translateY(32px)'},{opacity:1,transform:'translateY(0)'}],
-          {duration:620,easing:'cubic-bezier(.22,.68,.28,1)',fill:'backwards'});
-        await enterMotion.finished.catch(() => {});
+          {duration:460,easing:'cubic-bezier(.22,.68,.28,1)',fill:'backwards'});
+        await Promise.race([enterMotion.finished.catch(() => {}), new Promise(r => setTimeout(r, 560))]);
       }
       transitioning = false;
     }
@@ -380,7 +382,7 @@
         if (direction > 0 && currentStep === 4) document.querySelector('.cta').click();
         return;
       }
-      lockedUntil = performance.now() + 950;
+      lockedUntil = performance.now() + 650;
       window.scrollTo({top: next * innerHeight, behavior:'instant'});
       updateStep();
     }
@@ -388,7 +390,12 @@
       if (document.body.classList.contains('intro-leaving')) return;
       if (event.ctrlKey || Math.abs(event.deltaY) < 2) return;
       const now = performance.now();
-      const continuing = now - wheelAt < 160;
+      const magnitude = Math.abs(event.deltaY);
+      // A fresh flick after a pause, or a clearly stronger wheel tick, starts a new page turn;
+      // the decaying tail of trackpad inertia does not.
+      const continuing = now - wheelAt < 120 && magnitude <= wheelPeak * 1.5;
+      if (!continuing) wheelPeak = magnitude;
+      else wheelPeak = Math.max(wheelPeak * .9, magnitude);
       wheelAt = now;
       const active = pages[currentStep - 2];
       if (active && active.scrollHeight > active.clientHeight + 2) {
