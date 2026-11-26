@@ -1467,19 +1467,17 @@ body,body *{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif!importa
 .terrain-dock-views button[aria-pressed=true] { background:#fff; color:#000; border-color:#fff; }
 .terrain-dock label { display:grid; gap:4px; font-size:11px; color:#c6c6c6; }
 .terrain-dock input[type=range] { width:100%; accent-color:#fff; cursor:pointer; }
-.hover-detail { position:sticky; top:0; z-index:4; margin:0 0 8px; padding:12px 14px; background:#111; border:1px solid #444; border-radius:10px; font-size:12px; line-height:1.5; }
+.hover-detail { position:absolute; z-index:4; right:10px; bottom:18px; box-sizing:border-box; width:min(396px,calc(100% - 20px)); min-height:170px; padding:12px 14px; background:#111; border:1px solid #444; border-radius:10px; font-size:12px; line-height:1.5; pointer-events:none; }
 .hover-detail[hidden] { display:none; }
 .hover-detail strong { display:block; margin-bottom:6px; font-size:13px; }
 .hover-detail dl { margin:0; display:grid; gap:3px; }
 .hover-detail dl div { display:flex; justify-content:space-between; gap:12px; }
 .hover-detail dt { color:#aaa; }
 .hover-detail dd { margin:0; color:#fff; font-variant-numeric:tabular-nums; text-align:right; }
-.data-explorer .explorer-region { position:relative; }
-.hover-detail { position:absolute; left:0; right:0; bottom:10px; top:auto; margin:0; }
-.hover-detail { position:static; width:100%; box-sizing:border-box; min-height:168px; margin:22px 0 0; }
-.hover-detail[hidden] { display:block; visibility:hidden; }
 .hover-detail dl { grid-template-columns:1fr 1fr; gap:3px 18px; }
 .hover-detail dl div { font-size:11px; }
+@media(max-width:760px) { .hover-detail { right:4px; bottom:4px; min-height:0; padding:8px 10px; } }
+.data-explorer #explorer-summary { border-top:0; padding-top:18px; }
 #detail-panel, #detail-panel:focus, #detail-panel:focus-visible,
 .data-explorer *:focus, .data-explorer *:focus-visible,
 .data-explorer button:focus-visible, .data-explorer summary:focus-visible,

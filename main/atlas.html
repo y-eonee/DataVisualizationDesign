@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>주말에 몰아자는 것도 게으름일까? - 사회적시차</title>
-  <link rel="stylesheet" href="styles.css?v=no-focus">
+  <link rel="stylesheet" href="styles.css?v=hover-card">
   <script>if (new URLSearchParams(location.search).has('personal')) document.documentElement.classList.add('personal-globe-entry');</script>
 </head>
 <body data-screen="detail" data-entry="globe">
@@ -57,23 +57,14 @@
     </div>
   </main>
   </div>
-  <section id="detail-screen" class="detail-screen" aria-labelledby="detail-title" aria-hidden="false">
+  <section id="detail-screen" class="detail-screen" aria-label="수면 데이터 구" aria-hidden="false">
     <header class="detail-header">
       <a id="back-to-atlas" class="detail-back" href="index.html"><span aria-hidden="true">←</span> Back</a>
     </header>
     <div class="detail-layout">
       <div id="globe-loading" role="status">수면 지형을 불러오는 중…</div>
-      <div id="detail-visual" class="detail-visual" aria-label="Sleep globe: six age clusters with radial layered contour disks. Drag to orbit, scroll to zoom.">      <div class="network-clock"><output id="sleep-time" aria-label="Simulated time">00:00</output><span>24h / 60s &#183; comparison / 15s</span><span id="comparison-phase">Weekday emphasis</span></div></div>
+      <div id="detail-visual" class="detail-visual" aria-label="Sleep globe: six age clusters with radial layered contour disks. Drag to orbit, scroll to zoom.">      <div class="network-clock"><output id="sleep-time" aria-label="Simulated time">00:00</output><span>24h / 60s &#183; comparison / 15s</span><span id="comparison-phase">Weekday emphasis</span></div><div id="hover-detail" class="hover-detail" aria-live="polite" hidden></div></div>
       <aside id="detail-panel" hidden inert tabindex="0" class="detail-info data-explorer" aria-label="수면 데이터 탐색">
-        <header class="explorer-region" data-panel-reveal>
-          <p id="detail-number" class="detail-eyebrow"></p>
-          <h2 id="detail-title"></h2>
-          <div class="detail-records"><b id="detail-count"></b><span>건의 수면 기록</span></div>
-          <p class="explorer-hint">구를 돌려 연령대별 수면 지형을 살펴보세요. 아래에서 평일과 주말의 수면 패턴을 비교할 수 있습니다.</p>
-          <a class="explorer-scroll" href="#explorer-summary">아래로 내려보기 <span aria-hidden="true">↓</span></a>
-          <div id="hover-detail" class="hover-detail" aria-live="polite" hidden></div>
-        </header>
-
         <section id="explorer-summary" class="explorer-section" aria-labelledby="summary-heading">
           <div data-panel-reveal>
             <h3 class="sleep-summary-heading" id="summary-heading"><span>평일과 주말,</span> <span>수면의 중간 시각은</span> <span>얼마나 다를까요?</span></h3>
@@ -260,8 +251,8 @@
   <script src="sleep-terrain-gpu.js"></script>
   <script src="sleep-landscape.js?v=bright-pink"></script>
   <script src="sleep-summary-chart.js?v=autoband"></script>
-  <script src="sleep-network.js?v=zoom-center"></script>
-  <script src="atlas-transition.js"></script>
+  <script src="sleep-network.js?v=hover-card"></script>
+  <script src="atlas-transition.js?v=hover-card"></script>
   <script src="app.js"></script>
   <script src="sleep-age-terrain.js?v=orbit-dock"></script>
   <script src="sleep-occupation-shifts.js"></script>
@@ -300,10 +291,6 @@
         }
       }, { root: explorerPanel, threshold: 0.05 });
       for (const part of explorerPanel.querySelectorAll('[data-panel-reveal]')) explorerObserver.observe(part);
-      explorerPanel.querySelector('.explorer-scroll')?.addEventListener('click', event => {
-        event.preventDefault();
-        document.getElementById('explorer-summary').scrollIntoView({behavior: 'smooth', block: 'start'});
-      });
     }
   </script>
 </body>

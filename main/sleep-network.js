@@ -6,7 +6,7 @@ const SleepNetwork = (() => {
     const colors = C.palette;
     const tau = Math.PI * 2, daySeconds = C.motion.daySeconds, rotationSeconds = C.motion.rotationSeconds;
     let model = null, graph = null, nodes = [], viewport = null, projected = [], labels = [];
-    let yaw = .62, pitch = -.22, zoom = 1, selected = null, hover = null, hoverPoint = null, hoverNode = null, pointer = null;
+    let yaw = .62, pitch = -.22, zoom = 1, selected = null, hover = null, hoverPoint = null, hoverNode = null, pendingHover = null, pointer = null;
     let animationSeconds = 0, metrics = {}, phaseCache = null, flexCache = null;
     let botanicals = [];
     let meanDrawMs=0;
@@ -159,7 +159,7 @@ const SleepNetwork = (() => {
                 v.radius=Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z);
             }
         }
-        yaw = .48; pitch = -.16; zoom = 1; targetZoom = 1; time = 0; animationSeconds = 0; hover = null; selected = null; hoverPoint = null; hoverNode = null; shownInfo = '';
+        yaw = .48; pitch = -.16; zoom = 1; targetZoom = 1; time = 0; animationSeconds = 0; hover = null; selected = null; hoverPoint = null; hoverNode = null; cancelPendingHover(); showHoverDetail(null); shownInfo = '';
         window.sleepAgeSelection = null; velocityYaw=0;velocityPitch=0;autoRate=0;rotationResumeAt = 0; tooltip.dataset.bin = '';
         if ((mode === 'weekday' && !model.stats.weekdayPeople) || (mode === 'weekend' && !model.stats.weekendPeople)) mode = 'compare';
         $('age-list').replaceChildren();
@@ -207,7 +207,7 @@ const SleepNetwork = (() => {
         for(const [code,count] of stats.occupations){const item=document.createElement('li');item.textContent=SleepOccupations.style(code).label+' · '+count.toLocaleString();$('occupation-list').append(item);}
     }
     function applySelection(redraw=true){
-        selected=selection.selectedAgeGroup;hover=null;hoverPoint=null;hoverNode=null;tooltip.hidden=true;tooltip.dataset.bin='';shownInfo='';
+        selected=selection.selectedAgeGroup;cancelPendingHover();showHoverDetail(null);hover=null;hoverPoint=null;hoverNode=null;tooltip.hidden=true;tooltip.dataset.bin='';shownInfo='';
         const active=selected!==null||selection.selectedOccupations.length>0;
         const indices=model.indices.filter(i=>{const n=occupationData.recordSymbols.get(i);return matchesMarker(n);});
         selectionStats=active?SleepNetworkData.build(indices):model;
@@ -535,7 +535,7 @@ const SleepNetwork = (() => {
             }
         }
         if (personalCard) personalCard.hidden = !personalResult || !!personalTurn;
-        projected=views;labels=views.labels;context.restore();
+        projected=views;labels=views.labels;drawHoverOutline(context);context.restore();
         $('comparison-phase').textContent=views.phaseLabel;
         updateSamplingSummary(views.length);
         document.documentElement.dataset.terrainRenderer=views.terrainRenderer;
@@ -554,13 +554,50 @@ const SleepNetwork = (() => {
         }
         return result;
     }
+    const hoverDelay = 1200;
     function refreshHover() {
-        const found = nearest(hoverPoint.x, hoverPoint.y), id = found?.node.groupId ?? null;
-        if (hover !== id) {hover = id; $('map').style.cursor = id===null ? '' : 'pointer'; updateInfo(); updateTime();}
-        hoverNode = found?.node ?? null;
-        if (!hoverNode) {tooltip.hidden = true; showHoverDetail(null); return;}
+        const node = nearest(hoverPoint.x, hoverPoint.y)?.node ?? null;
+        $('map').style.cursor = node ? 'pointer' : '';
         tooltip.hidden = true;
-        showHoverDetail(hoverNode);
+        // The first datum appears at once. Replacing or clearing it waits until the cursor settles.
+        if (!hoverNode) {if (node || hover !== null) commitHover(node); return;}
+        if (node?.key === hoverNode.key) {cancelPendingHover(); return;}
+        if (pendingHover && pendingHover.key === node?.key) return;
+        cancelPendingHover();
+        pendingHover = {key: node?.key, timer: setTimeout(() => {
+            pendingHover = null; commitHover(node);
+            if (playing) schedule(); else render();
+        }, hoverDelay)};
+    }
+    function cancelPendingHover() {
+        if (pendingHover) clearTimeout(pendingHover.timer);
+        pendingHover = null;
+    }
+    function commitHover(node) {
+        const id = node?.groupId ?? null;
+        hoverNode = node;
+        if (hover !== id) {hover = id; updateInfo(); updateTime();}
+        showHoverDetail(node);
+    }
+    function drawHoverOutline(context) {
+        if (!hoverNode) return;
+        const view = projected.find(p => p.node.key === hoverNode.key);
+        if (!view) return;
+        const u = view.ellipseU || {x: view.radius, y: 0}, v = view.ellipseV || {x: 0, y: view.radius};
+        // Keep a small gap around the marker, including very small or edge-on ones.
+        const grow = axis => {const length = Math.hypot(axis.x, axis.y) || 1, k = Math.max(7, length + 4) / length; return {x: axis.x * k, y: axis.y * k};};
+        const a = grow(u), b = grow(v);
+        context.save();
+        context.beginPath();
+        for (let i = 0; i <= 48; i++) {
+            const t = i / 48 * tau, c = Math.cos(t), s = Math.sin(t);
+            context[i ? 'lineTo' : 'moveTo'](view.x + a.x * c + b.x * s, view.y + a.y * c + b.y * s);
+        }
+        context.closePath();
+        context.globalAlpha = 1; context.lineJoin = 'round';
+        context.strokeStyle = '#000'; context.lineWidth = 5; context.stroke();
+        context.strokeStyle = '#fff'; context.lineWidth = 2; context.stroke();
+        context.restore();
     }
     function showHoverDetail(n){
         const box=$('hover-detail');if(!box)return;
@@ -602,7 +639,7 @@ const SleepNetwork = (() => {
         if(pointer||(e.button!==undefined&&e.button!==0))return;
         const now=performance.now();velocityYaw=0;velocityPitch=0;autoRate=0;
         pointer={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,distance:0,time:now,vx:0,vy:0,moved:false};
-        hoverPoint=null;tooltip.hidden=true;showHoverDetail(null);canvas.setPointerCapture(e.pointerId);
+        hoverPoint=null;hoverNode=null;cancelPendingHover();tooltip.hidden=true;showHoverDetail(null);canvas.setPointerCapture(e.pointerId);
     }
     function up(e) {
         if(!pointer||(e.pointerId!==undefined&&pointer.id!==e.pointerId))return;
@@ -642,7 +679,7 @@ const SleepNetwork = (() => {
     function leave() {
         // Leaving the element during capture must not cancel a continuing drag.
         if(pointer)return;
-        hoverPoint=null;hoverNode=null;hover=null;tooltip.hidden=true;showHoverDetail(null);updateInfo();
+        cancelPendingHover();hoverPoint=null;hoverNode=null;hover=null;tooltip.hidden=true;showHoverDetail(null);updateInfo();
         if(playing)schedule();else render();
     }
     function wheel(e) {
@@ -681,7 +718,7 @@ const SleepNetwork = (() => {
         updateTime(); render(); schedule();
     }
     function start() {playing = true; previous = null; schedule();}
-    function stop() {playing = false; previous = null; pointer = null;personalTurn=null;velocityYaw=0;velocityPitch=0;autoRate=0; hoverPoint = null; tooltip.hidden = true; if (frame) cancelAnimationFrame(frame); frame = 0;}
+    function stop() {cancelPendingHover(); hoverNode = null; hover = null; showHoverDetail(null); playing = false; previous = null; pointer = null;personalTurn=null;velocityYaw=0;velocityPitch=0;autoRate=0; hoverPoint = null; tooltip.hidden = true; if (frame) cancelAnimationFrame(frame); frame = 0;}
     document.querySelectorAll('[data-sleep-mode]').forEach(b => b.onclick = () => {
         if (b.disabled) return; mode = b.dataset.sleepMode;
         document.querySelectorAll('[data-sleep-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render();

@@ -111,9 +111,6 @@ window.AtlasTransition = (() => {
     function populate() {
         const selection = window.sleepRegionSelection,
             stats = selection.statistics;
-        document.getElementById('detail-number').textContent = selection.id === 'all' ? 'Sleep Atlas' : '수면 구간 ' + selection.region.number;
-        document.getElementById('detail-title').textContent = selection.id === 'all' ? '수면 데이터' : selection.region.name;
-        document.getElementById('detail-count').textContent = stats.count.toLocaleString();
         document.getElementById('detail-percent').textContent = '전체 유효 기록의 ' + stats.percentOfValid.toFixed(2) + '%';
         document.getElementById('detail-onset').textContent = SleepRegions.clock(stats.onsetMean) + (18 + stats.onsetMean >= 24 ? ' (다음 날)' : '');
         const minutes = Math.round(stats.durationMean * 60);
